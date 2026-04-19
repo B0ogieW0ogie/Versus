@@ -1,0 +1,75 @@
+networks:
+  versus:
+
+volumes:
+  pgdata:
+
+services:
+
+  nginx:
+    container_name: versus_nginx
+    build:
+      context: ./.docker/nginx
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-80}:80"
+    volumes:
+      - ./:/var/www/app
+    depends_on:
+      php:
+        condition: service_healthy
+    networks:
+      - versus
+
+  php:
+    container_name: versus_php
+    build:
+      context: ./.docker/php
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/app
+    environment:
+      - PHP_OPCACHE_VALIDATE_TIMESTAMPS=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - versus
+    healthcheck:
+      test: ["CMD", "php-fpm", "-t"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  workspace:
+    container_name: versus_ws
+    build:
+      context: ./.docker/workspace
+    volumes:
+      - ./:/var/www/app
+    environment:
+      - COMPOSER_MEMORY_LIMIT=-1
+    tty: true
+    stdin_open: true
+    networks:
+      - versus
+
+  postgres:
+    container_name: versus_pg
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-versus}
+      POSTGRES_USER: ${DB_USERNAME:-versus}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-versus}
+    ports:
+      - "${DB_PORT_HOST:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - versus
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-versus} -d ${DB_DATABASE:-versus}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Actions\Battles;
+
+use App\Models\Battle;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\Vote;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
+class CastVoteAction
+{
+    public function __invoke(User $user, Battle $battle, string $side, float $amount): Vote
+    {
+        if (! in_array($side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
+            throw ValidationException::withMessages(['side' => 'Invalid side.']);
+        }
+
+        if ($amount <= 0) {
+            throw ValidationException::withMessages(['amount' => 'Amount must be positive.']);
+        }
+
+        return DB::transaction(function () use ($user, $battle, $side, $amount) {
+            /** @var Battle $battle */
+            $battle = Battle::whereKey($battle->id)->lockForUpdate()->firstOrFail();
+
+            if (! $battle->isOpenForVoting()) {
+                throw ValidationException::withMessages(['battle' => 'Battle is not open for voting.']);
+            }
+
+            /** @var User $user */
+            $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            if ((float) $user->balance < $amount) {
+                throw ValidationException::withMessages(['amount' => 'Insufficient balance.']);
+            }
+
+            if (Vote::where('user_id', $user->id)->where('battle_id', $battle->id)->exists()) {
+                throw ValidationException::withMessages(['battle' => 'You have already voted in this battle.']);
+            }
+
+            $user->balance = (float) $user->balance - $amount;
+            $user->save();
+
+            $vote = Vote::create([
+                'user_id' => $user->id,
+                'battle_id' => $battle->id,
+                'side' => $side,
+                'amount' => $amount,
+                'weight' => $amount,
+                'referrer_id' => $user->referred_by_id,
+            ]);
+
+            $battle->total_pool = (float) $battle->total_pool + $amount;
+            $battle->save();
+
+            Transaction::create([
+                'user_id' => $user->id,
+                'type' => Transaction::TYPE_VOTE_STAKE,
+                'amount' => -$amount,
+                'balance_after' => $user->balance,
+                'battle_id' => $battle->id,
+                'meta' => ['side' => $side, 'vote_id' => $vote->id],
+            ]);
+
+            return $vote;
+        });
+    }
+}
