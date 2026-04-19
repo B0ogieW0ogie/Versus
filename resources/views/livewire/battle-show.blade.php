@@ -7,6 +7,7 @@
         $closesIso = optional($battle->closes_at)->toIso8601String();
         $totalPool = (float) ($poolA + $poolB);
         $userBalance = auth()->check() ? (float) auth()->user()->balance : 0.0;
+        $maxAllowed = (int) min((int) $userBalance, $maxVoteAmount);
         $canVote = auth()->check()
             && $battle->isOpenForVoting()
             && $userBalance >= 1;
@@ -84,33 +85,57 @@
 
                     @auth
                         @if ($battle->isOpenForVoting())
-                            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                <button type="button"
-                                        wire:click="voteFor('A')"
-                                        wire:loading.attr="disabled"
-                                        @disabled(! $canVote)
-                                        class="rounded-xl py-3 text-center font-bold uppercase tracking-wider
-                                               bg-gradient-to-r from-vote-blue-from to-vote-blue-to
-                                               shadow-vote-blue transition hover:brightness-110
-                                               disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
-                                    <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_a_label)]) }}</span>
-                                    <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1">
-                                        {{ __('battle.token_to_vote_rate') }}
-                                    </span>
-                                </button>
-                                <button type="button"
-                                        wire:click="voteFor('B')"
-                                        wire:loading.attr="disabled"
-                                        @disabled(! $canVote)
-                                        class="rounded-xl py-3 text-center font-bold uppercase tracking-wider
-                                               bg-gradient-to-r from-vote-purple-from to-vote-purple-to
-                                               shadow-vote-purple transition hover:brightness-110
-                                               disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
-                                    <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_b_label)]) }}</span>
-                                    <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1">
-                                        {{ __('battle.token_to_vote_rate') }}
-                                    </span>
-                                </button>
+                            <div class="mt-6"
+                                 x-data="voteForm({{ $maxAllowed }}, @js(__('battle.amount_clamped')))">
+                                <label class="flex items-center justify-center gap-3 text-sm text-white/80">
+                                    <span class="uppercase tracking-wider text-white/60">{{ __('battle.amount_label') }}</span>
+                                    <input type="number"
+                                           x-model.number="amount"
+                                           @input="clamp()"
+                                           @blur="clamp(true)"
+                                           min="1"
+                                           :max="max"
+                                           inputmode="numeric"
+                                           class="w-32 rounded-lg bg-navy-900 border border-white/10 px-3 py-2 text-center
+                                                  font-mono text-white focus:outline-none focus:ring-2 focus:ring-glow-cyan/50">
+                                </label>
+
+                                <p x-show="err"
+                                   x-transition.opacity.duration.500ms
+                                   x-cloak
+                                   x-text="err"
+                                   class="mt-2 text-center text-xs text-amber-300"></p>
+
+                                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                    <button type="button"
+                                            @click="submit('A')"
+                                            :disabled="amount < 1 || amount > max"
+                                            wire:loading.attr="disabled"
+                                            @disabled(! $canVote)
+                                            class="rounded-xl py-3 text-center font-bold uppercase tracking-wider
+                                                   bg-gradient-to-r from-vote-blue-from to-vote-blue-to
+                                                   shadow-vote-blue transition hover:brightness-110
+                                                   disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
+                                        <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_a_label)]) }}</span>
+                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1">
+                                            {{ __('battle.token_to_vote_rate') }}
+                                        </span>
+                                    </button>
+                                    <button type="button"
+                                            @click="submit('B')"
+                                            :disabled="amount < 1 || amount > max"
+                                            wire:loading.attr="disabled"
+                                            @disabled(! $canVote)
+                                            class="rounded-xl py-3 text-center font-bold uppercase tracking-wider
+                                                   bg-gradient-to-r from-vote-purple-from to-vote-purple-to
+                                                   shadow-vote-purple transition hover:brightness-110
+                                                   disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
+                                        <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_b_label)]) }}</span>
+                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1">
+                                            {{ __('battle.token_to_vote_rate') }}
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
 
                             @error('vote')

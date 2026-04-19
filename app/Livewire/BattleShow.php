@@ -25,7 +25,7 @@ class BattleShow extends Component
         $this->battle = $battle;
     }
 
-    public function voteFor(string $side, CastVoteAction $action): void
+    public function voteFor(string $side, int $amount, CastVoteAction $action): void
     {
         if (! Auth::check()) {
             $this->redirectRoute('login');
@@ -40,7 +40,7 @@ class BattleShow extends Component
         }
 
         try {
-            $action(Auth::user(), $this->battle, $side, 1.0);
+            $action(Auth::user(), $this->battle, $side, (float) $amount);
             $this->battle->refresh();
             $this->dispatch('battle-voted');
             session()->flash('battle-status', __('battle.vote_cast'));
@@ -130,6 +130,7 @@ class BattleShow extends Component
             'votesB' => (int) ($stats->get('B')->vote_count ?? 0),
             'userStakeA' => $userStakeA,
             'userStakeB' => $userStakeB,
+            'maxVoteAmount' => (int) config('versus.max_vote_amount'),
             'comments' => Comment::query()
                 ->where('battle_id', $this->battle->id)
                 ->with('user:id,name')

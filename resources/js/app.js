@@ -26,4 +26,37 @@ document.addEventListener('alpine:init', () => {
             }
         },
     }));
+
+    window.Alpine.data('voteForm', (max, clampMsg) => ({
+        amount: 1,
+        max: Math.max(0, Number(max) || 0),
+        err: null,
+        errTimer: null,
+        clamp(onBlur = false) {
+            let n = parseInt(this.amount, 10);
+            let changed = false;
+            if (isNaN(n)) {
+                n = onBlur ? 1 : this.amount;
+                if (onBlur) changed = true;
+            } else if (n < 1) {
+                n = 1;
+                changed = true;
+            } else if (n > this.max) {
+                n = this.max;
+                changed = true;
+            }
+            if (n !== this.amount) this.amount = n;
+            if (changed) this.flash(clampMsg);
+        },
+        flash(msg) {
+            this.err = msg;
+            clearTimeout(this.errTimer);
+            this.errTimer = setTimeout(() => { this.err = null; }, 2000);
+        },
+        submit(side) {
+            this.clamp(true);
+            if (this.amount < 1 || this.amount > this.max) return;
+            this.$wire.voteFor(side, this.amount);
+        },
+    }));
 });
