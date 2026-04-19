@@ -287,3 +287,32 @@ Cron-settlement крутится через `battles:settle-due` every minute �
 - Мобильное приложение
 
 Подробный план — [`doc/mvp-plan.md`](doc/mvp-plan.md).
+
+### Deploy (staging)
+
+На сервере `/home/user/versus`, тот же `docker-compose.yml`, наружу только 80.
+
+Первичная раскатка:
+
+```bash
+git clone git@github.com:B0ogieW0ogie/Versus.git /home/user/versus
+cd /home/user/versus
+cp .env.example .env                                   # прописать APP_KEY, DB_PASSWORD
+docker compose run --rm workspace composer install --no-dev --optimize-autoloader
+docker compose run --rm workspace php artisan key:generate --force
+docker compose run --rm workspace npm install --ignore-scripts
+docker compose run --rm workspace npm run build
+docker compose up -d postgres
+docker compose run --rm workspace php artisan migrate --force --seed
+docker compose up -d
+```
+
+Авто-пулл из `main` каждую минуту ставится одной строкой в crontab:
+
+```cron
+* * * * * /usr/bin/flock -n /tmp/versus-deploy.lock /home/user/versus/bin/auto-deploy.sh
+```
+
+Скрипт [`bin/auto-deploy.sh`](bin/auto-deploy.sh) подтягивает `main` через
+`git merge --ff-only` и по содержимому diff запускает composer install / npm build /
+`artisan migrate` / `optimize:clear`. Логи — `storage/logs/deploy.log`.
