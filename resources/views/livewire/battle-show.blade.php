@@ -83,7 +83,7 @@
                         <div>
                             <label class="block text-sm text-gray-700 dark:text-gray-300">Сумма</label>
                             <input type="number" step="0.01" min="0.01" wire:model="voteAmount"
-                                   class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700"
+                                   class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                                    placeholder="например, 100">
                             @error('voteAmount') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -112,12 +112,12 @@
             @auth
                 <form wire:submit="comment" class="mt-4 space-y-3">
                     <textarea wire:model="commentBody" rows="3"
-                              class="block w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700"
+                              class="block w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
                               placeholder="Поделитесь своим мнением…"></textarea>
                     @error('commentBody') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
                     <div class="flex items-center justify-between">
                         <select wire:model="commentSide"
-                                class="rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 text-sm">
+                                class="rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 text-sm">
                             <option value="">Болею за: (необязательно)</option>
                             <option value="A">{{ $battle->side_a_label }}</option>
                             <option value="B">{{ $battle->side_b_label }}</option>

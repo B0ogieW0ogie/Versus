@@ -4,7 +4,7 @@
             <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Ваша реферальная ссылка</h2>
             <div class="mt-4 flex items-center gap-3" x-data="{ url: '{{ $referralUrl }}', copied: false }">
                 <input readonly value="{{ $referralUrl }}"
-                       class="flex-1 rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 text-sm">
+                       class="flex-1 rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 text-sm">
                 <button type="button"
                         @click="navigator.clipboard.writeText(url).then(() => { copied = true; setTimeout(() => copied = false, 1500); })"
                         class="rounded-md bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-500">
