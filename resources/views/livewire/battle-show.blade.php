@@ -58,43 +58,53 @@
                             @endif
                         </strong>
                     </p>
-                @elseif ($userVote)
-                    <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">
-                        Вы поставили <strong>{{ number_format((float) $userVote->amount, 2) }}</strong>
-                        на сторону <strong>{{ $userVote->side }}</strong>.
-                    </p>
                 @elseif (! $battle->isOpenForVoting())
                     <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">Голосование закрыто.</p>
                 @else
+                    @if ($userStakeA > 0 || $userStakeB > 0)
+                        <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">
+                            Ваши ставки в этом баттле:
+                            <strong>{{ number_format($userStakeA, 2) }}</strong> на {{ $battle->side_a_label }},
+                            <strong>{{ number_format($userStakeB, 2) }}</strong> на {{ $battle->side_b_label }}.
+                        </p>
+                    @endif
                     @if (session('battle-status'))
                         <p class="mt-2 text-sm text-green-600">{{ session('battle-status') }}</p>
                     @endif
-                    <form wire:submit="vote" class="mt-4 space-y-3">
-                        <div class="flex gap-4">
-                            <label class="inline-flex items-center gap-2">
-                                <input type="radio" wire:model="voteSide" value="A" class="text-indigo-600">
-                                <span>{{ $battle->side_a_label }}</span>
-                            </label>
-                            <label class="inline-flex items-center gap-2">
-                                <input type="radio" wire:model="voteSide" value="B" class="text-pink-600">
-                                <span>{{ $battle->side_b_label }}</span>
-                            </label>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-700 dark:text-gray-300">Сумма</label>
-                            <input type="number" step="0.01" min="0.01" wire:model="voteAmount"
-                                   class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
-                                   placeholder="например, 100">
-                            @error('voteAmount') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
-                        </div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                            Ваш баланс: {{ number_format((float) auth()->user()->balance, 2) }}
+                    @php $remainingCap = max(0.0, $voteCap - $userTotalStaked); @endphp
+                    @if ($remainingCap <= 0)
+                        <p class="mt-4 text-sm text-amber-600">
+                            Вы израсходовали лимит в {{ number_format($voteCap, 0) }} голосов.
                         </p>
-                        <button type="submit"
-                                class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-500">
-                            Проголосовать
-                        </button>
-                    </form>
+                    @else
+                        <form wire:submit="vote" class="mt-4 space-y-3">
+                            <div class="flex gap-4">
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="radio" wire:model="voteSide" value="A" class="text-indigo-600">
+                                    <span>{{ $battle->side_a_label }}</span>
+                                </label>
+                                <label class="inline-flex items-center gap-2">
+                                    <input type="radio" wire:model="voteSide" value="B" class="text-pink-600">
+                                    <span>{{ $battle->side_b_label }}</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-700 dark:text-gray-300">Сумма</label>
+                                <input type="number" step="0.01" min="0.01" wire:model="voteAmount"
+                                       class="mt-1 block w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
+                                       placeholder="например, 100">
+                                @error('voteAmount') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Ваш баланс: {{ number_format((float) auth()->user()->balance, 2) }}.
+                                Осталось от лимита: {{ number_format($remainingCap, 2) }} из {{ number_format($voteCap, 0) }}.
+                            </p>
+                            <button type="submit"
+                                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-500">
+                                Проголосовать
+                            </button>
+                        </form>
+                    @endif
                 @endif
             @else
                 <p class="mt-4 text-sm text-gray-600 dark:text-gray-300">

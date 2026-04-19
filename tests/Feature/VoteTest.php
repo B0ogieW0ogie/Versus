@@ -51,15 +51,18 @@ class VoteTest extends TestCase
         $this->assertSame($referrer->id, $vote->referrer_id);
     }
 
-    public function test_user_cannot_vote_twice_in_same_battle(): void
+    public function test_user_can_vote_multiple_times_in_same_battle_on_either_side(): void
     {
         $user = User::factory()->create(['balance' => 1000]);
         $battle = Battle::factory()->create();
 
         ($this->action())($user, $battle, Battle::SIDE_A, 100);
-
-        $this->expectException(ValidationException::class);
         ($this->action())($user, $battle, Battle::SIDE_B, 50);
+        ($this->action())($user, $battle, Battle::SIDE_A, 25);
+
+        $this->assertSame(3, Vote::where('user_id', $user->id)->where('battle_id', $battle->id)->count());
+        $this->assertSame(825.0, (float) $user->fresh()->balance);
+        $this->assertSame(175.0, (float) $battle->fresh()->total_pool);
     }
 
     public function test_user_cannot_vote_more_than_balance(): void

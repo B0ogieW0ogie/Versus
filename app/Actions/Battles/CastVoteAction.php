@@ -36,10 +36,6 @@ class CastVoteAction
                 throw ValidationException::withMessages(['amount' => 'Недостаточно средств на балансе.']);
             }
 
-            if (Vote::where('user_id', $user->id)->where('battle_id', $battle->id)->exists()) {
-                throw ValidationException::withMessages(['battle' => 'Вы уже голосовали в этом баттле.']);
-            }
-
             $cap = (float) config('versus.vote_cap_per_user');
             $alreadyStaked = (float) Vote::where('user_id', $user->id)->sum('amount');
             if ($alreadyStaked + $amount > $cap) {

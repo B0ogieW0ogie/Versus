@@ -80,12 +80,20 @@ class BattleShow extends Component
         $poolA = (float) ($stats->get('A')->amount_sum ?? 0);
         $poolB = (float) ($stats->get('B')->amount_sum ?? 0);
 
-        $userVote = null;
+        $userStakeA = 0.0;
+        $userStakeB = 0.0;
+        $userTotalStaked = 0.0;
         $user = Auth::user();
         if ($user !== null) {
-            $userVote = Vote::where('user_id', $user->id)
+            $userStats = Vote::where('user_id', $user->id)
                 ->where('battle_id', $this->battle->id)
-                ->first();
+                ->selectRaw('side, COALESCE(SUM(amount), 0) AS amount_sum')
+                ->groupBy('side')
+                ->pluck('amount_sum', 'side');
+
+            $userStakeA = (float) ($userStats['A'] ?? 0);
+            $userStakeB = (float) ($userStats['B'] ?? 0);
+            $userTotalStaked = (float) Vote::where('user_id', $user->id)->sum('amount');
         }
 
         return view('livewire.battle-show', [
@@ -93,7 +101,10 @@ class BattleShow extends Component
             'poolB' => $poolB,
             'votesA' => (int) ($stats->get('A')->vote_count ?? 0),
             'votesB' => (int) ($stats->get('B')->vote_count ?? 0),
-            'userVote' => $userVote,
+            'userStakeA' => $userStakeA,
+            'userStakeB' => $userStakeB,
+            'userTotalStaked' => $userTotalStaked,
+            'voteCap' => (float) config('versus.vote_cap_per_user'),
             'comments' => $this->battle->comments()->with('user')->latest()->get(),
         ]);
     }
