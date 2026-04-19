@@ -54,6 +54,20 @@ services:
     networks:
       - versus
 
+  scheduler:
+    container_name: versus_scheduler
+    build:
+      context: ./.docker/php
+    restart: unless-stopped
+    command: php artisan schedule:work
+    volumes:
+      - ./:/var/www/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - versus
+
   postgres:
     container_name: versus_pg
     image: postgres:16-alpine
