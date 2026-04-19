@@ -3,7 +3,7 @@
 return [
     'signup_bonus' => 1000,
 
-    'vote_cap_per_user' => 10000,
+    'max_vote_amount' => 10000,
 
     'distribution' => [
         'winners' => 0.88,

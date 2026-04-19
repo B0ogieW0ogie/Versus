@@ -14,6 +14,6 @@ return [
     'insufficient_balance' => 'Недостаточно токенов.',
     'battle_not_open' => 'Голосование в этом батле закрыто.',
     'amount_too_small' => 'Минимум 1 токен на голос.',
-    'vote_cap_reached' => 'Достигнут лимит 10 000 голосов на батл.',
+    'vote_cap_reached' => 'Максимум 10 000 токенов за одно голосование.',
     'distribution' => 'Победа: :win% | Проект: :project% | Призовой фонд: :draw%',
 ];

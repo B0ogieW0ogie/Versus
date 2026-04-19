@@ -6,11 +6,9 @@
         $drawPct = (int) round(($distribution['reward_pool'] ?? 0) * 100);
         $closesIso = optional($battle->closes_at)->toIso8601String();
         $totalPool = (float) ($poolA + $poolB);
-        $remainingCap = max(0.0, $voteCap - $userTotalStaked);
         $userBalance = auth()->check() ? (float) auth()->user()->balance : 0.0;
         $canVote = auth()->check()
             && $battle->isOpenForVoting()
-            && $remainingCap >= 1
             && $userBalance >= 1;
     @endphp
 

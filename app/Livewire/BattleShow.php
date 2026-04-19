@@ -111,7 +111,6 @@ class BattleShow extends Component
 
         $userStakeA = 0.0;
         $userStakeB = 0.0;
-        $userTotalStaked = 0.0;
         $user = Auth::user();
         if ($user !== null) {
             $userStats = Vote::where('user_id', $user->id)
@@ -122,7 +121,6 @@ class BattleShow extends Component
 
             $userStakeA = (float) ($userStats['A'] ?? 0);
             $userStakeB = (float) ($userStats['B'] ?? 0);
-            $userTotalStaked = (float) Vote::where('user_id', $user->id)->sum('amount');
         }
 
         return view('livewire.battle-show', [
@@ -132,8 +130,6 @@ class BattleShow extends Component
             'votesB' => (int) ($stats->get('B')->vote_count ?? 0),
             'userStakeA' => $userStakeA,
             'userStakeB' => $userStakeB,
-            'userTotalStaked' => $userTotalStaked,
-            'voteCap' => (float) config('versus.vote_cap_per_user'),
             'comments' => Comment::query()
                 ->where('battle_id', $this->battle->id)
                 ->with('user:id,name')

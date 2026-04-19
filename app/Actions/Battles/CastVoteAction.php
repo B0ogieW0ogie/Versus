@@ -36,9 +36,8 @@ class CastVoteAction
                 throw ValidationException::withMessages(['amount' => __('battle.insufficient_balance')]);
             }
 
-            $cap = (float) config('versus.vote_cap_per_user');
-            $alreadyStaked = (float) Vote::where('user_id', $user->id)->sum('amount');
-            if ($alreadyStaked + $amount > $cap) {
+            $cap = (float) config('versus.max_vote_amount');
+            if ($amount > $cap) {
                 throw ValidationException::withMessages([
                     'amount' => __('battle.vote_cap_reached'),
                 ]);

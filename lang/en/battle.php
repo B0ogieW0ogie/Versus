@@ -14,6 +14,6 @@ return [
     'insufficient_balance' => 'Insufficient balance.',
     'battle_not_open' => 'This battle is not open for voting.',
     'amount_too_small' => 'Vote amount must be at least 1 token.',
-    'vote_cap_reached' => 'You have reached the 10 000 vote cap for this battle.',
+    'vote_cap_reached' => 'A single vote cannot exceed 10 000 tokens.',
     'distribution' => 'Win Share: :win% | Project: :project% | Draw Pool: :draw%',
 ];
