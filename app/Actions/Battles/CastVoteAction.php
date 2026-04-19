@@ -40,6 +40,15 @@ class CastVoteAction
                 throw ValidationException::withMessages(['battle' => 'Вы уже голосовали в этом баттле.']);
             }
 
+            $cap = (float) config('versus.vote_cap_per_user');
+            $alreadyStaked = (float) Vote::where('user_id', $user->id)->sum('amount');
+            if ($alreadyStaked + $amount > $cap) {
+                $remaining = max(0.0, $cap - $alreadyStaked);
+                throw ValidationException::withMessages([
+                    'amount' => 'Превышен лимит голосов на пользователя ('.(int) $cap.'). Доступно: '.number_format($remaining, 2, '.', '').'.',
+                ]);
+            }
+
             $user->balance = (float) $user->balance - $amount;
             $user->save();
 

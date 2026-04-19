@@ -115,4 +115,41 @@ class VoteTest extends TestCase
         $this->expectException(ValidationException::class);
         ($this->action())($user, $battle, Battle::SIDE_A, 0);
     }
+
+    public function test_user_cannot_exceed_vote_cap_across_battles(): void
+    {
+        config()->set('versus.vote_cap_per_user', 10000);
+
+        $user = User::factory()->create(['balance' => 20000]);
+        $battleA = Battle::factory()->create();
+        $battleB = Battle::factory()->create();
+        $battleC = Battle::factory()->create();
+
+        ($this->action())($user, $battleA, Battle::SIDE_A, 6000);
+        ($this->action())($user, $battleB, Battle::SIDE_B, 4000);
+
+        try {
+            ($this->action())($user, $battleC, Battle::SIDE_A, 1);
+            $this->fail('Expected ValidationException for exceeding vote cap.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('amount', $e->errors());
+        }
+
+        $this->assertSame(2, Vote::where('user_id', $user->id)->count());
+        $this->assertSame(10000.0, (float) $user->fresh()->balance);
+    }
+
+    public function test_user_can_vote_exactly_up_to_cap(): void
+    {
+        config()->set('versus.vote_cap_per_user', 10000);
+
+        $user = User::factory()->create(['balance' => 20000]);
+        $battleA = Battle::factory()->create();
+        $battleB = Battle::factory()->create();
+
+        ($this->action())($user, $battleA, Battle::SIDE_A, 9000);
+        ($this->action())($user, $battleB, Battle::SIDE_B, 1000);
+
+        $this->assertSame(10000.0, (float) Vote::where('user_id', $user->id)->sum('amount'));
+    }
 }
