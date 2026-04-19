@@ -1,16 +1,6 @@
 <div class="bg-navy-900 text-white min-h-screen">
     @php
-        $distribution = config('versus.distribution');
-        $winPct = (int) round(($distribution['winners'] ?? 0) * 100);
-        $projectPct = (int) round(($distribution['project'] ?? 0) * 100);
-        $drawPct = (int) round(($distribution['reward_pool'] ?? 0) * 100);
         $closesIso = optional($battle->closes_at)->toIso8601String();
-        $totalPool = (float) ($poolA + $poolB);
-        $userBalance = auth()->check() ? (float) auth()->user()->balance : 0.0;
-        $maxAllowed = (int) min((int) $userBalance, $maxVoteAmount);
-        $canVote = auth()->check()
-            && $battle->isOpenForVoting()
-            && $userBalance >= 1;
     @endphp
 
     <div class="max-w-7xl mx-auto px-4 py-8 grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -82,90 +72,6 @@
                         <span class="font-semibold text-white">{{ number_format($totalPool, 0) }}</span>
                         {{ __('battle.tokens') }}
                     </p>
-
-                    @auth
-                        @if ($battle->isOpenForVoting())
-                            <div class="mt-6"
-                                 x-data="voteForm({{ $maxAllowed }}, {{ $maxVoteAmount }}, @js([
-                                    'clamp' => __('battle.amount_clamped'),
-                                    'tokens' => __('battle.tokens'),
-                                    'votes' => __('battle.votes'),
-                                 ]))"
-                                 x-on:balance-updated.window="onBalance($event.detail.balance)">
-                                <label class="flex items-center justify-center gap-3 text-sm text-white/80">
-                                    <span class="uppercase tracking-wider text-white/60">{{ __('battle.amount_label') }}</span>
-                                    <input type="number"
-                                           x-model.number="amount"
-                                           @input="clamp()"
-                                           @blur="clamp(true)"
-                                           min="1"
-                                           :max="max"
-                                           inputmode="numeric"
-                                           class="w-32 rounded-lg bg-navy-900 border border-white/10 px-3 py-2 text-center
-                                                  font-mono text-white focus:outline-none focus:ring-2 focus:ring-glow-cyan/50">
-                                </label>
-
-                                <p x-show="err"
-                                   x-transition.opacity.duration.500ms
-                                   x-cloak
-                                   x-text="err"
-                                   class="mt-2 text-center text-xs text-amber-300"></p>
-
-                                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                    <button type="button"
-                                            @click="submit('A')"
-                                            :disabled="amount < 1 || amount > max"
-                                            wire:loading.attr="disabled"
-                                            @disabled(! $canVote)
-                                            class="rounded-xl py-3 text-center font-bold uppercase tracking-wider
-                                                   bg-gradient-to-r from-vote-blue-from to-vote-blue-to
-                                                   shadow-vote-blue transition hover:brightness-110
-                                                   disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
-                                        <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_a_label)]) }}</span>
-                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1"
-                                              x-text="rateLabel"></span>
-                                    </button>
-                                    <button type="button"
-                                            @click="submit('B')"
-                                            :disabled="amount < 1 || amount > max"
-                                            wire:loading.attr="disabled"
-                                            @disabled(! $canVote)
-                                            class="rounded-xl py-3 text-center font-bold uppercase tracking-wider
-                                                   bg-gradient-to-r from-vote-purple-from to-vote-purple-to
-                                                   shadow-vote-purple transition hover:brightness-110
-                                                   disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
-                                        <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_b_label)]) }}</span>
-                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1"
-                                              x-text="rateLabel"></span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            @error('vote')
-                                <p class="mt-3 text-center text-sm text-red-400">{{ $message }}</p>
-                            @enderror
-
-                            @if (session('battle-status'))
-                                <p class="mt-3 text-center text-sm text-emerald-400">{{ session('battle-status') }}</p>
-                            @endif
-                        @else
-                            <p class="mt-6 text-center text-sm text-white/70">{{ __('battle.voting_closed') }}</p>
-                        @endif
-                    @else
-                        <p class="mt-6 text-center text-sm">
-                            <a href="{{ route('login') }}" class="underline hover:text-glow-cyan">
-                                {{ __('battle.sign_in_to_vote') }}
-                            </a>
-                        </p>
-                    @endauth
-
-                    <p class="mt-5 text-center text-[11px] tracking-wider text-white/50">
-                        {{ __('battle.distribution', [
-                            'win' => $winPct,
-                            'project' => $projectPct,
-                            'draw' => $drawPct,
-                        ]) }}
-                    </p>
                 </div>
             </article>
 
@@ -200,7 +106,6 @@
                                             <button type="button"
                                                     wire:click="supportFor({{ $c->id }})"
                                                     wire:loading.attr="disabled"
-                                                    @disabled(! $canVote)
                                                     class="rounded-lg px-3 py-2 text-[11px] font-bold uppercase tracking-wider
                                                            {{ $c->side === 'A'
                                                                ? 'bg-gradient-to-r from-vote-blue-from to-vote-blue-to shadow-vote-blue'
@@ -249,7 +154,8 @@
         </main>
 
         {{-- =================== Sidebar =================== --}}
-        <aside class="lg:sticky lg:top-6 lg:self-start">
+        <aside class="lg:sticky lg:top-6 lg:self-start space-y-4">
+            <livewire:battle-vote-widget :battle="$battle" />
             <livewire:sidebar-widgets :battle="$battle" />
         </aside>
     </div>
