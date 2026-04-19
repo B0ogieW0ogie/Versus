@@ -27,11 +27,15 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    window.Alpine.data('voteForm', (max, clampMsg) => ({
+    window.Alpine.data('voteForm', (max, maxCap, i18n) => ({
         amount: 1,
         max: Math.max(0, Number(max) || 0),
+        maxCap: Math.max(0, Number(maxCap) || 0),
         err: null,
         errTimer: null,
+        get rateLabel() {
+            return `${this.amount} ${i18n.tokens} = ${this.amount} ${i18n.votes}`;
+        },
         clamp(onBlur = false) {
             let n = parseInt(this.amount, 10);
             let changed = false;
@@ -46,7 +50,7 @@ document.addEventListener('alpine:init', () => {
                 changed = true;
             }
             if (n !== this.amount) this.amount = n;
-            if (changed) this.flash(clampMsg);
+            if (changed) this.flash(i18n.clamp);
         },
         flash(msg) {
             this.err = msg;
@@ -57,6 +61,11 @@ document.addEventListener('alpine:init', () => {
             this.clamp(true);
             if (this.amount < 1 || this.amount > this.max) return;
             this.$wire.voteFor(side, this.amount);
+        },
+        onBalance(newBalance) {
+            const b = Math.max(0, Number(newBalance) || 0);
+            this.max = Math.min(b, this.maxCap);
+            if (this.amount > this.max) this.amount = Math.max(1, this.max);
         },
     }));
 });

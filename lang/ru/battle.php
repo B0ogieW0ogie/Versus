@@ -4,6 +4,7 @@ return [
     'ends_in' => 'До конца:',
     'total_prize_pool' => 'Призовой фонд',
     'tokens' => 'токенов',
+    'votes' => 'голосов',
     'vs' => 'VS',
     'vote_for' => 'ГОЛОСОВАТЬ ЗА :name',
     'token_to_vote_rate' => '1 токен = 1 голос',

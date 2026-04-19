@@ -86,7 +86,12 @@
                     @auth
                         @if ($battle->isOpenForVoting())
                             <div class="mt-6"
-                                 x-data="voteForm({{ $maxAllowed }}, @js(__('battle.amount_clamped')))">
+                                 x-data="voteForm({{ $maxAllowed }}, {{ $maxVoteAmount }}, @js([
+                                    'clamp' => __('battle.amount_clamped'),
+                                    'tokens' => __('battle.tokens'),
+                                    'votes' => __('battle.votes'),
+                                 ]))"
+                                 x-on:balance-updated.window="onBalance($event.detail.balance)">
                                 <label class="flex items-center justify-center gap-3 text-sm text-white/80">
                                     <span class="uppercase tracking-wider text-white/60">{{ __('battle.amount_label') }}</span>
                                     <input type="number"
@@ -117,9 +122,8 @@
                                                    shadow-vote-blue transition hover:brightness-110
                                                    disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
                                         <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_a_label)]) }}</span>
-                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1">
-                                            {{ __('battle.token_to_vote_rate') }}
-                                        </span>
+                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1"
+                                              x-text="rateLabel"></span>
                                     </button>
                                     <button type="button"
                                             @click="submit('B')"
@@ -131,9 +135,8 @@
                                                    shadow-vote-purple transition hover:brightness-110
                                                    disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
                                         <span class="block">{{ __('battle.vote_for', ['name' => mb_strtoupper($battle->side_b_label)]) }}</span>
-                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1">
-                                            {{ __('battle.token_to_vote_rate') }}
-                                        </span>
+                                        <span class="block text-[11px] font-normal opacity-80 normal-case tracking-normal mt-1"
+                                              x-text="rateLabel"></span>
                                     </button>
                                 </div>
                             </div>

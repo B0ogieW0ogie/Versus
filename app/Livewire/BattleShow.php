@@ -42,7 +42,9 @@ class BattleShow extends Component
         try {
             $action(Auth::user(), $this->battle, $side, (float) $amount);
             $this->battle->refresh();
+            Auth::user()?->refresh();
             $this->dispatch('battle-voted');
+            $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
             session()->flash('battle-status', __('battle.vote_cast'));
         } catch (ValidationException $e) {
             foreach ($e->errors() as $messages) {
@@ -69,7 +71,9 @@ class BattleShow extends Component
         try {
             $action(Auth::user(), $this->battle, $comment->side, 1.0);
             $this->battle->refresh();
+            Auth::user()?->refresh();
             $this->dispatch('battle-voted');
+            $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
         } catch (ValidationException $e) {
             foreach ($e->errors() as $messages) {
                 foreach ($messages as $message) {

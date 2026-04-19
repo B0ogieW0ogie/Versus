@@ -4,6 +4,7 @@ return [
     'ends_in' => 'Ends in:',
     'total_prize_pool' => 'Total Prize Pool',
     'tokens' => 'Tokens',
+    'votes' => 'Votes',
     'vs' => 'VS',
     'vote_for' => 'VOTE FOR :name',
     'token_to_vote_rate' => '1 Token = 1 Vote',

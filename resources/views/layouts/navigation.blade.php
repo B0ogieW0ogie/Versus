@@ -56,8 +56,11 @@
                                 <span class="h-7 w-7 rounded-full bg-navy-700 flex items-center justify-center text-xs font-semibold">
                                     {{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
                                 </span>
-                                <span class="text-xs font-semibold">
-                                    <span class="text-white">{{ number_format((float) Auth::user()->balance, 0) }}</span>
+                                <span class="text-xs font-semibold"
+                                      x-data="{ balance: {{ (int) Auth::user()->balance }} }"
+                                      x-on:balance-updated.window="balance = $event.detail.balance">
+                                    <span class="text-white"
+                                          x-text="new Intl.NumberFormat().format(balance)">{{ number_format((float) Auth::user()->balance, 0) }}</span>
                                     <span class="text-white/50 font-normal ml-1">{{ __('sidebar.tokens') }}</span>
                                 </span>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
@@ -134,8 +137,11 @@
             <div class="px-4 py-3 border-t border-white/5">
                 <div class="text-sm font-semibold text-white">{{ Auth::user()->name }}</div>
                 <div class="text-xs text-white/50">{{ Auth::user()->email }}</div>
-                <div class="mt-1 text-sm">
-                    <span class="text-white">{{ number_format((float) Auth::user()->balance, 0) }}</span>
+                <div class="mt-1 text-sm"
+                     x-data="{ balance: {{ (int) Auth::user()->balance }} }"
+                     x-on:balance-updated.window="balance = $event.detail.balance">
+                    <span class="text-white"
+                          x-text="new Intl.NumberFormat().format(balance)">{{ number_format((float) Auth::user()->balance, 0) }}</span>
                     <span class="text-white/50">{{ __('sidebar.tokens') }}</span>
                 </div>
             </div>
