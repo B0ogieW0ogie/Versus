@@ -25,6 +25,7 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6 gap-4">
+                <livewire:locale-switcher />
                 @auth
                     <span class="text-sm text-gray-600 dark:text-gray-300">
                         Баланс: <strong>{{ number_format((float) Auth::user()->balance, 2) }}</strong>

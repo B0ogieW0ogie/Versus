@@ -21,6 +21,8 @@ use Illuminate\Support\Carbon;
     'description',
     'side_a_label',
     'side_b_label',
+    'side_a_subtitle',
+    'side_b_subtitle',
     'side_a_image',
     'side_b_image',
     'status',

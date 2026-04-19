@@ -39,6 +39,12 @@ class BattleForm
                 TextInput::make('side_b_label')
                     ->label('Сторона B')
                     ->required(),
+                TextInput::make('side_a_subtitle')
+                    ->label('Подзаголовок A')
+                    ->maxLength(120),
+                TextInput::make('side_b_subtitle')
+                    ->label('Подзаголовок B')
+                    ->maxLength(120),
                 FileUpload::make('side_a_image')->label('Изображение стороны A')->image(),
                 FileUpload::make('side_b_image')->label('Изображение стороны B')->image(),
                 Select::make('status')

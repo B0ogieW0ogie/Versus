@@ -16,10 +16,6 @@ class BattleShow extends Component
 {
     public Battle $battle;
 
-    public string $voteSide = Battle::SIDE_A;
-
-    public ?float $voteAmount = null;
-
     public string $commentBody = '';
 
     public ?string $commentSide = null;
@@ -29,22 +25,28 @@ class BattleShow extends Component
         $this->battle = $battle;
     }
 
-    public function vote(CastVoteAction $action): void
+    public function voteFor(string $side, CastVoteAction $action): void
     {
-        $this->validate([
-            'voteSide' => ['required', 'in:A,B'],
-            'voteAmount' => ['required', 'numeric', 'min:0.01'],
-        ]);
+        if (! Auth::check()) {
+            $this->redirectRoute('login');
+
+            return;
+        }
+
+        if (! in_array($side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
+            $this->addError('vote', __('battle.invalid_side'));
+
+            return;
+        }
 
         try {
-            $action(Auth::user(), $this->battle, $this->voteSide, (float) $this->voteAmount);
-            $this->voteAmount = null;
+            $action(Auth::user(), $this->battle, $side, 1.0);
             $this->battle->refresh();
-            session()->flash('battle-status', 'Ставка принята.');
+            session()->flash('battle-status', __('battle.vote_cast'));
         } catch (ValidationException $e) {
             foreach ($e->errors() as $messages) {
                 foreach ($messages as $message) {
-                    $this->addError('voteAmount', $message);
+                    $this->addError('vote', $message);
                 }
             }
         }

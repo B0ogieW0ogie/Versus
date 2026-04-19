@@ -14,11 +14,11 @@ class CastVoteAction
     public function __invoke(User $user, Battle $battle, string $side, float $amount): Vote
     {
         if (! in_array($side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
-            throw ValidationException::withMessages(['side' => 'Неверная сторона.']);
+            throw ValidationException::withMessages(['side' => __('battle.invalid_side')]);
         }
 
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Сумма должна быть больше нуля.']);
+            throw ValidationException::withMessages(['amount' => __('battle.amount_too_small')]);
         }
 
         return DB::transaction(function () use ($user, $battle, $side, $amount) {
@@ -26,22 +26,21 @@ class CastVoteAction
             $battle = Battle::whereKey($battle->id)->lockForUpdate()->firstOrFail();
 
             if (! $battle->isOpenForVoting()) {
-                throw ValidationException::withMessages(['battle' => 'Голосование в баттле закрыто.']);
+                throw ValidationException::withMessages(['battle' => __('battle.battle_not_open')]);
             }
 
             /** @var User $user */
             $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
 
             if ((float) $user->balance < $amount) {
-                throw ValidationException::withMessages(['amount' => 'Недостаточно средств на балансе.']);
+                throw ValidationException::withMessages(['amount' => __('battle.insufficient_balance')]);
             }
 
             $cap = (float) config('versus.vote_cap_per_user');
             $alreadyStaked = (float) Vote::where('user_id', $user->id)->sum('amount');
             if ($alreadyStaked + $amount > $cap) {
-                $remaining = max(0.0, $cap - $alreadyStaked);
                 throw ValidationException::withMessages([
-                    'amount' => 'Превышен лимит голосов на пользователя ('.(int) $cap.'). Доступно: '.number_format($remaining, 2, '.', '').'.',
+                    'amount' => __('battle.vote_cap_reached'),
                 ]);
             }
 
