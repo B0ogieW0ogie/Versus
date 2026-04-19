@@ -42,7 +42,34 @@ class BattleShow extends Component
         try {
             $action(Auth::user(), $this->battle, $side, 1.0);
             $this->battle->refresh();
+            $this->dispatch('battle-voted');
             session()->flash('battle-status', __('battle.vote_cast'));
+        } catch (ValidationException $e) {
+            foreach ($e->errors() as $messages) {
+                foreach ($messages as $message) {
+                    $this->addError('vote', $message);
+                }
+            }
+        }
+    }
+
+    public function supportFor(int $commentId, CastVoteAction $action): void
+    {
+        if (! Auth::check()) {
+            $this->redirectRoute('login');
+
+            return;
+        }
+
+        $comment = $this->battle->comments()->find($commentId);
+        if ($comment === null || ! in_array($comment->side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
+            return;
+        }
+
+        try {
+            $action(Auth::user(), $this->battle, $comment->side, 1.0);
+            $this->battle->refresh();
+            $this->dispatch('battle-voted');
         } catch (ValidationException $e) {
             foreach ($e->errors() as $messages) {
                 foreach ($messages as $message) {
@@ -107,7 +134,20 @@ class BattleShow extends Component
             'userStakeB' => $userStakeB,
             'userTotalStaked' => $userTotalStaked,
             'voteCap' => (float) config('versus.vote_cap_per_user'),
-            'comments' => $this->battle->comments()->with('user')->latest()->get(),
+            'comments' => Comment::query()
+                ->where('battle_id', $this->battle->id)
+                ->with('user:id,name')
+                ->select('comments.*')
+                ->addSelect([
+                    'author_side_votes_sum' => Vote::query()
+                        ->selectRaw('COALESCE(SUM(amount), 0)')
+                        ->whereColumn('votes.user_id', 'comments.user_id')
+                        ->whereColumn('votes.battle_id', 'comments.battle_id')
+                        ->whereColumn('votes.side', 'comments.side'),
+                ])
+                ->latest()
+                ->limit(50)
+                ->get(),
         ]);
     }
 }

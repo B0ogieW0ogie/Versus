@@ -31,11 +31,16 @@ export default {
                 glow: {
                     cyan: '#22D3EE',
                 },
+                gold: {
+                    500: '#F59E0B',
+                    600: '#D97706',
+                },
             },
             boxShadow: {
                 'vs-glow': '0 0 40px rgba(34, 211, 238, 0.35)',
                 'vote-blue': '0 10px 30px -10px rgba(37, 99, 235, 0.6)',
                 'vote-purple': '0 10px 30px -10px rgba(126, 34, 206, 0.6)',
+                'jackpot': '0 10px 30px -10px rgba(245, 158, 11, 0.5)',
             },
         },
     },

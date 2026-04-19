@@ -12,6 +12,9 @@
 /.vscode
 /.zed
 /.claude
+/.playwright-mcp
+/.serena
+/CLAUDE.md
 /auth.json
 /node_modules
 /public/build

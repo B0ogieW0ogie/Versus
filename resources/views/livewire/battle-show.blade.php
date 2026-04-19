@@ -1,4 +1,4 @@
-<div>
+<div class="bg-navy-900 text-white min-h-screen">
     @php
         $distribution = config('versus.distribution');
         $winPct = (int) round(($distribution['winners'] ?? 0) * 100);
@@ -14,12 +14,11 @@
             && $userBalance >= 1;
     @endphp
 
-    {{-- =================== Central battle card (dark) =================== --}}
-    <section class="bg-navy-900 text-white py-10">
-        <div class="max-w-4xl mx-auto px-4">
+    <div class="max-w-7xl mx-auto px-4 py-8 grid gap-6 lg:grid-cols-[1fr_320px]">
+        <main class="space-y-6 min-w-0">
+            {{-- =================== Central battle card =================== --}}
             <article class="relative overflow-hidden rounded-2xl bg-navy-800 p-6 sm:p-8
                             bg-[radial-gradient(ellipse_at_top,_rgba(99,102,241,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,_rgba(168,85,247,0.12),transparent_55%)]">
-                {{-- Starry dots --}}
                 <div class="pointer-events-none absolute inset-0 opacity-40
                             bg-[radial-gradient(1px_1px_at_20%_30%,white,transparent),radial-gradient(1px_1px_at_70%_60%,white,transparent),radial-gradient(1px_1px_at_40%_80%,white,transparent),radial-gradient(1px_1px_at_85%_20%,white,transparent)]
                             bg-[length:400px_400px]"></div>
@@ -143,55 +142,89 @@
                     </p>
                 </div>
             </article>
-        </div>
-    </section>
 
-    {{-- =================== Comments (unchanged, existing light style) =================== --}}
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-8">
-            <section class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Обсуждение</h3>
+            {{-- =================== Comments (dark, with SUPPORT) =================== --}}
+            <section class="rounded-2xl bg-navy-800 border border-white/5 p-6">
+                <h3 class="text-lg font-semibold">{{ __('comments.heading') }}</h3>
+
+                <ul class="mt-4 space-y-3">
+                    @forelse ($comments as $c)
+                        <li class="flex items-start gap-3 rounded-xl bg-navy-900/60 p-4">
+                            <div class="h-10 w-10 shrink-0 rounded-full bg-navy-700 flex items-center justify-center
+                                        text-sm font-semibold text-white/80">
+                                {{ mb_strtoupper(mb_substr($c->user->name, 0, 1)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <strong class="text-sm">{{ $c->user->name }}</strong>
+                                    <span class="text-[11px] text-white/40">{{ $c->created_at->diffForHumans() }}</span>
+                                </div>
+                                <p class="mt-1 text-sm text-white/80 whitespace-pre-line break-words">{{ $c->body }}</p>
+                            </div>
+
+                            @if ($c->side)
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/80">
+                                        {{ number_format((int) $c->author_side_votes_sum) }}
+                                        <span class="text-white/50">{{ __('comments.votes') }}</span>
+                                        <span class="text-white/40 ml-1">›</span>
+                                    </span>
+                                    @auth
+                                        @if ($battle->isOpenForVoting())
+                                            <button type="button"
+                                                    wire:click="supportFor({{ $c->id }})"
+                                                    wire:loading.attr="disabled"
+                                                    @disabled(! $canVote)
+                                                    class="rounded-lg px-3 py-2 text-[11px] font-bold uppercase tracking-wider
+                                                           {{ $c->side === 'A'
+                                                               ? 'bg-gradient-to-r from-vote-blue-from to-vote-blue-to shadow-vote-blue'
+                                                               : 'bg-gradient-to-r from-vote-purple-from to-vote-purple-to shadow-vote-purple' }}
+                                                           transition hover:brightness-110
+                                                           disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
+                                                {{ __('comments.support') }}
+                                                {{ mb_strtoupper($c->side === 'A' ? $battle->side_a_label : $battle->side_b_label) }}
+                                            </button>
+                                        @endif
+                                    @endauth
+                                </div>
+                            @endif
+                        </li>
+                    @empty
+                        <li class="text-sm text-white/50">{{ __('comments.empty') }}</li>
+                    @endforelse
+                </ul>
 
                 @auth
-                    <form wire:submit="comment" class="mt-4 space-y-3">
-                        <textarea wire:model="commentBody" rows="3"
-                                  class="block w-full rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 dark:placeholder-gray-500"
-                                  placeholder="Поделитесь своим мнением…"></textarea>
-                        @error('commentBody') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
-                        <div class="flex items-center justify-between">
+                    <form wire:submit="comment" class="mt-5 space-y-2">
+                        <div class="flex items-center gap-2 rounded-xl bg-navy-900/60 p-2">
                             <select wire:model="commentSide"
-                                    class="rounded border-gray-300 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-100 text-sm">
-                                <option value="">Болею за: (необязательно)</option>
+                                    class="shrink-0 bg-navy-700 text-xs text-white/90 border-0 rounded px-2 py-1
+                                           focus:ring-1 focus:ring-glow-cyan/50">
+                                <option value="">{{ __('comments.side_select_none') }}</option>
                                 <option value="A">{{ $battle->side_a_label }}</option>
                                 <option value="B">{{ $battle->side_b_label }}</option>
                             </select>
+                            <input wire:model="commentBody" type="text"
+                                   placeholder="{{ __('comments.add_your_argument') }}"
+                                   class="flex-1 min-w-0 bg-transparent border-0 text-sm text-white
+                                          placeholder:text-white/40 focus:ring-0">
                             <button type="submit"
-                                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white font-semibold hover:bg-indigo-500">
-                                Отправить
+                                    class="shrink-0 rounded-md bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wider
+                                           text-white hover:bg-white/20 transition">
+                                {{ __('comments.post') }}
                             </button>
                         </div>
+                        @error('commentBody')
+                            <p class="text-xs text-red-400">{{ $message }}</p>
+                        @enderror
                     </form>
                 @endauth
-
-                <ul class="mt-6 space-y-4">
-                    @forelse ($comments as $comment)
-                        <li class="border-b border-gray-200 dark:border-gray-700 pb-3">
-                            <div class="flex items-baseline justify-between">
-                                <strong class="text-gray-900 dark:text-gray-100">{{ $comment->user->name }}</strong>
-                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
-                            </div>
-                            @if ($comment->side)
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    болеет за {{ $comment->side === 'A' ? $battle->side_a_label : $battle->side_b_label }}
-                                </p>
-                            @endif
-                            <p class="mt-1 text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{{ $comment->body }}</p>
-                        </li>
-                    @empty
-                        <li class="text-sm text-gray-500 dark:text-gray-400">Пока нет комментариев.</li>
-                    @endforelse
-                </ul>
             </section>
-        </div>
+        </main>
+
+        {{-- =================== Sidebar =================== --}}
+        <aside class="lg:sticky lg:top-6 lg:self-start">
+            <livewire:sidebar-widgets :battle="$battle" />
+        </aside>
     </div>
 </div>
