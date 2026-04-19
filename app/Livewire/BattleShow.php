@@ -40,7 +40,7 @@ class BattleShow extends Component
             $action(Auth::user(), $this->battle, $this->voteSide, (float) $this->voteAmount);
             $this->voteAmount = null;
             $this->battle->refresh();
-            session()->flash('battle-status', 'Vote placed.');
+            session()->flash('battle-status', 'Ставка принята.');
         } catch (ValidationException $e) {
             foreach ($e->errors() as $messages) {
                 foreach ($messages as $message) {

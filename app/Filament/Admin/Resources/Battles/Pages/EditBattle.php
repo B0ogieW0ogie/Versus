@@ -19,7 +19,7 @@ class EditBattle extends EditRecord
     {
         return [
             Action::make('settle')
-                ->label('Settle now')
+                ->label('Завершить сейчас')
                 ->icon('heroicon-o-check-badge')
                 ->color('success')
                 ->requiresConfirmation()
@@ -34,12 +34,12 @@ class EditBattle extends EditRecord
                         $settle($record);
 
                         Notification::make()
-                            ->title('Battle settled')
+                            ->title('Баттл завершён')
                             ->success()
                             ->send();
                     } catch (Throwable $e) {
                         Notification::make()
-                            ->title('Settlement failed')
+                            ->title('Не удалось завершить баттл')
                             ->body($e->getMessage())
                             ->danger()
                             ->send();

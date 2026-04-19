@@ -18,6 +18,12 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
+    protected static ?string $navigationLabel = 'Пользователи';
+
+    protected static ?string $modelLabel = 'Пользователь';
+
+    protected static ?string $pluralModelLabel = 'Пользователи';
+
     public static function table(Table $table): Table
     {
         return UsersTable::configure($table);

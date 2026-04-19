@@ -18,6 +18,12 @@ class TransactionResource extends Resource
 
     protected static ?int $navigationSort = 30;
 
+    protected static ?string $navigationLabel = 'Транзакции';
+
+    protected static ?string $modelLabel = 'Транзакция';
+
+    protected static ?string $pluralModelLabel = 'Транзакции';
+
     public static function table(Table $table): Table
     {
         return TransactionsTable::configure($table);

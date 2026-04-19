@@ -20,6 +20,12 @@ class BattleResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $navigationLabel = 'Баттлы';
+
+    protected static ?string $modelLabel = 'Баттл';
+
+    protected static ?string $pluralModelLabel = 'Баттлы';
+
     public static function form(Schema $schema): Schema
     {
         return BattleForm::configure($schema);

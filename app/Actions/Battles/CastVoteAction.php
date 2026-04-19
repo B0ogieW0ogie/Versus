@@ -14,11 +14,11 @@ class CastVoteAction
     public function __invoke(User $user, Battle $battle, string $side, float $amount): Vote
     {
         if (! in_array($side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
-            throw ValidationException::withMessages(['side' => 'Invalid side.']);
+            throw ValidationException::withMessages(['side' => 'Неверная сторона.']);
         }
 
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Amount must be positive.']);
+            throw ValidationException::withMessages(['amount' => 'Сумма должна быть больше нуля.']);
         }
 
         return DB::transaction(function () use ($user, $battle, $side, $amount) {
@@ -26,18 +26,18 @@ class CastVoteAction
             $battle = Battle::whereKey($battle->id)->lockForUpdate()->firstOrFail();
 
             if (! $battle->isOpenForVoting()) {
-                throw ValidationException::withMessages(['battle' => 'Battle is not open for voting.']);
+                throw ValidationException::withMessages(['battle' => 'Голосование в баттле закрыто.']);
             }
 
             /** @var User $user */
             $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
 
             if ((float) $user->balance < $amount) {
-                throw ValidationException::withMessages(['amount' => 'Insufficient balance.']);
+                throw ValidationException::withMessages(['amount' => 'Недостаточно средств на балансе.']);
             }
 
             if (Vote::where('user_id', $user->id)->where('battle_id', $battle->id)->exists()) {
-                throw ValidationException::withMessages(['battle' => 'You have already voted in this battle.']);
+                throw ValidationException::withMessages(['battle' => 'Вы уже голосовали в этом баттле.']);
             }
 
             $user->balance = (float) $user->balance - $amount;

@@ -18,6 +18,7 @@ class BattleForm
         return $schema
             ->components([
                 TextInput::make('title')
+                    ->label('Название')
                     ->required()
                     ->live(onBlur: true)
                     ->afterStateUpdated(function (?string $state, callable $set, callable $get) {
@@ -26,40 +27,45 @@ class BattleForm
                         }
                     }),
                 TextInput::make('slug')
+                    ->label('Слаг')
                     ->required()
                     ->unique(ignoreRecord: true),
                 Textarea::make('description')
+                    ->label('Описание')
                     ->columnSpanFull(),
                 TextInput::make('side_a_label')
-                    ->label('Side A')
+                    ->label('Сторона A')
                     ->required(),
                 TextInput::make('side_b_label')
-                    ->label('Side B')
+                    ->label('Сторона B')
                     ->required(),
-                FileUpload::make('side_a_image')->image(),
-                FileUpload::make('side_b_image')->image(),
+                FileUpload::make('side_a_image')->label('Изображение стороны A')->image(),
+                FileUpload::make('side_b_image')->label('Изображение стороны B')->image(),
                 Select::make('status')
+                    ->label('Статус')
                     ->options([
-                        Battle::STATUS_DRAFT => 'Draft',
-                        Battle::STATUS_ACTIVE => 'Active',
-                        Battle::STATUS_CLOSED => 'Closed',
-                        Battle::STATUS_SETTLED => 'Settled',
+                        Battle::STATUS_DRAFT => 'Черновик',
+                        Battle::STATUS_ACTIVE => 'Активен',
+                        Battle::STATUS_CLOSED => 'Закрыт',
+                        Battle::STATUS_SETTLED => 'Завершён',
                     ])
                     ->required()
                     ->default(Battle::STATUS_DRAFT),
-                DateTimePicker::make('opens_at')->seconds(false),
-                DateTimePicker::make('closes_at')->seconds(false),
+                DateTimePicker::make('opens_at')->label('Открытие')->seconds(false),
+                DateTimePicker::make('closes_at')->label('Закрытие')->seconds(false),
                 Select::make('winning_side')
+                    ->label('Победившая сторона')
                     ->options([
-                        Battle::SIDE_A => 'Side A',
-                        Battle::SIDE_B => 'Side B',
+                        Battle::SIDE_A => 'Сторона A',
+                        Battle::SIDE_B => 'Сторона B',
                     ])
                     ->disabled(),
                 TextInput::make('total_pool')
+                    ->label('Общий банк')
                     ->numeric()
                     ->disabled()
                     ->default(0),
-                DateTimePicker::make('settled_at')->disabled(),
+                DateTimePicker::make('settled_at')->label('Завершён в')->disabled(),
             ]);
     }
 }

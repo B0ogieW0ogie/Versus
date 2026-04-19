@@ -18,28 +18,28 @@ class UsersTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable(),
-                TextColumn::make('name')->searchable(),
-                TextColumn::make('email')->searchable(),
-                TextColumn::make('balance')->numeric(decimalPlaces: 2)->sortable(),
-                TextColumn::make('referral_code')->label('Ref code')->searchable()->copyable(),
-                TextColumn::make('referrer.email')->label('Referred by')->toggleable(),
-                IconColumn::make('is_admin')->boolean(),
-                TextColumn::make('created_at')->dateTime('Y-m-d H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('id')->label('ID')->sortable(),
+                TextColumn::make('name')->label('Имя')->searchable(),
+                TextColumn::make('email')->label('Email')->searchable(),
+                TextColumn::make('balance')->label('Баланс')->numeric(decimalPlaces: 2)->sortable(),
+                TextColumn::make('referral_code')->label('Реф. код')->searchable()->copyable(),
+                TextColumn::make('referrer.email')->label('Пригласил')->toggleable(),
+                IconColumn::make('is_admin')->label('Админ')->boolean(),
+                TextColumn::make('created_at')->label('Создан')->dateTime('Y-m-d H:i')->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([
                 Action::make('grant')
-                    ->label('Grant tokens')
+                    ->label('Начислить токены')
                     ->icon('heroicon-o-banknotes')
                     ->schema([
                         TextInput::make('amount')
                             ->numeric()
                             ->minValue(0.01)
                             ->required()
-                            ->label('Amount'),
+                            ->label('Сумма'),
                         TextInput::make('note')
-                            ->label('Note')
+                            ->label('Комментарий')
                             ->maxLength(255),
                     ])
                     ->action(function (User $record, array $data): void {
@@ -60,7 +60,7 @@ class UsersTable
                         });
 
                         Notification::make()
-                            ->title('Tokens granted')
+                            ->title('Токены начислены')
                             ->success()
                             ->send();
                     }),

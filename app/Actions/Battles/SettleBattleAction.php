@@ -18,7 +18,7 @@ class SettleBattleAction
             $battle = Battle::whereKey($battle->id)->lockForUpdate()->firstOrFail();
 
             if ($battle->status === Battle::STATUS_SETTLED) {
-                throw new RuntimeException('Battle already settled.');
+                throw new RuntimeException('Баттл уже завершён.');
             }
 
             $weightA = (float) Vote::where('battle_id', $battle->id)
