@@ -66,7 +66,7 @@ class Leaderboard extends Component
 
         $ahead = (int) DB::query()
             ->fromSub($winningsSubquery, 'w')
-            ->where('total_winnings', '>', $mine)
+            ->whereRaw('CAST(total_winnings AS REAL) > ?', [$mine])
             ->count();
 
         return [
