@@ -195,46 +195,55 @@ Added to both desktop and mobile top bar in `layouts/navigation.blade.php`. `<bu
 ### Leaderboard route and component
 
 - `Route::get('/leaderboard', Leaderboard::class)->name('leaderboard');` in `routes/web.php`, outside the auth group (public).
-- `App\Livewire\Leaderboard` with `WithPagination`.
+- `App\Livewire\Leaderboard` — flat top 100 list, no pagination in v1.
 
 ### Aggregate query
 
-Rank users by `SUM(transactions.amount)` where `type = Transaction::TYPE_PAYOUT_WIN`:
+Rank users by the sum of their winning-vote payouts. `votes.payout` is already populated by `SettleBattleAction` (see [app/Actions/Battles/SettleBattleAction.php](../../../app/Actions/Battles/SettleBattleAction.php)) — winning votes get a positive payout, refunded (tie) votes also get their stake written there, so the winning-only filter is: `battles.status = settled` AND `battles.winning_side IS NOT NULL` AND `votes.side = battles.winning_side`:
+
 ```php
-User::query()
+$winnings = Vote::query()
+    ->join('battles', 'battles.id', '=', 'votes.battle_id')
+    ->where('battles.status', Battle::STATUS_SETTLED)
+    ->whereNotNull('battles.winning_side')
+    ->whereColumn('votes.side', 'battles.winning_side')
+    ->selectRaw('votes.user_id, COALESCE(SUM(votes.payout), 0) AS total_winnings')
+    ->groupBy('votes.user_id');
+
+$rows = User::query()
     ->select('users.id', 'users.name')
-    ->selectSub(
-        Transaction::query()
-            ->selectRaw('COALESCE(SUM(amount), 0)')
-            ->whereColumn('user_id', 'users.id')
-            ->where('type', Transaction::TYPE_PAYOUT_WIN),
-        'total_winnings'
-    )
+    ->leftJoinSub($winnings, 'w', fn ($j) => $j->on('w.user_id', '=', 'users.id'))
+    ->selectRaw('COALESCE(w.total_winnings, 0) AS total_winnings')
     ->orderByDesc('total_winnings')
     ->orderBy('users.id')
     ->limit(100)
     ->get();
 ```
-One query. Tie-breaker on `users.id` keeps ranks deterministic. Returning top 100 without pagination — we can paginate later if needed; v1 is a single list.
+
+Two logical queries (the subquery + the outer). Tie-breaker on `users.id` keeps ranks deterministic.
 
 ### "Your position" row
 
 For authenticated users not in the top 100, compute their rank and winnings separately and render a pinned row below the top list:
+
 ```php
-$mine = Transaction::query()
-    ->where('user_id', auth()->id())
-    ->where('type', Transaction::TYPE_PAYOUT_WIN)
-    ->sum('amount');
-$myRank = User::query()
-    ->selectRaw('COUNT(*) as c')
-    ->fromSub(/* same aggregate subquery */, 't')
+$mine = (float) Vote::query()
+    ->join('battles', 'battles.id', '=', 'votes.battle_id')
+    ->where('votes.user_id', auth()->id())
+    ->where('battles.status', Battle::STATUS_SETTLED)
+    ->whereNotNull('battles.winning_side')
+    ->whereColumn('votes.side', 'battles.winning_side')
+    ->sum('votes.payout');
+
+$myRank = 1 + DB::query()
+    ->fromSub($winnings, 'w')
     ->where('total_winnings', '>', $mine)
-    ->value('c') + 1;
+    ->count();
 ```
 
 ### Sidebar sync
 
-Update `App\Livewire\SidebarWidgets::topPlayers()` (or wherever the current "Top Players" query lives) to use the same aggregate — returning the top 5 users by `payout_win` instead of by `balance`. The mini-widget and the full page thus tell the same story.
+Update `App\Livewire\SidebarWidgets::render()` so `$topPlayers` uses the same winnings aggregate — top 3 users by total winnings — instead of the current `orderByDesc('balance')`. The mini-widget on desktop and the full Leaderboard page then tell the same story.
 
 ### View
 
@@ -249,7 +258,8 @@ Single-column list identical in shape to the Leaderboard mockup: rank badge (gol
 
 ### Query
 
-Load the user's votes (newest first), eager-loading the battle and any relevant payout transactions:
+Load the user's votes (newest first), eager-loading the battle:
+
 ```php
 $votes = Vote::query()
     ->where('user_id', auth()->id())
@@ -264,12 +274,13 @@ $votes = Vote::query()
     ->paginate(20);
 ```
 
-For Settled rows, compute per-row status and payout in the view (or in a small helper on the component) by matching the `Vote` against the battle's `winning_side`:
-- `winning_side` is null on the battle and a `Transaction::TYPE_REFUND` exists for `(user_id, battle_id)` → **Refund**.
-- `vote.side === battle.winning_side` → **Won**; payout amount = `Transaction::where(user_id, battle_id, type=TYPE_PAYOUT_WIN)->sum('amount')`. Because a user can cast several votes on the same battle, the payout transaction is per-battle-per-user; show it once on the most recent winning vote, or sum per-vote proportionally. Simplest: show the total payout on the user's most recent winning vote row and a subdued dash on earlier winning rows on the same battle (grouping is explicit on display, not in the query).
-- Otherwise → **Lost**; display `−{stake}`.
+Per-row status is a pure function of the Vote and its Battle — no extra queries needed because `votes.payout` is already populated by `SettleBattleAction` for both wins and tie refunds (it stays `NULL` on losing votes):
 
-Emit a single `Transaction`-sum query per page load (`whereIn('battle_id', ...)`) and fold results onto each vote row in PHP, rather than per-row queries.
+- Battle `winning_side IS NULL` and Battle is settled → **Refund**; show `+{vote.payout}` (equals the stake that was returned).
+- `vote.side === battle.winning_side` → **Won**; show `+{vote.payout}`.
+- Otherwise (Battle settled, `vote.side !== battle.winning_side`) → **Lost**; show `−{vote.amount}`.
+
+Multiple votes on the same battle appear as separate rows, each with its own status and payout. This is correct: payout is per-vote proportional to weight in `SettleBattleAction`.
 
 ### View
 
@@ -346,7 +357,7 @@ Category names live in the `categories` table (`name_en`, `name_ru`) and are acc
 
 All new tests use `RefreshDatabase` on the class and Factories for setup.
 
-1. `tests/Feature/FeaturedBattleTest.php`
+1. `tests/Feature/FeaturedBattleTest.php` — `class FeaturedBattleTest extends TestCase { use RefreshDatabase; }` (Pest test file using PHPUnit-style class; matches the project convention established by [tests/Feature/Livewire/BattleVoteWidgetTest.php](../../../tests/Feature/Livewire/BattleVoteWidgetTest.php)).
    - A battle with `is_featured = true` is chosen over one with a larger pool.
    - With no flagged battles, the active battle with the largest pool is chosen.
    - Among multiple flagged, the most recently updated is chosen.
@@ -361,16 +372,17 @@ All new tests use `RefreshDatabase` on the class and Factories for setup.
    - Empty states for no-active-battles, no-category-matches, no-settled.
 
 3. `tests/Feature/Livewire/LeaderboardTest.php`
-   - Aggregation ranks users by total `payout_win`; other transaction types don't contribute.
+   - Aggregation ranks users by sum of `votes.payout` on winning-side votes; losing and refund votes don't contribute.
    - Tie-break by user id.
    - Authenticated user outside the top 100 gets a correct `your_position` row.
    - Unauthenticated user sees the list with no pinned row.
 
 4. `tests/Feature/Livewire/MyBetsTest.php`
    - Active tab filters to votes on active battles only.
-   - Settled tab: Won status + payout sum matches the `payout_win` transactions on that (user, battle).
-   - Settled tab: Lost status when vote.side ≠ battle.winning_side.
-   - Settled tab: Refund status when battle has no winning side and a `refund` transaction exists.
+   - Settled tab: Won status when `vote.side === battle.winning_side`, payout shown from `vote.payout`.
+   - Settled tab: Lost status when `vote.side !== battle.winning_side`, net amount equals `-vote.amount`.
+   - Settled tab: Refund status when battle is settled with `winning_side = null`, payout shown from `vote.payout`.
+   - Multiple votes on the same battle produce multiple rows.
    - Guest hitting `/my-bets` redirects to `/login`.
 
 5. `tests/Feature/Livewire/SearchOverlayTest.php`
