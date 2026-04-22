@@ -44,4 +44,9 @@ return [
     'no_battles' => 'Баттлов пока нет.',
     'no_battles_in_category' => 'В этой категории пока пусто.',
     'no_settled_battles' => 'Пока нет завершённых.',
+
+    'status_active' => 'активен',
+    'status_draft' => 'черновик',
+    'status_closed' => 'закрыт',
+    'status_settled' => 'завершён',
 ];

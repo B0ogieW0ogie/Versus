@@ -34,5 +34,7 @@
 
             @include('layouts.bottom-nav')
         </div>
+
+        <livewire:search-overlay />
     </body>
 </html>
