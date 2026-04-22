@@ -46,7 +46,7 @@
                         <span class="truncate text-sm text-white/90">{{ $p->name }}</span>
                     </span>
                     <span class="shrink-0 text-xs text-white/60">
-                        {{ number_format((float) $p->balance, 0) }}
+                        {{ number_format((float) $p->total_winnings, 0) }}
                         <span class="text-white/40">{{ __('sidebar.tokens') }}</span>
                     </span>
                 </li>
