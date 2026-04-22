@@ -35,4 +35,7 @@ return [
     'vote' => 'VOTE',
     'winner' => 'Winner',
     'refunded_tie' => 'Tie — refunded',
+
+    'all_chip' => 'All',
+    'finished_chip' => 'Finished',
 ];

@@ -35,4 +35,7 @@ return [
     'vote' => 'ГОЛОС',
     'winner' => 'Победитель',
     'refunded_tie' => 'Ничья — возврат',
+
+    'all_chip' => 'Все',
+    'finished_chip' => 'Завершённые',
 ];
