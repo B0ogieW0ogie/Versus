@@ -38,4 +38,10 @@ return [
 
     'all_chip' => 'Все',
     'finished_chip' => 'Завершённые',
+
+    'all_battles' => 'Все баттлы',
+    'load_more' => 'Показать ещё',
+    'no_battles' => 'Баттлов пока нет.',
+    'no_battles_in_category' => 'В этой категории пока пусто.',
+    'no_settled_battles' => 'Пока нет завершённых.',
 ];

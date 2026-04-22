@@ -38,4 +38,10 @@ return [
 
     'all_chip' => 'All',
     'finished_chip' => 'Finished',
+
+    'all_battles' => 'All battles',
+    'load_more' => 'Load more',
+    'no_battles' => 'No battles yet.',
+    'no_battles_in_category' => 'Nothing in this category yet.',
+    'no_settled_battles' => 'No settled battles yet.',
 ];
