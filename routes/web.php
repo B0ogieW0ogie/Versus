@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Livewire\BattleIndex;
 use App\Livewire\BattleShow;
 use App\Livewire\Leaderboard;
+use App\Livewire\MyBets;
 use App\Livewire\ReferralPanel;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/referrals', ReferralPanel::class)->name('referrals');
+    Route::get('/my-bets', MyBets::class)->name('my-bets');
 });
 
 require __DIR__.'/auth.php';

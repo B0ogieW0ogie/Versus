@@ -12,8 +12,6 @@ class BottomNavTest extends TestCase
 
     public function test_bottom_nav_is_rendered_on_home(): void
     {
-        $this->markTestIncomplete('Awaiting /leaderboard (Task 23) and /my-bets (Task 26) routes for full tab visibility.');
-
         $this->get('/')
             ->assertOk()
             ->assertSee(__('nav.home'))
@@ -24,15 +22,11 @@ class BottomNavTest extends TestCase
 
     public function test_guest_clicking_my_bets_is_redirected_to_login(): void
     {
-        $this->markTestIncomplete('Awaiting /my-bets route in Task 26.');
-
         $this->get('/my-bets')->assertRedirect('/login');
     }
 
     public function test_authed_user_can_reach_my_bets(): void
     {
-        $this->markTestIncomplete('Awaiting /my-bets route in Task 26.');
-
         $user = User::factory()->create();
         $this->actingAs($user)->get('/my-bets')->assertOk();
     }
