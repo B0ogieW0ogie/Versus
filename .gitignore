@@ -14,6 +14,7 @@
 /.claude
 /.playwright-mcp
 /.serena
+/.superpowers
 /CLAUDE.md
 /auth.json
 /node_modules
