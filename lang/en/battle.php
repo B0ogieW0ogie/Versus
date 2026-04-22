@@ -3,6 +3,8 @@
 return [
     'ends_in' => 'Ends in:',
     'featured' => 'Featured battle',
+    'hot' => 'Hot battles',
+    'view_all' => 'View all',
     'total_prize_pool' => 'Total Prize Pool',
     'tokens' => 'Tokens',
     'votes' => 'Votes',
