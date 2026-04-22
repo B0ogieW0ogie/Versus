@@ -27,4 +27,9 @@ return [
     'widget_cta_prefix' => 'Проголосовать за',
     'widget_balance' => 'Баланс',
     'widget_no_multiplier' => '—',
+
+    'pool' => 'Банк',
+    'vote' => 'ГОЛОС',
+    'winner' => 'Победитель',
+    'refunded_tie' => 'Ничья — возврат',
 ];

@@ -27,4 +27,9 @@ return [
     'widget_cta_prefix' => 'Vote for',
     'widget_balance' => 'Balance',
     'widget_no_multiplier' => '—',
+
+    'pool' => 'Pool',
+    'vote' => 'VOTE',
+    'winner' => 'Winner',
+    'refunded_tie' => 'Tie — refunded',
 ];
