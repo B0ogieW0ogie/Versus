@@ -114,6 +114,12 @@ class Battle extends Model
         return $query->where('is_featured', true);
     }
 
+    public static function resolveFeatured(): ?self
+    {
+        return static::query()->active()->featured()->latest('updated_at')->first()
+            ?? static::query()->active()->orderByDesc('total_pool')->first();
+    }
+
     public function isOpenForVoting(): bool
     {
         return $this->status === self::STATUS_ACTIVE
