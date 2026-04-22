@@ -3,11 +3,13 @@
 namespace App\Filament\Admin\Resources\Battles\Schemas;
 
 use App\Models\Battle;
+use App\Models\Category;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -66,6 +68,14 @@ class BattleForm
                         Battle::SIDE_B => 'Сторона B',
                     ])
                     ->disabled(),
+                Select::make('category_id')
+                    ->label('Категория')
+                    ->options(fn () => Category::query()->orderBy('sort_order')->pluck('name_en', 'id'))
+                    ->searchable()
+                    ->nullable(),
+                Toggle::make('is_featured')
+                    ->label('Показать в героя на главной')
+                    ->helperText('Если ничего не отмечено, героем становится активный баттл с самым большим банком.'),
                 TextInput::make('total_pool')
                     ->label('Общий банк')
                     ->numeric()
