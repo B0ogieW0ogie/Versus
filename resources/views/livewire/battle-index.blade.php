@@ -1,7 +1,7 @@
 <div class="pb-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 lg:max-w-7xl lg:mx-auto lg:px-6">
     <div class="min-w-0">
         @if ($featured)
-            <div class="max-w-xl mx-auto">
+            <div class="max-w-xl mx-auto lg:max-w-none">
                 @include('livewire.battle-index.featured-card', ['featured' => $featured])
             </div>
         @endif
