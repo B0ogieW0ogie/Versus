@@ -8,4 +8,7 @@ return [
     'register' => 'Register',
     'profile' => 'Profile',
     'logout' => 'Sign out',
+    'home' => 'Home',
+    'leaderboard' => 'Leaderboard',
+    'my_bets' => 'My Bets',
 ];
