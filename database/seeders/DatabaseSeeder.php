@@ -11,6 +11,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(CategorySeeder::class);
+
         $admin = User::firstOrCreate(
             ['email' => 'admin@versus.test'],
             [
