@@ -28,9 +28,11 @@
             @endisset
 
             <!-- Page Content -->
-            <main>
+            <main class="pb-20 sm:pb-0">
                 {{ $slot }}
             </main>
+
+            @include('layouts.bottom-nav')
         </div>
     </body>
 </html>
