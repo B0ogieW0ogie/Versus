@@ -18,7 +18,7 @@
             @endif
         </div>
     @else
-        <div class="space-y-2 px-3">
+        <div class="grid grid-cols-1 gap-2 px-3 lg:grid-cols-2 lg:gap-3">
             @foreach ($all as $battle)
                 <x-battle-row :battle="$battle" />
             @endforeach
