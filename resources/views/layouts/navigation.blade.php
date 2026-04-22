@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-navy-900 border-b border-white/5 text-white">
+<nav class="bg-navy-900 border-b border-white/5 text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
             {{-- Left: logo + primary menu --}}
@@ -25,30 +25,41 @@
             </div>
 
             {{-- Right: locale + icons + user --}}
-            <div class="hidden sm:flex items-center gap-3">
-                <livewire:locale-switcher />
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button type="button"
+                        x-on:click="$dispatch('open-search')"
+                        class="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/5 transition"
+                        aria-label="{{ __('search.open') }}">
+                    <x-icon.search class="h-5 w-5" />
+                </button>
+
+                <div class="hidden sm:flex items-center gap-3">
+                    <livewire:locale-switcher />
+                </div>
 
                 @auth
-                    <button type="button"
-                            title="{{ __('sidebar.coming_soon') }}"
-                            class="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/5 transition"
-                            aria-label="Notifications">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                        </svg>
-                    </button>
-                    <button type="button"
-                            title="{{ __('sidebar.coming_soon') }}"
-                            class="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/5 transition"
-                            aria-label="Messages">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                             stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
-                        </svg>
-                    </button>
+                    <div class="hidden sm:flex items-center gap-2">
+                        <button type="button"
+                                title="{{ __('sidebar.coming_soon') }}"
+                                class="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/5 transition"
+                                aria-label="Notifications">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                            </svg>
+                        </button>
+                        <button type="button"
+                                title="{{ __('sidebar.coming_soon') }}"
+                                class="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/5 transition"
+                                aria-label="Messages">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+                            </svg>
+                        </button>
+                    </div>
 
                     <x-dropdown align="right" width="48" contentClasses="py-1 bg-navy-800 text-white/90">
                         <x-slot name="trigger">
@@ -61,10 +72,10 @@
                                       x-on:balance-updated.window="balance = $event.detail.balance">
                                     <span class="text-white"
                                           x-text="new Intl.NumberFormat().format(balance)">{{ number_format((float) Auth::user()->balance, 0) }}</span>
-                                    <span class="text-white/50 font-normal ml-1">{{ __('sidebar.tokens') }}</span>
+                                    <span class="text-white/50 font-normal ml-1 hidden sm:inline">{{ __('sidebar.tokens') }}</span>
                                 </span>
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                     class="h-4 w-4 text-white/50">
+                                     class="h-4 w-4 text-white/50 hidden sm:inline">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </button>
@@ -78,8 +89,8 @@
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <x-dropdown-link :href="route('logout')"
-                                        class="!text-white/80 hover:!bg-white/10 hover:!text-white"
-                                        onclick="event.preventDefault(); this.closest('form').submit();">
+                                                 class="!text-white/80 hover:!bg-white/10 hover:!text-white"
+                                                 onclick="event.preventDefault(); this.closest('form').submit();">
                                     {{ __('nav.logout') }}
                                 </x-dropdown-link>
                             </form>
@@ -91,83 +102,11 @@
                     <a href="{{ route('login') }}"
                        class="text-sm text-white/80 hover:text-white transition">{{ __('nav.login') }}</a>
                     <a href="{{ route('register') }}"
-                       class="text-sm rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5 transition">
+                       class="hidden sm:inline-block text-sm rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5 transition">
                         {{ __('nav.register') }}
                     </a>
                 @endguest
             </div>
-
-            {{-- Hamburger (mobile) --}}
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open"
-                        class="inline-flex items-center justify-center p-2 rounded-md text-white/60 hover:text-white hover:bg-white/5 focus:outline-none transition">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex"
-                              stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden"
-                              stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
         </div>
-    </div>
-
-    {{-- Responsive navigation menu --}}
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-white/5">
-        <div class="px-4 py-3 space-y-1">
-            <a href="{{ route('home') }}"
-               class="block rounded px-3 py-2 text-sm transition
-                      {{ request()->routeIs('battles.*') || request()->routeIs('home') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5' }}">
-                {{ __('nav.battles') }}
-            </a>
-            @auth
-                <a href="{{ route('referrals') }}"
-                   class="block rounded px-3 py-2 text-sm transition
-                          {{ request()->routeIs('referrals') ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5' }}">
-                    {{ __('nav.referrals') }}
-                </a>
-            @endauth
-        </div>
-
-        <div class="px-4 py-3 border-t border-white/5">
-            <livewire:locale-switcher />
-        </div>
-
-        @auth
-            <div class="px-4 py-3 border-t border-white/5">
-                <div class="text-sm font-semibold text-white">{{ Auth::user()->name }}</div>
-                <div class="text-xs text-white/50">{{ Auth::user()->email }}</div>
-                <div class="mt-1 text-sm"
-                     x-data="{ balance: {{ (int) Auth::user()->balance }} }"
-                     x-on:balance-updated.window="balance = $event.detail.balance">
-                    <span class="text-white"
-                          x-text="new Intl.NumberFormat().format(balance)">{{ number_format((float) Auth::user()->balance, 0) }}</span>
-                    <span class="text-white/50">{{ __('sidebar.tokens') }}</span>
-                </div>
-            </div>
-            <div class="px-4 pb-4 space-y-1">
-                <a href="{{ route('profile.edit') }}"
-                   class="block rounded px-3 py-2 text-sm text-white/70 hover:bg-white/5 transition">
-                    {{ __('nav.profile') }}
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                            class="w-full text-left rounded px-3 py-2 text-sm text-white/70 hover:bg-white/5 transition">
-                        {{ __('nav.logout') }}
-                    </button>
-                </form>
-            </div>
-        @endauth
-        @guest
-            <div class="px-4 pb-4 flex gap-3">
-                <a href="{{ route('login') }}"
-                   class="text-sm text-white/80 hover:text-white transition">{{ __('nav.login') }}</a>
-                <a href="{{ route('register') }}"
-                   class="text-sm rounded-md bg-white/10 hover:bg-white/20 px-3 py-1.5 transition">
-                    {{ __('nav.register') }}
-                </a>
-            </div>
-        @endguest
     </div>
 </nav>
