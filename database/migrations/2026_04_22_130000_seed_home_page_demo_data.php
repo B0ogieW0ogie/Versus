@@ -36,8 +36,8 @@ return new class extends Migration
 
     public function up(): void
     {
-        // Demo content only — skip in tests and production.
-        if (! app()->environment('local')) {
+        // Skip in tests only — real DBs (local + prod) should receive demo data.
+        if (app()->environment('testing')) {
             return;
         }
 
