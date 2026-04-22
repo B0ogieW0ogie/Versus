@@ -2,6 +2,7 @@
 
 return [
     'ends_in' => 'Ends in:',
+    'featured' => 'Featured battle',
     'total_prize_pool' => 'Total Prize Pool',
     'tokens' => 'Tokens',
     'votes' => 'Votes',

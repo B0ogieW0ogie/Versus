@@ -2,6 +2,7 @@
 
 return [
     'ends_in' => 'До конца:',
+    'featured' => 'Баттл дня',
     'total_prize_pool' => 'Призовой фонд',
     'tokens' => 'токенов',
     'votes' => 'голосов',
