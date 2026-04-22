@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\BattleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,6 +33,8 @@ use Illuminate\Support\Carbon;
     'total_pool',
     'created_by_id',
     'settled_at',
+    'category_id',
+    'is_featured',
 ])]
 class Battle extends Model
 {
@@ -57,6 +60,7 @@ class Battle extends Model
             'closes_at' => 'datetime',
             'settled_at' => 'datetime',
             'total_pool' => 'decimal:2',
+            'is_featured' => 'boolean',
         ];
     }
 
@@ -82,6 +86,32 @@ class Battle extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_ACTIVE);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('is_featured', true);
     }
 
     public function isOpenForVoting(): bool

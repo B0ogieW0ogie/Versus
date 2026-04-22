@@ -33,6 +33,8 @@ class BattleFactory extends Factory
             'total_pool' => 0,
             'created_by_id' => null,
             'settled_at' => null,
+            'category_id' => null,
+            'is_featured' => false,
         ];
     }
 
