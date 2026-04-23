@@ -5,9 +5,7 @@ use App\Livewire\BattleIndex;
 use App\Livewire\BattleShow;
 use App\Livewire\CategoryShow;
 use App\Livewire\Leaderboard;
-use App\Livewire\MyBets;
 use App\Livewire\ProfilePage;
-use App\Livewire\ReferralPanel;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', BattleIndex::class)->name('home');
@@ -26,8 +24,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/settings', [ProfileController::class, 'update'])->name('profile.settings.update');
     Route::delete('/profile/settings', [ProfileController::class, 'destroy'])->name('profile.settings.destroy');
 
-    Route::get('/referrals', ReferralPanel::class)->name('referrals');
-    Route::get('/my-bets', MyBets::class)->name('my-bets');
+    Route::get('/referrals', fn () => redirect('/profile?tab=referrals'))->name('referrals');
+    Route::get('/my-bets', fn () => redirect('/profile?tab=activity'))->name('my-bets');
 });
 
 require __DIR__.'/auth.php';

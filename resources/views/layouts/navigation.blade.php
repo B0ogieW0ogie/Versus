@@ -15,12 +15,6 @@
                        class="transition {{ request()->routeIs('battles.*') || request()->routeIs('home') ? 'text-white' : 'text-white/60 hover:text-white' }}">
                         {{ __('nav.battles') }}
                     </a>
-                    @auth
-                        <a href="{{ route('referrals') }}"
-                           class="transition {{ request()->routeIs('referrals') ? 'text-white' : 'text-white/60 hover:text-white' }}">
-                            {{ __('nav.referrals') }}
-                        </a>
-                    @endauth
                 </div>
             </div>
 
