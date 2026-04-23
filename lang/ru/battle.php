@@ -33,6 +33,9 @@ return [
 
     'pool' => 'Банк',
     'vote' => 'ГОЛОС',
+    'vote_for_side' => 'ЗА :side',
+    'sponsored_by' => 'Спонсор: :handle',
+    'no_active_in_category' => 'В этой категории пока нет активных баттлов.',
     'winner' => 'Победитель',
     'refunded_tie' => 'Ничья — возврат',
 

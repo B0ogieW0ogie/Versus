@@ -33,6 +33,9 @@ return [
 
     'pool' => 'Pool',
     'vote' => 'VOTE',
+    'vote_for_side' => 'VOTE :side',
+    'sponsored_by' => 'Sponsored by :handle',
+    'no_active_in_category' => 'No active battles in this category yet.',
     'winner' => 'Winner',
     'refunded_tie' => 'Tie — refunded',
 
