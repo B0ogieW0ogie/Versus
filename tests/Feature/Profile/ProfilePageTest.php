@@ -15,3 +15,16 @@ test('renders for authenticated user', function () {
         ->assertOk()
         ->assertSee('Alice');
 });
+
+test('guest is redirected to login', function () {
+    $this->get('/profile')->assertRedirect(route('login'));
+});
+
+test('authenticated user sees the profile page at /profile', function () {
+    $user = User::factory()->create(['name' => 'Alice']);
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertOk()
+        ->assertSee('Alice');
+});

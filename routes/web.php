@@ -6,6 +6,7 @@ use App\Livewire\BattleShow;
 use App\Livewire\CategoryShow;
 use App\Livewire\Leaderboard;
 use App\Livewire\MyBets;
+use App\Livewire\ProfilePage;
 use App\Livewire\ReferralPanel;
 use Illuminate\Support\Facades\Route;
 
@@ -20,9 +21,10 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', ProfilePage::class)->name('profile.edit');
+    Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');
+    Route::patch('/profile/settings', [ProfileController::class, 'update'])->name('profile.settings.update');
+    Route::delete('/profile/settings', [ProfileController::class, 'destroy'])->name('profile.settings.destroy');
 
     Route::get('/referrals', ReferralPanel::class)->name('referrals');
     Route::get('/my-bets', MyBets::class)->name('my-bets');
