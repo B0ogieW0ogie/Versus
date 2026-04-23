@@ -42,13 +42,15 @@
                 x-show="pageCount > 1"
                 x-on:click="prev()"
                 :disabled="isFirst"
-                class="absolute left-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-navy-900/70 text-white/80 hover:text-white border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                style="top: var(--carousel-arrow-y, 50%)"
+                class="absolute left-1 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-navy-900/70 text-white/80 hover:text-white border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
                 aria-label="Previous">‹</button>
         <button type="button"
                 x-show="pageCount > 1"
                 x-on:click="next()"
                 :disabled="isLast"
-                class="absolute right-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-navy-900/70 text-white/80 hover:text-white border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                style="top: var(--carousel-arrow-y, 50%)"
+                class="absolute right-1 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-navy-900/70 text-white/80 hover:text-white border border-white/10 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
                 aria-label="Next">›</button>
     @endif
 

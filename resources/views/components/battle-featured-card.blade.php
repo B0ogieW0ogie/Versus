@@ -8,7 +8,8 @@
 @endphp
 
 <article class="mx-3 rounded-2xl border border-white/5 bg-white/[0.04] p-4 sm:p-5">
-    <div class="relative overflow-hidden rounded-xl aspect-[2/1] bg-navy-800">
+    <div data-carousel-arrow-anchor
+         class="relative overflow-hidden rounded-xl aspect-[2/1] bg-navy-800">
         <div class="absolute inset-y-0 left-0 w-[55%] bg-navy-800"
              style="clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);">
             @if ($battle->side_a_image)

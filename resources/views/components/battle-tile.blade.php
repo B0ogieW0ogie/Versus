@@ -14,7 +14,8 @@
 
 <a href="{{ route('battles.show', $battle) }}"
    class="block rounded-xl border border-white/5 bg-white/[0.035] p-3 hover:bg-white/[0.06] transition">
-    <div class="relative overflow-hidden rounded-lg aspect-[2/1] bg-navy-800">
+    <div data-carousel-arrow-anchor
+         class="relative overflow-hidden rounded-lg aspect-[2/1] bg-navy-800">
         <div class="absolute inset-y-0 left-0 w-[55%] bg-navy-800"
              style="clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);">
             @if ($battle->side_a_image)

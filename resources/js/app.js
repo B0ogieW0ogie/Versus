@@ -147,6 +147,7 @@ document.addEventListener('alpine:init', () => {
         timer: null,
         touchStartX: null,
         mql: null,
+        _resizeHandler: null,
 
         init() {
             this.mql = window.matchMedia('(min-width: 1024px)');
@@ -154,13 +155,33 @@ document.addEventListener('alpine:init', () => {
             this.mql.addEventListener('change', (e) => {
                 this.perPage = e.matches ? perPageDesktop : perPageMobile;
                 this.page = Math.min(this.page, this.pageCount - 1);
+                requestAnimationFrame(() => this.measureArrowY());
             });
             if (this.autoAdvance && this.pageCount > 1) {
                 this.startTimer();
             }
+            requestAnimationFrame(() => this.measureArrowY());
+            this._resizeHandler = () => requestAnimationFrame(() => this.measureArrowY());
+            window.addEventListener('resize', this._resizeHandler);
         },
         destroy() {
             this.stopTimer();
+            if (this._resizeHandler) {
+                window.removeEventListener('resize', this._resizeHandler);
+                this._resizeHandler = null;
+            }
+        },
+        measureArrowY() {
+            if (!this.$refs.track) return;
+            const firstSlide = this.$refs.track.children[0];
+            if (!firstSlide) return;
+            const anchor = firstSlide.querySelector('[data-carousel-arrow-anchor]') || firstSlide;
+            const rootRect = this.$root.getBoundingClientRect();
+            const anchorRect = anchor.getBoundingClientRect();
+            const centerY = anchorRect.top + anchorRect.height / 2 - rootRect.top;
+            if (Number.isFinite(centerY) && centerY > 0) {
+                this.$root.style.setProperty('--carousel-arrow-y', centerY + 'px');
+            }
         },
         get pageCount() {
             return Math.max(1, Math.ceil(this.total / this.perPage));
