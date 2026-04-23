@@ -2,6 +2,8 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -79,4 +81,76 @@ test('bio is saved and rendered on profile page', function () {
         ->get('/profile')
         ->assertSee('multi')
         ->assertSee('line bio');
+});
+
+test('user can upload an avatar', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch('/profile/settings', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->image('me.png'),
+        ])
+        ->assertSessionHasNoErrors();
+
+    $user->refresh();
+    expect($user->avatar_path)->toStartWith('avatars/');
+    Storage::disk('public')->assertExists($user->avatar_path);
+});
+
+test('user can upload a banner', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->patch('/profile/settings', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'banner' => UploadedFile::fake()->image('banner.png'),
+        ])
+        ->assertSessionHasNoErrors();
+
+    $user->refresh();
+    expect($user->banner_path)->toStartWith('banners/');
+    Storage::disk('public')->assertExists($user->banner_path);
+});
+
+test('uploading a new avatar deletes the previous file', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    // First upload
+    $this->actingAs($user)->patch('/profile/settings', [
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => UploadedFile::fake()->image('first.png'),
+    ]);
+    $firstPath = $user->fresh()->avatar_path;
+    Storage::disk('public')->assertExists($firstPath);
+
+    // Second upload
+    $this->actingAs($user->fresh())->patch('/profile/settings', [
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => UploadedFile::fake()->image('second.png'),
+    ]);
+
+    Storage::disk('public')->assertMissing($firstPath);
+    Storage::disk('public')->assertExists($user->fresh()->avatar_path);
+});
+
+test('non-image files are rejected', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->from('/profile/settings')
+        ->patch('/profile/settings', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->create('doc.pdf', 100, 'application/pdf'),
+        ])
+        ->assertSessionHasErrors('avatar');
 });

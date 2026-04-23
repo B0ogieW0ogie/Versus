@@ -13,7 +13,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.settings.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.settings.update') }}" enctype="multipart/form-data" class="mt-6 space-y-6">
         @csrf
         @method('patch')
 
@@ -62,6 +62,20 @@
                       class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('bio', $user->bio) }}</textarea>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('profile.bio_help') }}</p>
             <x-input-error class="mt-2" :messages="$errors->get('bio')" />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="avatar" :value="__('profile.avatar_label')" />
+            <input id="avatar" name="avatar" type="file" accept="image/*"
+                   class="mt-1 block w-full text-sm text-gray-600 dark:text-gray-300" />
+            <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="banner" :value="__('profile.banner_label')" />
+            <input id="banner" name="banner" type="file" accept="image/*"
+                   class="mt-1 block w-full text-sm text-gray-600 dark:text-gray-300" />
+            <x-input-error class="mt-2" :messages="$errors->get('banner')" />
         </div>
 
         <div class="flex items-center gap-4">
