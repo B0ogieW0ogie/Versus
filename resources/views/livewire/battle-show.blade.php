@@ -1,7 +1,6 @@
 <div class="bg-navy-900 text-white min-h-screen">
     @php
         $closesIso = optional($battle->closes_at)->toIso8601String();
-        $pcts = $battle->sidePercentages();
     @endphp
 
     <div class="max-w-7xl mx-auto px-4 py-8 grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -62,13 +61,10 @@
                             @endif
                         </div>
 
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3">
-                            <span class="text-base sm:text-lg font-bold text-white drop-shadow">{{ $pcts['a'] }}%</span>
-                            <span class="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full
-                                         bg-navy-700 text-sm sm:text-base font-bold tracking-wider shadow-vs-glow ring-1 ring-glow-cyan/40">
-                                {{ __('battle.vs') }}
-                            </span>
-                            <span class="text-base sm:text-lg font-bold text-white drop-shadow">{{ $pcts['b'] }}%</span>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                                    flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full
+                                    bg-navy-700 text-sm sm:text-base font-bold tracking-wider shadow-vs-glow ring-1 ring-glow-cyan/40">
+                            {{ __('battle.vs') }}
                         </div>
                     </div>
 

@@ -18,7 +18,6 @@ class BattleIndex extends Component
 
         $hot = Battle::query()
             ->active()
-            ->withSideWeights()
             ->with('category')
             ->when($sponsoredIds, fn ($q) => $q->whereNotIn('id', $sponsoredIds))
             ->orderByDesc('total_pool')
@@ -29,7 +28,6 @@ class BattleIndex extends Component
             ->orderBy('sort_order')
             ->with(['battles' => fn ($q) => $q
                 ->active()
-                ->withSideWeights()
                 ->when($sponsoredIds, fn ($qq) => $qq->whereNotIn('id', $sponsoredIds))
                 ->orderByDesc('total_pool')
                 ->limit(10),

@@ -5,7 +5,6 @@
 @php
     /** @var \App\Models\Battle $battle */
     $closesIso = optional($battle->closes_at)->toIso8601String();
-    $pcts = $battle->sidePercentages();
 @endphp
 
 <article class="mx-3 rounded-2xl border border-white/5 bg-white/[0.04] p-4 sm:p-5">
@@ -38,14 +37,11 @@
             <span class="truncate max-w-[40%] text-right">{{ $battle->side_b_label }}</span>
         </div>
 
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
-            <span class="text-sm sm:text-base font-bold text-white drop-shadow">{{ $pcts['a'] }}%</span>
-            <span class="h-10 w-10 rounded-full border border-white/25 bg-navy-900
-                         text-xs font-bold text-white/90 flex items-center justify-center">
-                VS
-            </span>
-            <span class="text-sm sm:text-base font-bold text-white drop-shadow">{{ $pcts['b'] }}%</span>
-        </div>
+        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                     h-10 w-10 rounded-full border border-white/25 bg-navy-900
+                     text-xs font-bold text-white/90 flex items-center justify-center">
+            VS
+        </span>
     </div>
 
     <div class="mt-4 flex items-center justify-center gap-6 text-sm text-white/70">

@@ -25,7 +25,6 @@ class CategoryShow extends Component
     {
         $battles = Battle::query()
             ->active()
-            ->withSideWeights()
             ->where('category_id', $this->category->id)
             ->with('category')
             ->orderByDesc('closes_at')

@@ -10,7 +10,6 @@
     $timeLabel = $timeLeft
         ? sprintf('%02d:%02d', (int) $timeLeft->format('%a') * 24 + (int) $timeLeft->h, $timeLeft->i)
         : '—';
-    $pcts = $battle->sidePercentages();
 @endphp
 
 <a href="{{ route('battles.show', $battle) }}"
@@ -36,14 +35,11 @@
                 </div>
             @endif
         </div>
-        <div class="absolute inset-0 flex items-center justify-center gap-1.5">
-            <span class="text-[10px] font-bold text-white drop-shadow">{{ $pcts['a'] }}%</span>
-            <span class="h-7 w-7 rounded-full border border-white/20 bg-navy-900
-                         text-[10px] font-bold text-white/90 flex items-center justify-center">
-                VS
-            </span>
-            <span class="text-[10px] font-bold text-white drop-shadow">{{ $pcts['b'] }}%</span>
-        </div>
+        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                     h-7 w-7 rounded-full border border-white/20 bg-navy-900
+                     text-[10px] font-bold text-white/90 flex items-center justify-center">
+            VS
+        </span>
     </div>
 
     <div class="mt-2 text-sm text-white/90 truncate">{{ $battle->title }}</div>
