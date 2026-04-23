@@ -10,6 +10,7 @@ test('/my-bets redirects to /profile?tab=activity', function () {
 
     $this->actingAs($user)
         ->get('/my-bets')
+        ->assertStatus(301)
         ->assertRedirect('/profile?tab=activity');
 });
 
@@ -18,5 +19,6 @@ test('/referrals redirects to /profile?tab=referrals', function () {
 
     $this->actingAs($user)
         ->get('/referrals')
+        ->assertStatus(301)
         ->assertRedirect('/profile?tab=referrals');
 });

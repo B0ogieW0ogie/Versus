@@ -32,6 +32,6 @@ class BottomNavTest extends TestCase
     {
         $html = $this->get(route('home'))->assertOk()->getContent();
 
-        $this->assertStringNotContainsString(__('nav.my_bets'), $html);
+        $this->assertStringNotContainsString('My Bets', $html);
     }
 }

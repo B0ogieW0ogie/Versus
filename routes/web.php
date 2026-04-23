@@ -24,8 +24,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/settings', [ProfileController::class, 'update'])->name('profile.settings.update');
     Route::delete('/profile/settings', [ProfileController::class, 'destroy'])->name('profile.settings.destroy');
 
-    Route::get('/referrals', fn () => redirect('/profile?tab=referrals'))->name('referrals');
-    Route::get('/my-bets', fn () => redirect('/profile?tab=activity'))->name('my-bets');
+    Route::get('/referrals', fn () => redirect()->route('profile.edit', ['tab' => 'referrals'], 301))->name('referrals');
+    Route::get('/my-bets', fn () => redirect()->route('profile.edit', ['tab' => 'activity'], 301))->name('my-bets');
 });
 
 require __DIR__.'/auth.php';
