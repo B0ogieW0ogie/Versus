@@ -1,29 +1,21 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Профиль
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
+    <div class="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        <div class="flex items-center justify-between">
+            <h1 class="text-xl font-semibold text-white">{{ __('profile.settings_title') }}</h1>
+            <a href="{{ route('profile.edit') }}"
+               class="text-xs text-white/60 hover:text-white">← {{ __('profile.title') }}</a>
         </div>
+
+        <section class="rounded-xl border border-white/5 bg-white/[0.03] p-4 sm:p-6">
+            @include('profile.partials.update-profile-information-form')
+        </section>
+
+        <section class="rounded-xl border border-white/5 bg-white/[0.03] p-4 sm:p-6">
+            @include('profile.partials.update-password-form')
+        </section>
+
+        <section class="rounded-xl border border-red-500/10 bg-red-500/[0.04] p-4 sm:p-6">
+            @include('profile.partials.delete-user-form')
+        </section>
     </div>
 </x-app-layout>
