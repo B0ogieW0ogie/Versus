@@ -31,7 +31,7 @@
             @endif
         </div>
 
-        <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/65 to-transparent pointer-events-none"></div>
+        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none"></div>
 
         <div class="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-2 text-sm sm:text-base font-semibold text-white drop-shadow">
             <span class="truncate max-w-[40%]">{{ $battle->side_a_label }}</span>

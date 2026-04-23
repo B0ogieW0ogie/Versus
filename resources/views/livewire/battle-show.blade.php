@@ -47,7 +47,7 @@
                             @endif
                         </div>
 
-                        <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none"></div>
+                        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none"></div>
 
                         <div class="absolute bottom-4 left-5 max-w-[40%]">
                             <p class="text-lg sm:text-xl font-bold uppercase tracking-wide text-white drop-shadow">{{ $battle->side_a_label }}</p>
