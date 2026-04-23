@@ -17,24 +17,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $settled_at
  */
 #[Fillable([
-    'slug',
-    'title',
-    'description',
-    'side_a_label',
-    'side_b_label',
-    'side_a_subtitle',
-    'side_b_subtitle',
-    'side_a_image',
-    'side_b_image',
-    'status',
-    'opens_at',
-    'closes_at',
-    'winning_side',
-    'total_pool',
-    'created_by_id',
-    'settled_at',
-    'category_id',
-    'is_featured',
+    'slug', 'title', 'description',
+    'side_a_label', 'side_b_label', 'side_a_subtitle', 'side_b_subtitle',
+    'side_a_image', 'side_b_image',
+    'status', 'opens_at', 'closes_at', 'winning_side',
+    'total_pool', 'created_by_id', 'settled_at', 'category_id',
+    'is_sponsored', 'sponsor_handle',
 ])]
 class Battle extends Model
 {
@@ -60,7 +48,7 @@ class Battle extends Model
             'closes_at' => 'datetime',
             'settled_at' => 'datetime',
             'total_pool' => 'decimal:2',
-            'is_featured' => 'boolean',
+            'is_sponsored' => 'boolean',
         ];
     }
 
@@ -106,18 +94,33 @@ class Battle extends Model
     }
 
     /**
-     * @param  Builder<self>  $query
-     * @return Builder<self>
+     * @return \Illuminate\Database\Eloquent\Collection<int, self>
      */
-    public function scopeFeatured(Builder $query): Builder
+    public static function sponsoredActive(): \Illuminate\Database\Eloquent\Collection
     {
-        return $query->where('is_featured', true);
+        return static::query()
+            ->active()
+            ->where('is_sponsored', true)
+            ->orderBy('closes_at')
+            ->limit(10)
+            ->get();
     }
 
-    public static function resolveFeatured(): ?self
+    public function compactPool(): string
     {
-        return static::query()->active()->featured()->latest('updated_at')->first()
-            ?? static::query()->active()->orderByDesc('total_pool')->first();
+        $n = (float) $this->total_pool;
+
+        if ($n < 1000) {
+            return (string) (int) $n;
+        }
+
+        $k = $n / 1000;
+
+        if (fmod($k, 1.0) === 0.0) {
+            return ((int) $k).'k';
+        }
+
+        return number_format($k, 1, '.', '').'k';
     }
 
     public function isOpenForVoting(): bool

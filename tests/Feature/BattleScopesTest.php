@@ -22,15 +22,6 @@ class BattleScopesTest extends TestCase
         $this->assertSame(1, Battle::query()->active()->count());
     }
 
-    public function test_featured_scope_returns_only_flagged_battles(): void
-    {
-        Battle::factory()->create(['is_featured' => true]);
-        Battle::factory()->create(['is_featured' => false]);
-        Battle::factory()->create();
-
-        $this->assertSame(1, Battle::query()->featured()->count());
-    }
-
     public function test_category_relation(): void
     {
         $cat = Category::factory()->create();

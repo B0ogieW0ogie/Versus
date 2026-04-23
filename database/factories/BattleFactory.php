@@ -34,13 +34,22 @@ class BattleFactory extends Factory
             'created_by_id' => null,
             'settled_at' => null,
             'category_id' => null,
-            'is_featured' => false,
+            'is_sponsored' => false,
+            'sponsor_handle' => null,
         ];
     }
 
     public function draft(): static
     {
         return $this->state(fn () => ['status' => Battle::STATUS_DRAFT]);
+    }
+
+    public function sponsored(string $handle = '@brand'): static
+    {
+        return $this->state(fn () => [
+            'is_sponsored' => true,
+            'sponsor_handle' => $handle,
+        ]);
     }
 
     public function closed(): static

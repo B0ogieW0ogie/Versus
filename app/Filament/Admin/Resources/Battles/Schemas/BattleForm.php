@@ -73,9 +73,15 @@ class BattleForm
                     ->options(fn () => Category::query()->orderBy('sort_order')->pluck('name_en', 'id'))
                     ->searchable()
                     ->nullable(),
-                Toggle::make('is_featured')
-                    ->label('Показать в героя на главной')
-                    ->helperText('Если ничего не отмечено, героем становится активный баттл с самым большим банком.'),
+                Toggle::make('is_sponsored')
+                    ->label('Спонсорский слайд на главной')
+                    ->live()
+                    ->helperText('Отмеченные баттлы попадают в слайдер на главной странице.'),
+                TextInput::make('sponsor_handle')
+                    ->label('Хендл спонсора')
+                    ->prefix('@')
+                    ->placeholder('brand')
+                    ->visible(fn (callable $get) => (bool) $get('is_sponsored')),
                 TextInput::make('total_pool')
                     ->label('Общий банк')
                     ->numeric()
