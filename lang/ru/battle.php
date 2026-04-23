@@ -2,7 +2,6 @@
 
 return [
     'ends_in' => 'До конца:',
-    'featured' => 'Баттл дня',
     'hot' => 'Горячие',
     'view_all' => 'Смотреть все',
     'total_prize_pool' => 'Призовой фонд',
@@ -39,14 +38,7 @@ return [
     'winner' => 'Победитель',
     'refunded_tie' => 'Ничья — возврат',
 
-    'all_chip' => 'Все',
-    'finished_chip' => 'Завершённые',
-
-    'all_battles' => 'Все баттлы',
     'load_more' => 'Показать ещё',
-    'no_battles' => 'Баттлов пока нет.',
-    'no_battles_in_category' => 'В этой категории пока пусто.',
-    'no_settled_battles' => 'Пока нет завершённых.',
 
     'status_active' => 'активен',
     'status_draft' => 'черновик',

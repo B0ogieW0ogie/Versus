@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', BattleIndex::class)->name('home');
 Route::get('/battles', BattleIndex::class)->name('battles.index');
 Route::get('/battles/{battle:slug}', BattleShow::class)->name('battles.show');
+Route::get('/categories/{category:slug}', fn () => redirect()->route('home'))->name('categories.show');
 Route::get('/leaderboard', Leaderboard::class)->name('leaderboard');
 
 Route::get('/dashboard', function () {

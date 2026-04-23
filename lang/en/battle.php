@@ -2,7 +2,6 @@
 
 return [
     'ends_in' => 'Ends in:',
-    'featured' => 'Featured battle',
     'hot' => 'Hot battles',
     'view_all' => 'View all',
     'total_prize_pool' => 'Total Prize Pool',
@@ -39,14 +38,7 @@ return [
     'winner' => 'Winner',
     'refunded_tie' => 'Tie — refunded',
 
-    'all_chip' => 'All',
-    'finished_chip' => 'Finished',
-
-    'all_battles' => 'All battles',
     'load_more' => 'Load more',
-    'no_battles' => 'No battles yet.',
-    'no_battles_in_category' => 'Nothing in this category yet.',
-    'no_settled_battles' => 'No settled battles yet.',
 
     'status_active' => 'active',
     'status_draft' => 'draft',
