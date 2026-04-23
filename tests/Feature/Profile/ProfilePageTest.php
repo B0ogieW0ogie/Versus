@@ -3,6 +3,7 @@
 use App\Livewire\ProfilePage;
 use App\Models\Battle;
 use App\Models\Comment;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -190,4 +191,31 @@ test('comments tab shows empty state', function () {
     $this->actingAs($user)
         ->get('/profile?tab=comments')
         ->assertSee(__('profile.comments_empty'));
+});
+
+test('referrals tab shows referral url, list and earned total', function () {
+    $user = User::factory()->create(['referral_code' => 'TESTCODE']);
+    $alice = User::factory()->create([
+        'name' => 'Alice',
+        'referred_by_id' => $user->id,
+    ]);
+    Transaction::factory()->create([
+        'user_id' => $user->id,
+        'type' => Transaction::TYPE_REFERRAL_REWARD,
+        'amount' => 42,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/profile?tab=referrals')
+        ->assertSee('?ref=TESTCODE', escape: false)
+        ->assertSee('Alice')
+        ->assertSee('42');
+});
+
+test('referrals tab shows empty state when no referrals', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/profile?tab=referrals')
+        ->assertSee(__('profile.referrals_empty'));
 });

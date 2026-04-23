@@ -4,10 +4,12 @@ namespace App\Livewire;
 
 use App\Models\Battle;
 use App\Models\Comment;
+use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -70,6 +72,9 @@ class ProfilePage extends Component
             'user' => $user,
             'votes' => $this->loadVotes($user),
             'comments' => $this->loadComments($user),
+            'referrals' => $this->loadReferrals($user),
+            'referralUrl' => url('/?ref='.$user->referral_code),
+            'referralEarned' => $this->loadReferralEarned($user),
         ]);
     }
 
@@ -95,5 +100,24 @@ class ProfilePage extends Component
             ->with(['battle:id,slug,title'])
             ->latest()
             ->paginate(20);
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    private function loadReferrals(User $user)
+    {
+        return User::query()
+            ->where('referred_by_id', $user->id)
+            ->orderByDesc('created_at')
+            ->get(['id', 'name', 'email', 'created_at']);
+    }
+
+    private function loadReferralEarned(User $user): float
+    {
+        return (float) Transaction::query()
+            ->where('user_id', $user->id)
+            ->where('type', Transaction::TYPE_REFERRAL_REWARD)
+            ->sum('amount');
     }
 }

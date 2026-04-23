@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable(['user_id', 'type', 'amount', 'balance_after', 'battle_id', 'meta'])]
 class Transaction extends Model
 {
+    /** @use HasFactory<\Database\Factories\TransactionFactory> */
+    use HasFactory;
+
     public const UPDATED_AT = null;
 
     public const TYPE_SIGNUP_BONUS = 'signup_bonus';
