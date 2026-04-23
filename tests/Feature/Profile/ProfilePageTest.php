@@ -62,3 +62,37 @@ test('edit button links to profile settings route', function () {
         ->get('/profile')
         ->assertSee(route('profile.settings'), escape: false);
 });
+
+test('activity tab is active by default', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->test(ProfilePage::class)
+        ->assertSet('tab', 'activity');
+});
+
+test('tab is switchable via url', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->withQueryParams(['tab' => 'comments'])
+        ->test(ProfilePage::class)
+        ->assertSet('tab', 'comments');
+});
+
+test('invalid tab param falls back to activity', function () {
+    $user = User::factory()->create();
+
+    Livewire::actingAs($user)
+        ->withQueryParams(['tab' => 'garbage'])
+        ->test(ProfilePage::class)
+        ->assertSet('tab', 'activity');
+});
+
+test('creation tab shows coming soon', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/profile?tab=creation')
+        ->assertSee(__('profile.coming_soon'));
+});

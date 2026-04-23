@@ -92,5 +92,38 @@
         @if ($user->bio)
             <p class="px-4 mt-2 text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
         @endif
+
+        {{-- Tab bar --}}
+        <div class="mt-4 px-4 flex items-end gap-4 border-b border-white/5">
+            @foreach (['activity', 'creation', 'comments', 'referrals'] as $key)
+                <button type="button"
+                        wire:click="selectTab('{{ $key }}')"
+                        class="pb-2 text-xs font-semibold tracking-wide transition
+                               {{ $tab === $key ? 'text-white border-b-2 border-vote-purple-to -mb-px' : 'text-white/50 hover:text-white/80' }}">
+                    {{ __('profile.tab_' . $key) }}
+                </button>
+            @endforeach
+            <div class="flex-1"></div>
+            <button type="button" disabled aria-disabled="true"
+                    title="{{ __('profile.coming_soon') }}"
+                    class="mb-1 p-1.5 rounded-lg border border-white/10 text-white/35 cursor-not-allowed">
+                <x-icon.trophy class="h-4 w-4" />
+            </button>
+        </div>
+
+        {{-- Tab content --}}
+        @switch($tab)
+            @case('creation')
+                @include('livewire.profile.tabs.creation')
+                @break
+            @case('comments')
+                @include('livewire.profile.tabs.comments')
+                @break
+            @case('referrals')
+                @include('livewire.profile.tabs.referrals')
+                @break
+            @default
+                @include('livewire.profile.tabs.activity')
+        @endswitch
     </div>
 </div>
