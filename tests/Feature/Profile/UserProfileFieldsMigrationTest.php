@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -24,5 +25,5 @@ test('username must be unique', function () {
     User::factory()->create(['username' => 'alice']);
 
     expect(fn () => User::factory()->create(['username' => 'alice']))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });

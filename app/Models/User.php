@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 #[Fillable(['name', 'email', 'password', 'referred_by_id', 'username', 'bio', 'avatar_path', 'banner_path'])]
@@ -73,14 +74,14 @@ class User extends Authenticatable implements FilamentUser
     public function avatarUrl(): ?string
     {
         return $this->avatar_path
-            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path)
+            ? Storage::disk('public')->url($this->avatar_path)
             : null;
     }
 
     public function bannerUrl(): ?string
     {
         return $this->banner_path
-            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->banner_path)
+            ? Storage::disk('public')->url($this->banner_path)
             : null;
     }
 }
