@@ -11,4 +11,7 @@ return [
     'home' => 'Главная',
     'leaderboard' => 'Лидеры',
     'my_bets' => 'Мои ставки',
+    'feed' => 'Лента',
+    'create' => 'Создать',
+    'coming_soon' => 'Скоро',
 ];
