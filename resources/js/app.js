@@ -131,4 +131,92 @@ document.addEventListener('alpine:init', () => {
             this.amount = 0;
         },
     }));
+
+    window.Alpine.data('carousel', ({
+        perPageMobile = 2,
+        perPageDesktop = 4,
+        autoAdvance = false,
+        intervalMs = 6000,
+        total = 0,
+    } = {}) => ({
+        perPage: perPageMobile,
+        page: 0,
+        total: Number(total) || 0,
+        autoAdvance: !!autoAdvance,
+        intervalMs: Number(intervalMs) || 6000,
+        timer: null,
+        touchStartX: null,
+        mql: null,
+
+        init() {
+            this.mql = window.matchMedia('(min-width: 1024px)');
+            this.perPage = this.mql.matches ? perPageDesktop : perPageMobile;
+            this.mql.addEventListener('change', (e) => {
+                this.perPage = e.matches ? perPageDesktop : perPageMobile;
+                this.page = Math.min(this.page, this.pageCount - 1);
+            });
+            if (this.autoAdvance && this.pageCount > 1) {
+                this.startTimer();
+            }
+        },
+        destroy() {
+            this.stopTimer();
+        },
+        get pageCount() {
+            return Math.max(1, Math.ceil(this.total / this.perPage));
+        },
+        get isFirst() {
+            return this.page <= 0;
+        },
+        get isLast() {
+            return this.page >= this.pageCount - 1;
+        },
+        get trackStyle() {
+            return `transform: translateX(-${this.page * 100}%);`;
+        },
+        get slideStyle() {
+            return `flex: 0 0 ${100 / this.perPage}%; max-width: ${100 / this.perPage}%;`;
+        },
+        next() {
+            if (this.pageCount <= 1) return;
+            this.page = (this.page + 1) % this.pageCount;
+        },
+        prev() {
+            if (this.pageCount <= 1) return;
+            this.page = (this.page - 1 + this.pageCount) % this.pageCount;
+        },
+        goTo(page) {
+            this.page = Math.max(0, Math.min(page, this.pageCount - 1));
+        },
+        startTimer() {
+            this.stopTimer();
+            this.timer = setInterval(() => this.next(), this.intervalMs);
+        },
+        stopTimer() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+        onPause() {
+            if (this.autoAdvance) this.stopTimer();
+        },
+        onResume() {
+            if (this.autoAdvance && this.pageCount > 1) this.startTimer();
+        },
+        onTouchStart(e) {
+            this.touchStartX = e.touches?.[0]?.clientX ?? null;
+            this.onPause();
+        },
+        onTouchEnd(e) {
+            if (this.touchStartX === null) return;
+            const endX = e.changedTouches?.[0]?.clientX ?? this.touchStartX;
+            const dx = endX - this.touchStartX;
+            if (Math.abs(dx) > 50) {
+                if (dx < 0) this.next(); else this.prev();
+            }
+            this.touchStartX = null;
+            this.onResume();
+        },
+    }));
 });
