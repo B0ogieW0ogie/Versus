@@ -16,6 +16,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $opens_at
  * @property Carbon|null $closes_at
  * @property Carbon|null $settled_at
+ * @property-read int|string|null $side_a_weight
+ * @property-read int|string|null $side_b_weight
  */
 #[Fillable([
     'slug', 'title', 'description',
@@ -95,16 +97,66 @@ class Battle extends Model
     }
 
     /**
+     * Eager-loads per-side stake weight as `side_a_weight` / `side_b_weight`
+     * so `sidePercentages()` does not N+1 across tile lists.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeWithSideWeights(Builder $query): Builder
+    {
+        return $query->addSelect([
+            'side_a_weight' => Vote::query()
+                ->selectRaw('COALESCE(SUM(weight), 0)')
+                ->whereColumn('battle_id', 'battles.id')
+                ->where('side', self::SIDE_A),
+            'side_b_weight' => Vote::query()
+                ->selectRaw('COALESCE(SUM(weight), 0)')
+                ->whereColumn('battle_id', 'battles.id')
+                ->where('side', self::SIDE_B),
+        ]);
+    }
+
+    /**
      * @return Collection<int, self>
      */
     public static function sponsoredActive(): Collection
     {
         return self::query()
             ->active()
+            ->withSideWeights()
             ->where('is_sponsored', true)
             ->orderBy('closes_at')
             ->limit(10)
             ->get();
+    }
+
+    /**
+     * @return array{a: int, b: int}
+     */
+    public function sidePercentages(): array
+    {
+        $attrs = $this->getAttributes();
+        if (array_key_exists('side_a_weight', $attrs) || array_key_exists('side_b_weight', $attrs)) {
+            $a = (float) ($this->side_a_weight ?? 0);
+            $b = (float) ($this->side_b_weight ?? 0);
+        } else {
+            $byWeight = $this->votes()
+                ->selectRaw('side, SUM(weight) as w')
+                ->groupBy('side')
+                ->pluck('w', 'side');
+            $a = (float) ($byWeight[self::SIDE_A] ?? 0);
+            $b = (float) ($byWeight[self::SIDE_B] ?? 0);
+        }
+
+        $total = $a + $b;
+        if ($total <= 0.0) {
+            return ['a' => 50, 'b' => 50];
+        }
+
+        $pa = (int) round(($a / $total) * 100);
+
+        return ['a' => $pa, 'b' => 100 - $pa];
     }
 
     public function compactPool(): string

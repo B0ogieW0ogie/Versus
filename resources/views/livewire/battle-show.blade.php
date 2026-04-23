@@ -1,6 +1,7 @@
 <div class="bg-navy-900 text-white min-h-screen">
     @php
         $closesIso = optional($battle->closes_at)->toIso8601String();
+        $pcts = $battle->sidePercentages();
     @endphp
 
     <div class="max-w-7xl mx-auto px-4 py-8 grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -26,45 +27,49 @@
                         @endif
                     </header>
 
-                    <div class="mt-8 grid grid-cols-[1fr_auto_1fr] items-center gap-4 sm:gap-6">
-                        <figure class="flex flex-col items-center">
-                            <div class="relative w-full aspect-square max-w-[240px] overflow-hidden rounded-2xl ring-1 ring-blue-400/30 shadow-vote-blue">
-                                @if ($battle->side_a_image)
-                                    <img src="{{ $battle->side_a_image }}" alt="{{ $battle->side_a_label }}"
-                                         class="h-full w-full object-cover">
-                                @else
-                                    <div class="h-full w-full bg-gradient-to-br from-vote-blue-from to-vote-blue-to"></div>
-                                @endif
-                            </div>
-                            <figcaption class="mt-3 text-center">
-                                <p class="text-lg font-bold uppercase tracking-wide">{{ $battle->side_a_label }}</p>
-                                @if ($battle->side_a_subtitle)
-                                    <p class="text-xs text-white/60">{{ $battle->side_a_subtitle }}</p>
-                                @endif
-                            </figcaption>
-                        </figure>
-
-                        <div class="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full
-                                    bg-navy-700 text-sm sm:text-base font-bold tracking-wider shadow-vs-glow ring-1 ring-glow-cyan/40">
-                            {{ __('battle.vs') }}
+                    <div class="mt-8 relative overflow-hidden rounded-2xl aspect-[2/1] bg-navy-900">
+                        <div class="absolute inset-y-0 left-0 w-[55%] bg-navy-900"
+                             style="clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);">
+                            @if ($battle->side_a_image)
+                                <img src="{{ $battle->side_a_image }}" alt="{{ $battle->side_a_label }}"
+                                     class="h-full w-full object-cover">
+                            @else
+                                <div class="h-full w-full bg-gradient-to-br from-vote-blue-from to-vote-blue-to"></div>
+                            @endif
+                        </div>
+                        <div class="absolute inset-y-0 right-0 w-[55%] bg-navy-900"
+                             style="clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);">
+                            @if ($battle->side_b_image)
+                                <img src="{{ $battle->side_b_image }}" alt="{{ $battle->side_b_label }}"
+                                     class="h-full w-full object-cover">
+                            @else
+                                <div class="h-full w-full bg-gradient-to-br from-vote-purple-from to-vote-purple-to"></div>
+                            @endif
                         </div>
 
-                        <figure class="flex flex-col items-center">
-                            <div class="relative w-full aspect-square max-w-[240px] overflow-hidden rounded-2xl ring-1 ring-purple-400/30 shadow-vote-purple">
-                                @if ($battle->side_b_image)
-                                    <img src="{{ $battle->side_b_image }}" alt="{{ $battle->side_b_label }}"
-                                         class="h-full w-full object-cover">
-                                @else
-                                    <div class="h-full w-full bg-gradient-to-br from-vote-purple-from to-vote-purple-to"></div>
-                                @endif
-                            </div>
-                            <figcaption class="mt-3 text-center">
-                                <p class="text-lg font-bold uppercase tracking-wide">{{ $battle->side_b_label }}</p>
-                                @if ($battle->side_b_subtitle)
-                                    <p class="text-xs text-white/60">{{ $battle->side_b_subtitle }}</p>
-                                @endif
-                            </figcaption>
-                        </figure>
+                        <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none"></div>
+
+                        <div class="absolute bottom-4 left-5 max-w-[40%]">
+                            <p class="text-lg sm:text-xl font-bold uppercase tracking-wide text-white drop-shadow">{{ $battle->side_a_label }}</p>
+                            @if ($battle->side_a_subtitle)
+                                <p class="text-xs text-white/70 drop-shadow">{{ $battle->side_a_subtitle }}</p>
+                            @endif
+                        </div>
+                        <div class="absolute bottom-4 right-5 max-w-[40%] text-right">
+                            <p class="text-lg sm:text-xl font-bold uppercase tracking-wide text-white drop-shadow">{{ $battle->side_b_label }}</p>
+                            @if ($battle->side_b_subtitle)
+                                <p class="text-xs text-white/70 drop-shadow">{{ $battle->side_b_subtitle }}</p>
+                            @endif
+                        </div>
+
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3">
+                            <span class="text-base sm:text-lg font-bold text-white drop-shadow">{{ $pcts['a'] }}%</span>
+                            <span class="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full
+                                         bg-navy-700 text-sm sm:text-base font-bold tracking-wider shadow-vs-glow ring-1 ring-glow-cyan/40">
+                                {{ __('battle.vs') }}
+                            </span>
+                            <span class="text-base sm:text-lg font-bold text-white drop-shadow">{{ $pcts['b'] }}%</span>
+                        </div>
                     </div>
 
                     <p class="mt-8 text-center text-sm text-white/70">
