@@ -1,7 +1,9 @@
 <?php
 
 use App\Livewire\ProfilePage;
+use App\Models\Battle;
 use App\Models\User;
+use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -95,4 +97,64 @@ test('creation tab shows coming soon', function () {
     $this->actingAs($user)
         ->get('/profile?tab=creation')
         ->assertSee(__('profile.coming_soon'));
+});
+
+test('activity tab lists user votes with win/lose/active badges', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+
+    // One active battle with a vote from the user
+    $activeBattle = Battle::factory()->create([
+        'title' => 'Alpha vs Beta',
+        'status' => Battle::STATUS_ACTIVE,
+        'side_a_label' => 'Alpha',
+        'side_b_label' => 'Beta',
+    ]);
+    Vote::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $activeBattle->id,
+        'side' => Battle::SIDE_A,
+        'amount' => 500,
+        'payout' => null,
+    ]);
+
+    // One settled battle where the user won
+    $wonBattle = Battle::factory()->create([
+        'title' => 'Gamma vs Delta',
+        'status' => Battle::STATUS_SETTLED,
+        'winning_side' => Battle::SIDE_A,
+        'settled_at' => now(),
+        'side_a_label' => 'Gamma',
+        'side_b_label' => 'Delta',
+    ]);
+    Vote::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $wonBattle->id,
+        'side' => Battle::SIDE_A,
+        'amount' => 300,
+        'payout' => 800,
+    ]);
+
+    // Noise: a vote from another user must not appear
+    $noiseBattle = Battle::factory()->create(['title' => 'NOISE vs NOISE']);
+    Vote::factory()->create([
+        'user_id' => $other->id,
+        'battle_id' => $noiseBattle->id,
+    ]);
+
+    $response = $this->actingAs($user)->get('/profile?tab=activity');
+
+    $response->assertSee('Alpha vs Beta')
+        ->assertSee('Gamma vs Delta')
+        ->assertSee(__('profile.activity_badge_active'))
+        ->assertSee(__('profile.activity_badge_win'))
+        ->assertDontSee('NOISE vs NOISE');
+});
+
+test('activity tab shows empty state when user has no votes', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/profile?tab=activity')
+        ->assertSee(__('profile.activity_empty'));
 });
