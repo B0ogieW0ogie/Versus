@@ -47,6 +47,23 @@
             @endif
         </div>
 
+        <div class="mt-4">
+            <x-input-label for="username" :value="__('profile.username_label')" />
+            <x-text-input id="username" name="username" type="text"
+                          class="mt-1 block w-full"
+                          value="{{ old('username', $user->username) }}" />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('profile.username_help') }}</p>
+            <x-input-error class="mt-2" :messages="$errors->get('username')" />
+        </div>
+
+        <div class="mt-4">
+            <x-input-label for="bio" :value="__('profile.bio_label')" />
+            <textarea id="bio" name="bio" rows="3"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('bio', $user->bio) }}</textarea>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('profile.bio_help') }}</p>
+            <x-input-error class="mt-2" :messages="$errors->get('bio')" />
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>Сохранить</x-primary-button>
 
