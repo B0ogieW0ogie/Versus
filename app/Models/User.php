@@ -69,4 +69,18 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->is_admin === true;
     }
+
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path)
+            : null;
+    }
+
+    public function bannerUrl(): ?string
+    {
+        return $this->banner_path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->banner_path)
+            : null;
+    }
 }
