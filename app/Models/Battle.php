@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\BattleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -94,11 +95,11 @@ class Battle extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     * @return Collection<int, self>
      */
-    public static function sponsoredActive(): \Illuminate\Database\Eloquent\Collection
+    public static function sponsoredActive(): Collection
     {
-        return static::query()
+        return self::query()
             ->active()
             ->where('is_sponsored', true)
             ->orderBy('closes_at')

@@ -52,8 +52,9 @@ class HomePageSectionsTest extends TestCase
         Battle::factory()->create(['category_id' => $c2->id]);
 
         Livewire::test(BattleIndex::class)
-            ->assertViewHas('categoryRails', function ($rails) use ($c1, $c2) {
+            ->assertViewHas('categoryRails', function ($rails) {
                 $slugs = $rails->pluck('slug')->values()->all();
+
                 return $slugs === ['one', 'two'];
             });
     }
@@ -85,6 +86,7 @@ class HomePageSectionsTest extends TestCase
             ->assertViewHas('categoryRails', function ($rails) use ($sponsored, $regular) {
                 $rail = $rails->first();
                 $ids = $rail->battles->pluck('id')->all();
+
                 return in_array($regular->id, $ids, true)
                     && ! in_array($sponsored->id, $ids, true);
             });
