@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Battle;
+use App\Models\Comment;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -68,6 +69,7 @@ class ProfilePage extends Component
         return view('livewire.profile-page', [
             'user' => $user,
             'votes' => $this->loadVotes($user),
+            'comments' => $this->loadComments($user),
         ]);
     }
 
@@ -79,6 +81,18 @@ class ProfilePage extends Component
         return Vote::query()
             ->where('user_id', $user->id)
             ->with(['battle:id,title,slug,status,side_a_label,side_b_label,winning_side,total_pool,closes_at,settled_at'])
+            ->latest()
+            ->paginate(20);
+    }
+
+    /**
+     * @return LengthAwarePaginator<int, Comment>
+     */
+    private function loadComments(User $user): LengthAwarePaginator
+    {
+        return Comment::query()
+            ->where('user_id', $user->id)
+            ->with(['battle:id,slug,title'])
             ->latest()
             ->paginate(20);
     }

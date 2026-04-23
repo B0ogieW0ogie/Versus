@@ -2,6 +2,7 @@
 
 use App\Livewire\ProfilePage;
 use App\Models\Battle;
+use App\Models\Comment;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -157,4 +158,36 @@ test('activity tab shows empty state when user has no votes', function () {
     $this->actingAs($user)
         ->get('/profile?tab=activity')
         ->assertSee(__('profile.activity_empty'));
+});
+
+test('comments tab lists user comments with battle link', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+
+    $battle = Battle::factory()->create(['title' => 'Pepsi vs Coke']);
+
+    Comment::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $battle->id,
+        'body' => 'My hot take',
+    ]);
+    Comment::factory()->create([
+        'user_id' => $other->id,
+        'battle_id' => $battle->id,
+        'body' => 'Someone else',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/profile?tab=comments')
+        ->assertSee('My hot take')
+        ->assertSee('Pepsi vs Coke')
+        ->assertDontSee('Someone else');
+});
+
+test('comments tab shows empty state', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/profile?tab=comments')
+        ->assertSee(__('profile.comments_empty'));
 });
