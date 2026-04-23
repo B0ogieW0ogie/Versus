@@ -28,3 +28,37 @@ test('authenticated user sees the profile page at /profile', function () {
         ->assertOk()
         ->assertSee('Alice');
 });
+
+test('shows user name, handle, bio and hardcoded stats', function () {
+    $user = User::factory()->create([
+        'name' => 'Vlad Basargin',
+        'username' => 'vladbasargin',
+        'bio' => 'Люблю спорить о футболе',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertSee('Vlad Basargin')
+        ->assertSee('@vladbasargin')
+        ->assertSee('Architect of Reality')
+        ->assertSee('Люблю спорить о футболе', escape: false)
+        ->assertSee('352')
+        ->assertSee('128')
+        ->assertSee('2,450');
+});
+
+test('falls back to @user{id} when username is null', function () {
+    $user = User::factory()->create(['username' => null]);
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertSee('@user'.$user->id);
+});
+
+test('edit button links to profile settings route', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertSee(route('profile.settings'), escape: false);
+});
