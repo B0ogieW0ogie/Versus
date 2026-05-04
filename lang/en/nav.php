@@ -2,6 +2,7 @@
 
 return [
     'battles' => 'Battles',
+    'create_battle' => 'Create battle',
     'balance' => 'Balance',
     'login' => 'Sign in',
     'register' => 'Register',

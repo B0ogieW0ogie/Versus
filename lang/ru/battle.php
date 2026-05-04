@@ -44,4 +44,8 @@ return [
     'status_draft' => 'черновик',
     'status_closed' => 'закрыт',
     'status_settled' => 'завершён',
+
+    'create_title' => 'Создать батл',
+    'create_placeholder' => 'Здесь появится форма создания батла пользователем, включая стоимость в токенах.',
+    'back_to_battles' => '← К баттлам',
 ];

@@ -12,9 +12,15 @@
 
                 <div class="hidden sm:flex items-center gap-6 text-sm">
                     <a href="{{ route('home') }}"
-                       class="transition {{ request()->routeIs('battles.*') || request()->routeIs('home') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                       class="transition {{ (request()->routeIs('battles.*') || request()->routeIs('home')) && ! request()->routeIs('battles.create') ? 'text-white' : 'text-white/60 hover:text-white' }}">
                         {{ __('nav.battles') }}
                     </a>
+                    @auth
+                        <a href="{{ route('battles.create') }}"
+                           class="transition {{ request()->routeIs('battles.create') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                            {{ __('nav.create_battle') }}
+                        </a>
+                    @endauth
                 </div>
             </div>
 

@@ -2,6 +2,7 @@
 
 return [
     'battles' => 'Баттлы',
+    'create_battle' => 'Создать батл',
     'balance' => 'Баланс',
     'login' => 'Вход',
     'register' => 'Регистрация',

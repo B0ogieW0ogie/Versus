@@ -44,4 +44,8 @@ return [
     'status_draft' => 'draft',
     'status_closed' => 'closed',
     'status_settled' => 'settled',
+
+    'create_title' => 'Create a battle',
+    'create_placeholder' => 'The form for user-created battles (including token cost) will appear here.',
+    'back_to_battles' => '← Back to battles',
 ];
