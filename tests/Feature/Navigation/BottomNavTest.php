@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Navigation;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,12 +21,39 @@ class BottomNavTest extends TestCase
         $response->assertSee(__('nav.profile'), false);
     }
 
-    public function test_feed_and_create_tabs_are_disabled_placeholders(): void
+    public function test_feed_tab_is_disabled_placeholder(): void
     {
         $html = $this->get(route('home'))->assertOk()->getContent();
 
-        // Both placeholders expose aria-disabled="true" so screen readers skip them.
-        $this->assertStringContainsString('aria-disabled="true"', $html);
+        $this->assertSame(1, substr_count($html, 'aria-disabled="true"'));
+    }
+
+    public function test_create_fab_links_guest_to_login(): void
+    {
+        $html = $this->get(route('home'))->assertOk()->getContent();
+
+        $login = preg_quote(route('login'), '#');
+        $this->assertMatchesRegularExpression(
+            '#<a href="'.$login.'"\s+class="-mt-7 h-14 w-14#',
+            $html
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '#<a href="'.preg_quote(route('battles.create'), '#').'"\s+class="-mt-7 h-14 w-14#',
+            $html
+        );
+    }
+
+    public function test_create_fab_links_authenticated_user_to_battles_create(): void
+    {
+        $user = User::factory()->create();
+
+        $html = $this->actingAs($user)->get(route('home'))->assertOk()->getContent();
+
+        $create = preg_quote(route('battles.create'), '#');
+        $this->assertMatchesRegularExpression(
+            '#<a href="'.$create.'"\s+class="-mt-7 h-14 w-14#',
+            $html
+        );
     }
 
     public function test_my_bets_tab_is_not_in_bottom_nav(): void
