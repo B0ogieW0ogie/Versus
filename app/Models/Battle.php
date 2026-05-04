@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $opens_at
  * @property Carbon|null $closes_at
  * @property Carbon|null $settled_at
+ * @property Carbon|null $ai_screened_at
  */
 #[Fillable([
     'slug', 'title', 'description',
@@ -23,7 +24,7 @@ use Illuminate\Support\Carbon;
     'side_a_image', 'side_b_image',
     'status', 'opens_at', 'closes_at', 'winning_side',
     'total_pool', 'created_by_id', 'settled_at', 'category_id',
-    'is_sponsored', 'sponsor_handle',
+    'is_sponsored', 'sponsor_handle', 'ai_screened_at',
 ])]
 class Battle extends Model
 {
@@ -48,6 +49,7 @@ class Battle extends Model
             'opens_at' => 'datetime',
             'closes_at' => 'datetime',
             'settled_at' => 'datetime',
+            'ai_screened_at' => 'datetime',
             'total_pool' => 'decimal:2',
             'is_sponsored' => 'boolean',
         ];
