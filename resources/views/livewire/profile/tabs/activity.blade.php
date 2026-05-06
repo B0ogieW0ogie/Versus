@@ -31,12 +31,15 @@
                             </div>
 
                             <div class="text-center">
-                                <div class="relative text-sm font-bold uppercase tracking-wide h-5">
-                                    <span class="absolute left-1/2 -translate-x-1/2 text-vote-purple-to tracking-widest">VS</span>
+                                <div class="flex items-center justify-center text-sm font-bold uppercase tracking-wide leading-none">
                                     @if ($selectedSide === \App\Models\Battle::SIDE_A)
-                                        <span class="absolute right-1/2 mr-4 {{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">◀ {{ __('profile.activity_badge_' . $status) }}</span>
+                                        <span class="w-20 text-right {{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">◀ {{ __('profile.activity_badge_' . $status) }}</span>
+                                        <span class="mx-2 text-vote-purple-to tracking-widest">VS</span>
+                                        <span class="w-20"></span>
                                     @else
-                                        <span class="absolute left-1/2 ml-4 {{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">{{ __('profile.activity_badge_' . $status) }} ▶</span>
+                                        <span class="w-20"></span>
+                                        <span class="mx-2 text-vote-purple-to tracking-widest">VS</span>
+                                        <span class="w-20 text-left {{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">{{ __('profile.activity_badge_' . $status) }} ▶</span>
                                     @endif
                                 </div>
                                 <div class="mt-1 text-xs text-white/70">
