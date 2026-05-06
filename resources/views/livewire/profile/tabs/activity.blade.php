@@ -31,15 +31,13 @@
                             </div>
 
                             <div class="text-center">
-                                <div class="text-sm font-bold uppercase tracking-wide leading-tight">
+                                <div class="relative text-sm font-bold uppercase tracking-wide h-5">
+                                    <span class="absolute left-1/2 -translate-x-1/2 text-vote-purple-to tracking-widest">VS</span>
                                     @if ($selectedSide === \App\Models\Battle::SIDE_A)
-                                        <span class="{{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">◀ {{ __('profile.activity_badge_' . $status) }}</span>
+                                        <span class="absolute right-1/2 mr-4 {{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">◀ {{ __('profile.activity_badge_' . $status) }}</span>
                                     @else
-                                        <span class="{{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">{{ __('profile.activity_badge_' . $status) }} ▶</span>
+                                        <span class="absolute left-1/2 ml-4 {{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">{{ __('profile.activity_badge_' . $status) }} ▶</span>
                                     @endif
-                                </div>
-                                <div class="text-sm font-bold uppercase tracking-widest text-vote-purple-to leading-tight">
-                                    VS
                                 </div>
                                 <div class="mt-1 text-xs text-white/70">
                                     {{ number_format($selectedStake, 0) }} {{ __('profile.activity_vrs') }}

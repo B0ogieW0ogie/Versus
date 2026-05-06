@@ -104,7 +104,19 @@ class ProfilePage extends Component
     private function loadVotes(User $user): LengthAwarePaginator
     {
         return Battle::query()
-            ->select(['id', 'title', 'slug', 'status', 'side_a_label', 'side_b_label', 'winning_side', 'closes_at', 'settled_at'])
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'status',
+                'side_a_label',
+                'side_b_label',
+                'side_a_image',
+                'side_b_image',
+                'winning_side',
+                'closes_at',
+                'settled_at',
+            ])
             ->whereHas('votes', function (Builder $query) use ($user): void {
                 $query->where('user_id', $user->id);
             })
