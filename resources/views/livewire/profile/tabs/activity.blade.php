@@ -22,19 +22,24 @@
                        class="block rounded-xl border border-white/5 bg-white/[0.03] p-3">
                         <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                             <div class="flex items-center gap-2 min-w-0">
-                                <div class="h-10 w-6 rounded-md bg-white/5"></div>
+                                <div class="h-10 w-8 rounded-md bg-white/5 overflow-hidden flex-shrink-0">
+                                    @if ($battle->side_a_image)
+                                        <img src="{{ $battle->side_a_image }}" alt="{{ $battle->side_a_label }}" class="h-full w-full object-cover">
+                                    @endif
+                                </div>
                                 <div class="truncate text-base font-semibold text-white/90">{{ $battle->side_a_label }}</div>
                             </div>
 
                             <div class="text-center">
-                                <div class="text-sm font-bold uppercase tracking-wide">
+                                <div class="text-sm font-bold uppercase tracking-wide leading-tight">
                                     @if ($selectedSide === \App\Models\Battle::SIDE_A)
                                         <span class="{{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">◀ {{ __('profile.activity_badge_' . $status) }}</span>
-                                        <span class="text-vote-purple-to">VS</span>
                                     @else
-                                        <span class="text-vote-purple-to">VS</span>
                                         <span class="{{ $status === 'win' ? 'text-green-300' : ($status === 'lose' ? 'text-red-300' : 'text-glow-cyan') }}">{{ __('profile.activity_badge_' . $status) }} ▶</span>
                                     @endif
+                                </div>
+                                <div class="text-sm font-bold uppercase tracking-widest text-vote-purple-to leading-tight">
+                                    VS
                                 </div>
                                 <div class="mt-1 text-xs text-white/70">
                                     {{ number_format($selectedStake, 0) }} {{ __('profile.activity_vrs') }}
@@ -43,7 +48,11 @@
 
                             <div class="flex items-center justify-end gap-2 min-w-0">
                                 <div class="truncate text-base font-semibold text-white/90">{{ $battle->side_b_label }}</div>
-                                <div class="h-10 w-6 rounded-md bg-white/5"></div>
+                                <div class="h-10 w-8 rounded-md bg-white/5 overflow-hidden flex-shrink-0">
+                                    @if ($battle->side_b_image)
+                                        <img src="{{ $battle->side_b_image }}" alt="{{ $battle->side_b_label }}" class="h-full w-full object-cover">
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </a>
