@@ -30,7 +30,7 @@
         </div>
     </header>
 
-    <div class="max-w-2xl mx-auto">
+    <div class="px-3 lg:max-w-7xl lg:mx-auto lg:px-6">
         {{-- Banner --}}
         <div class="aspect-[16/7] bg-white/5 flex items-center justify-center overflow-hidden">
             @if ($user->bannerUrl())
@@ -41,7 +41,7 @@
         </div>
 
         {{-- Header row: avatar + stats + edit --}}
-        <div class="px-4 -mt-12 flex items-end gap-4">
+        <div class="-mt-12 flex items-end gap-4">
             <div class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
                 @if ($user->avatarUrl())
                     <img src="{{ $user->avatarUrl() }}" alt="" class="w-full h-full object-cover">
@@ -72,14 +72,14 @@
         </div>
 
         {{-- RP --}}
-        <div class="px-4 mt-2 flex items-center gap-1.5 text-sm text-white/70">
+        <div class="mt-2 flex items-center gap-1.5 text-sm text-white/70">
             <x-icon.trophy class="h-4 w-4" />
             <span class="font-semibold text-white">2,450</span>
             <span>{{ __('profile.rp_suffix') }}</span>
         </div>
 
         {{-- Name + handle + title --}}
-        <div class="px-4 mt-3">
+        <div class="mt-3">
             <h2 class="text-2xl font-bold text-white">{{ $user->name }}</h2>
             <div class="mt-0.5 text-sm text-white/60 flex flex-wrap gap-x-2 items-center">
                 <span>{{ $handle }}</span>
@@ -90,11 +90,11 @@
 
         {{-- Bio --}}
         @if ($user->bio)
-            <p class="px-4 mt-2 text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
+            <p class="mt-2 text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
         @endif
 
         {{-- Tab bar --}}
-        <div class="mt-4 px-4 flex items-end gap-4 border-b border-white/5">
+        <div class="mt-4 flex items-end gap-4 border-b border-white/5">
             @foreach (['activity', 'creation', 'comments', 'referrals'] as $key)
                 <button type="button"
                         wire:click="selectTab('{{ $key }}')"
