@@ -101,7 +101,7 @@ test('creation tab shows coming soon', function () {
         ->assertSee(__('profile.coming_soon'));
 });
 
-test('activity tab lists user votes with win/lose/active badges', function () {
+test('activity tab lists user battles with win/lose/active badges', function () {
     $user = User::factory()->create();
     $other = User::factory()->create();
 
@@ -146,11 +146,71 @@ test('activity tab lists user votes with win/lose/active badges', function () {
 
     $response = $this->actingAs($user)->get('/profile?tab=activity');
 
-    $response->assertSee('Alpha vs Beta')
-        ->assertSee('Gamma vs Delta')
+    $response->assertSee('Alpha')
+        ->assertSee('Beta')
+        ->assertSee('Gamma')
+        ->assertSee('Delta')
         ->assertSee(__('profile.activity_badge_active'))
         ->assertSee(__('profile.activity_badge_win'))
         ->assertDontSee('NOISE vs NOISE');
+});
+
+test('activity tab aggregates votes per battle and shows selected-side stake', function () {
+    $user = User::factory()->create();
+
+    $activeBattle = Battle::factory()->create([
+        'title' => 'BTC vs Stocks',
+        'status' => Battle::STATUS_ACTIVE,
+        'side_a_label' => 'BTC',
+        'side_b_label' => 'Stocks',
+    ]);
+    Vote::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $activeBattle->id,
+        'side' => Battle::SIDE_A,
+        'amount' => 700,
+    ]);
+    Vote::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $activeBattle->id,
+        'side' => Battle::SIDE_B,
+        'amount' => 300,
+    ]);
+
+    $settledBattle = Battle::factory()->create([
+        'title' => 'Max Carter vs Jake Lewis',
+        'status' => Battle::STATUS_SETTLED,
+        'winning_side' => Battle::SIDE_A,
+        'settled_at' => now()->subHours(3),
+        'side_a_label' => 'Max Carter',
+        'side_b_label' => 'Jake Lewis',
+    ]);
+    Vote::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $settledBattle->id,
+        'side' => Battle::SIDE_A,
+        'amount' => 500,
+    ]);
+    Vote::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $settledBattle->id,
+        'side' => Battle::SIDE_B,
+        'amount' => 500,
+    ]);
+
+    $response = $this->actingAs($user)->get('/profile?tab=activity');
+
+    $response->assertSee('BTC')
+        ->assertSee('Stocks')
+        ->assertSee(__('profile.activity_badge_active'))
+        ->assertSee('Max Carter')
+        ->assertSee('Jake Lewis')
+        ->assertSee(__('profile.activity_badge_lose'))
+        ->assertSee('500 '.__('profile.activity_vrs'))
+        ->assertSee('3h ago');
+
+    expect(substr_count($response->getContent(), 'Max Carter'))->toBe(1)
+        ->and(substr_count($response->getContent(), 'Jake Lewis'))->toBe(1);
 });
 
 test('activity tab shows empty state when user has no votes', function () {

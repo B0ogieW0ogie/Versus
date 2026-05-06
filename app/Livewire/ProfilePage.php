@@ -6,10 +6,10 @@ use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\Transaction;
 use App\Models\User;
-use App\Models\Vote;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -38,10 +38,8 @@ class ProfilePage extends Component
         $this->resetPage();
     }
 
-    public function statusFor(Vote $vote): string
+    public function statusFor(Battle $battle): string
     {
-        $battle = $vote->battle;
-
         if ($battle->status === Battle::STATUS_ACTIVE) {
             return 'active';
         }
@@ -50,16 +48,38 @@ class ProfilePage extends Component
             return 'refund';
         }
 
-        return $vote->side === $battle->winning_side ? 'win' : 'lose';
+        return $this->selectedSideFor($battle) === $battle->winning_side ? 'win' : 'lose';
     }
 
-    public function netAmountFor(Vote $vote): float
+    public function selectedSideFor(Battle $battle): string
     {
-        return match ($this->statusFor($vote)) {
-            'win', 'refund' => (float) ($vote->payout ?? 0),
-            'lose' => -(float) $vote->amount,
-            default => 0.0,
-        };
+        $sumA = (float) ($battle->user_side_a_stake ?? 0);
+        $sumB = (float) ($battle->user_side_b_stake ?? 0);
+
+        if ($sumA > $sumB) {
+            return Battle::SIDE_A;
+        }
+
+        if ($sumB > $sumA) {
+            return Battle::SIDE_B;
+        }
+
+        if ($battle->winning_side === Battle::SIDE_A) {
+            return Battle::SIDE_B;
+        }
+
+        if ($battle->winning_side === Battle::SIDE_B) {
+            return Battle::SIDE_A;
+        }
+
+        return Battle::SIDE_A;
+    }
+
+    public function selectedStakeFor(Battle $battle): float
+    {
+        return $this->selectedSideFor($battle) === Battle::SIDE_A
+            ? (float) ($battle->user_side_a_stake ?? 0)
+            : (float) ($battle->user_side_b_stake ?? 0);
     }
 
     #[Layout('layouts.app')]
@@ -79,14 +99,28 @@ class ProfilePage extends Component
     }
 
     /**
-     * @return LengthAwarePaginator<int, Vote>
+     * @return LengthAwarePaginator<int, Battle>
      */
     private function loadVotes(User $user): LengthAwarePaginator
     {
-        return Vote::query()
-            ->where('user_id', $user->id)
-            ->with(['battle:id,title,slug,status,side_a_label,side_b_label,winning_side,total_pool,closes_at,settled_at'])
-            ->latest()
+        return Battle::query()
+            ->select(['id', 'title', 'slug', 'status', 'side_a_label', 'side_b_label', 'winning_side', 'closes_at', 'settled_at'])
+            ->whereHas('votes', function (Builder $query) use ($user): void {
+                $query->where('user_id', $user->id);
+            })
+            ->withSum(['votes as user_total_stake' => function (Builder $query) use ($user): void {
+                $query->where('user_id', $user->id);
+            }], 'amount')
+            ->withSum(['votes as user_side_a_stake' => function (Builder $query) use ($user): void {
+                $query->where('user_id', $user->id)->where('side', Battle::SIDE_A);
+            }], 'amount')
+            ->withSum(['votes as user_side_b_stake' => function (Builder $query) use ($user): void {
+                $query->where('user_id', $user->id)->where('side', Battle::SIDE_B);
+            }], 'amount')
+            ->withMax(['votes as user_last_voted_at' => function (Builder $query) use ($user): void {
+                $query->where('user_id', $user->id);
+            }], 'created_at')
+            ->orderByDesc('user_last_voted_at')
             ->paginate(20);
     }
 
