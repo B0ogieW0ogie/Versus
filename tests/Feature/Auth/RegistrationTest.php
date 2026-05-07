@@ -22,7 +22,6 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register(): void
     {
         $response = $this->post('/register', [
-            'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -35,7 +34,6 @@ class RegistrationTest extends TestCase
     public function test_new_user_receives_signup_bonus_and_referral_code(): void
     {
         $this->post('/register', [
-            'name' => 'Bonus User',
             'email' => 'bonus@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -63,7 +61,6 @@ class RegistrationTest extends TestCase
 
         $response = $this->withCookie(CaptureReferralCode::COOKIE, $referrer->referral_code)
             ->post('/register', [
-                'name' => 'Referee User',
                 'email' => 'referee@example.com',
                 'password' => 'password',
                 'password_confirmation' => 'password',
@@ -79,7 +76,6 @@ class RegistrationTest extends TestCase
     {
         $this->withCookie(CaptureReferralCode::COOKIE, 'NOPE1234')
             ->post('/register', [
-                'name' => 'Orphan User',
                 'email' => 'orphan@example.com',
                 'password' => 'password',
                 'password_confirmation' => 'password',
@@ -100,7 +96,6 @@ class RegistrationTest extends TestCase
     public function test_empty_fields_show_unified_error_message(): void
     {
         $response = $this->from('/register')->post('/register', [
-            'name' => '',
             'email' => '',
             'password' => '',
             'password_confirmation' => '',
@@ -108,7 +103,6 @@ class RegistrationTest extends TestCase
 
         $response->assertRedirect('/register');
         $response->assertSessionHasErrors([
-            'name' => 'Заполните все поля',
             'email' => 'Заполните все поля',
             'password' => 'Заполните все поля',
         ]);
@@ -118,7 +112,6 @@ class RegistrationTest extends TestCase
     public function test_invalid_email_format_is_rejected(): void
     {
         $response = $this->from('/register')->post('/register', [
-            'name' => 'Test User',
             'email' => 'not-an-email',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -135,7 +128,6 @@ class RegistrationTest extends TestCase
     public function test_password_must_be_at_least_eight_characters(): void
     {
         $response = $this->from('/register')->post('/register', [
-            'name' => 'Test User',
             'email' => 'shortpw@example.com',
             'password' => 'short',
             'password_confirmation' => 'short',
@@ -147,5 +139,31 @@ class RegistrationTest extends TestCase
 
         $errors = session('errors')->getBag('default');
         $this->assertNotSame('Заполните все поля', $errors->first('password'));
+    }
+
+    public function test_registration_form_prefills_referral_code_from_cookie(): void
+    {
+        $response = $this->withCookie(CaptureReferralCode::COOKIE, 'ABCD1234')
+            ->get('/register');
+
+        $response->assertOk();
+        $response->assertSee('name="referral_code"', false);
+        $response->assertSee('value="ABCD1234"', false);
+    }
+
+    public function test_manual_referral_code_is_used_when_submitted(): void
+    {
+        $referrer = User::factory()->create();
+
+        $this->post('/register', [
+            'email' => 'manual-ref@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'referral_code' => $referrer->referral_code,
+        ]);
+
+        $referee = User::where('email', 'manual-ref@example.com')->firstOrFail();
+
+        $this->assertSame($referrer->id, $referee->referred_by_id);
     }
 }
