@@ -106,4 +106,34 @@ class GoogleAuthenticationTest extends TestCase
         ]);
         $response->assertRedirect(route('dashboard', absolute: false));
     }
+
+    public function test_google_callback_marks_existing_google_user_email_as_verified(): void
+    {
+        $existingUser = User::factory()->create([
+            'email' => 'google-linked@example.com',
+            'google_id' => 'google-linked-123',
+            'email_verified_at' => null,
+        ]);
+
+        $socialiteUser = Mockery::mock(SocialiteUser::class);
+        $socialiteUser->shouldReceive('getId')->andReturn('google-linked-123');
+        $socialiteUser->shouldReceive('getEmail')->andReturn('google-linked@example.com');
+        $socialiteUser->shouldReceive('getName')->andReturn('Google Linked');
+
+        $provider = Mockery::mock(Provider::class);
+        $provider->shouldReceive('user')->once()->andReturn($socialiteUser);
+
+        Socialite::shouldReceive('driver')
+            ->once()
+            ->with('google')
+            ->andReturn($provider);
+
+        $response = $this->get(route('google.callback'));
+
+        $existingUser->refresh();
+
+        $this->assertAuthenticatedAs($existingUser);
+        $this->assertNotNull($existingUser->email_verified_at);
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
 }

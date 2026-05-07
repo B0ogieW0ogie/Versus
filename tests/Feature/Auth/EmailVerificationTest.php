@@ -20,6 +20,8 @@ class EmailVerificationTest extends TestCase
         $response = $this->actingAs($user)->get('/verify-email');
 
         $response->assertStatus(200);
+        $response->assertSee('Подтвердите email. Мы отправили письмо на '.$user->email.'.');
+        $response->assertSee('Отправить повторно');
     }
 
     public function test_email_can_be_verified(): void

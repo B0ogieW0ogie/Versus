@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        Спасибо за регистрацию! Пожалуйста, подтвердите свой email, перейдя по ссылке, которую мы только что отправили. Если письмо не пришло, мы с радостью отправим его снова.
+        Подтвердите email. Мы отправили письмо на {{ auth()->user()?->email }}.
     </div>
 
     @if (session('status') == 'verification-link-sent')
@@ -15,7 +15,7 @@
 
             <div>
                 <x-primary-button>
-                    Отправить письмо повторно
+                    Отправить повторно
                 </x-primary-button>
             </div>
         </form>

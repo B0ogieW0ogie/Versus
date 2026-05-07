@@ -75,6 +75,12 @@ class GoogleAuthController extends Controller
             }
         }
 
+        if ($user->email_verified_at === null) {
+            $user->forceFill([
+                'email_verified_at' => now(),
+            ])->save();
+        }
+
         Auth::login($user, remember: true);
 
         $response = redirect(route('dashboard', absolute: false));

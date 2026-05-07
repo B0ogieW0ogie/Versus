@@ -6,6 +6,8 @@ use App\Http\Middleware\CaptureReferralCode;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -23,14 +25,19 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        Notification::fake();
+
         $response = $this->post('/register', [
             'email' => 'test@example.com',
             'password' => self::VALID_PASSWORD,
             'password_confirmation' => self::VALID_PASSWORD,
         ]);
 
+        $user = User::where('email', 'test@example.com')->firstOrFail();
+
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('verification.notice', absolute: false));
+        Notification::assertSentTo($user, VerifyEmail::class);
     }
 
     public function test_new_user_receives_signup_bonus_and_referral_code(): void
