@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -14,9 +16,20 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.login');
+        $email = Str::lower(trim((string) old('email')));
+        $throttleKey = Str::transliterate($email.'|'.$request->ip());
+        $isRateLimited = $email !== ''
+            && RateLimiter::tooManyAttempts($throttleKey, LoginRequest::MAX_ATTEMPTS);
+        $secondsUntilUnlock = $isRateLimited
+            ? RateLimiter::availableIn($throttleKey)
+            : 0;
+
+        return view('auth.login', [
+            'isRateLimited' => $isRateLimited,
+            'secondsUntilUnlock' => $secondsUntilUnlock,
+        ]);
     }
 
     /**

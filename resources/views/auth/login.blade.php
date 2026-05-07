@@ -1,4 +1,11 @@
 <x-guest-layout>
+    @php
+        /** @var bool $isRateLimited */
+        $isRateLimited = $isRateLimited ?? false;
+        /** @var int $secondsUntilUnlock */
+        $secondsUntilUnlock = $secondsUntilUnlock ?? 0;
+    @endphp
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -37,9 +44,32 @@
                 </a>
             </div>
 
-            <x-primary-button>
-                Войти
-            </x-primary-button>
+            @if ($isRateLimited)
+                <p class="text-sm font-medium text-red-600 dark:text-red-400">
+                    {{ \App\Http\Requests\Auth\LoginRequest::LOCKOUT_MESSAGE }}
+                </p>
+                <p
+                    id="lockout-timer"
+                    data-seconds="{{ $secondsUntilUnlock }}"
+                    class="text-sm text-gray-600 dark:text-gray-300"
+                >
+                    Попробуйте снова через {{ sprintf('%02d:%02d', intdiv($secondsUntilUnlock, 60), $secondsUntilUnlock % 60) }}
+                </p>
+            @endif
+
+            @if ($isRateLimited)
+                <button
+                    type="submit"
+                    disabled
+                    class="inline-flex items-center rounded-md bg-gray-400 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white opacity-70 cursor-not-allowed dark:bg-gray-600"
+                >
+                    Войти
+                </button>
+            @else
+                <x-primary-button>
+                    Войти
+                </x-primary-button>
+            @endif
 
             @if (Route::has('google.redirect'))
                 <a
@@ -59,4 +89,37 @@
             @endif
         </div>
     </form>
+
+    @if ($isRateLimited)
+        <script>
+            (() => {
+                const timer = document.getElementById('lockout-timer');
+
+                if (!timer) {
+                    return;
+                }
+
+                let seconds = Number.parseInt(timer.dataset.seconds ?? '0', 10);
+
+                const render = () => {
+                    const safeSeconds = Math.max(seconds, 0);
+                    const minutes = Math.floor(safeSeconds / 60).toString().padStart(2, '0');
+                    const secs = (safeSeconds % 60).toString().padStart(2, '0');
+                    timer.textContent = `Попробуйте снова через ${minutes}:${secs}`;
+                };
+
+                render();
+
+                const interval = window.setInterval(() => {
+                    seconds -= 1;
+                    render();
+
+                    if (seconds <= 0) {
+                        window.clearInterval(interval);
+                        window.location.reload();
+                    }
+                }, 1000);
+            })();
+        </script>
+    @endif
 </x-guest-layout>
