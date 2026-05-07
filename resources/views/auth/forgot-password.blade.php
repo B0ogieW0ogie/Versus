@@ -1,6 +1,6 @@
 <x-guest-layout>
     <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        Забыли пароль? Не проблема. Укажите свой email, и мы отправим вам ссылку для сброса пароля.
+        Забыли пароль? Не проблема. Укажите свой email, и мы отправим вам ссылку для сброса пароля. Ссылка действительна 1 час.
     </div>
 
     <!-- Session Status -->
@@ -18,7 +18,7 @@
 
         <div class="flex items-center justify-end mt-4">
             <x-primary-button>
-                Отправить ссылку для сброса
+                Отправить ссылку
             </x-primary-button>
         </div>
     </form>
