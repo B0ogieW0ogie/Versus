@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
     {
         $validated = $request->validate([
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->mixedCase()->numbers()->symbols()],
             'referral_code' => ['nullable', 'string', 'regex:/^[A-Z0-9]{4,16}$/'],
         ], [
             'email.required' => 'Заполните все поля',

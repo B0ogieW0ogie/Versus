@@ -12,6 +12,8 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const VALID_PASSWORD = 'StrongPass1!';
+
     public function test_registration_screen_can_be_rendered(): void
     {
         $response = $this->get('/register');
@@ -23,8 +25,8 @@ class RegistrationTest extends TestCase
     {
         $response = $this->post('/register', [
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => self::VALID_PASSWORD,
+            'password_confirmation' => self::VALID_PASSWORD,
         ]);
 
         $this->assertAuthenticated();
@@ -35,8 +37,8 @@ class RegistrationTest extends TestCase
     {
         $this->post('/register', [
             'email' => 'bonus@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => self::VALID_PASSWORD,
+            'password_confirmation' => self::VALID_PASSWORD,
         ]);
 
         $user = User::where('email', 'bonus@example.com')->firstOrFail();
@@ -62,8 +64,8 @@ class RegistrationTest extends TestCase
         $response = $this->withCookie(CaptureReferralCode::COOKIE, $referrer->referral_code)
             ->post('/register', [
                 'email' => 'referee@example.com',
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => self::VALID_PASSWORD,
+                'password_confirmation' => self::VALID_PASSWORD,
             ]);
 
         $referee = User::where('email', 'referee@example.com')->firstOrFail();
@@ -77,8 +79,8 @@ class RegistrationTest extends TestCase
         $this->withCookie(CaptureReferralCode::COOKIE, 'NOPE1234')
             ->post('/register', [
                 'email' => 'orphan@example.com',
-                'password' => 'password',
-                'password_confirmation' => 'password',
+                'password' => self::VALID_PASSWORD,
+                'password_confirmation' => self::VALID_PASSWORD,
             ]);
 
         $user = User::where('email', 'orphan@example.com')->firstOrFail();
@@ -113,8 +115,8 @@ class RegistrationTest extends TestCase
     {
         $response = $this->from('/register')->post('/register', [
             'email' => 'not-an-email',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => self::VALID_PASSWORD,
+            'password_confirmation' => self::VALID_PASSWORD,
         ]);
 
         $response->assertRedirect('/register');
@@ -157,13 +159,54 @@ class RegistrationTest extends TestCase
 
         $this->post('/register', [
             'email' => 'manual-ref@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => self::VALID_PASSWORD,
+            'password_confirmation' => self::VALID_PASSWORD,
             'referral_code' => $referrer->referral_code,
         ]);
 
         $referee = User::where('email', 'manual-ref@example.com')->firstOrFail();
 
         $this->assertSame($referrer->id, $referee->referred_by_id);
+    }
+
+    public function test_password_must_contain_uppercase_number_and_symbol(): void
+    {
+        $response = $this->from('/register')->post('/register', [
+            'email' => 'weak-password@example.com',
+            'password' => 'lowercaseonly',
+            'password_confirmation' => 'lowercaseonly',
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors('password');
+        $this->assertGuest();
+    }
+
+    public function test_password_confirmation_must_match(): void
+    {
+        $response = $this->from('/register')->post('/register', [
+            'email' => 'mismatch@example.com',
+            'password' => self::VALID_PASSWORD,
+            'password_confirmation' => 'OtherPass1!',
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors('password');
+        $this->assertGuest();
+    }
+
+    public function test_email_must_be_unique(): void
+    {
+        User::factory()->create(['email' => 'duplicate@example.com']);
+
+        $response = $this->from('/register')->post('/register', [
+            'email' => 'duplicate@example.com',
+            'password' => self::VALID_PASSWORD,
+            'password_confirmation' => self::VALID_PASSWORD,
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
     }
 }
