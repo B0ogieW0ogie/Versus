@@ -96,4 +96,56 @@ class RegistrationTest extends TestCase
 
         $response->assertCookie(CaptureReferralCode::COOKIE, 'ABCDEF12');
     }
+
+    public function test_empty_fields_show_unified_error_message(): void
+    {
+        $response = $this->from('/register')->post('/register', [
+            'name' => '',
+            'email' => '',
+            'password' => '',
+            'password_confirmation' => '',
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors([
+            'name' => 'Заполните все поля',
+            'email' => 'Заполните все поля',
+            'password' => 'Заполните все поля',
+        ]);
+        $this->assertGuest();
+    }
+
+    public function test_invalid_email_format_is_rejected(): void
+    {
+        $response = $this->from('/register')->post('/register', [
+            'name' => 'Test User',
+            'email' => 'not-an-email',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        $errors = session('errors')->getBag('default');
+        $this->assertNotSame('Заполните все поля', $errors->first('email'));
+    }
+
+    public function test_password_must_be_at_least_eight_characters(): void
+    {
+        $response = $this->from('/register')->post('/register', [
+            'name' => 'Test User',
+            'email' => 'shortpw@example.com',
+            'password' => 'short',
+            'password_confirmation' => 'short',
+        ]);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors('password');
+        $this->assertGuest();
+
+        $errors = session('errors')->getBag('default');
+        $this->assertNotSame('Заполните все поля', $errors->first('password'));
+    }
 }

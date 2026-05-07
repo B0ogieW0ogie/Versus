@@ -30,6 +30,10 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'name.required' => 'Заполните все поля',
+            'email.required' => 'Заполните все поля',
+            'password.required' => 'Заполните все поля',
         ]);
 
         $referralCode = $request->cookie(CaptureReferralCode::COOKIE);
