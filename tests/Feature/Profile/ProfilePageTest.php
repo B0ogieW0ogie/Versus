@@ -24,6 +24,14 @@ test('guest is redirected to login', function () {
     $this->get('/profile')->assertRedirect(route('login'));
 });
 
+test('unverified user is redirected to verify email', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->get('/profile')
+        ->assertRedirect(route('verification.notice', absolute: false));
+});
+
 test('authenticated user sees the profile page at /profile', function () {
     $user = User::factory()->create(['name' => 'Alice']);
 
