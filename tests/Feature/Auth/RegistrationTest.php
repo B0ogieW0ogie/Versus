@@ -40,7 +40,7 @@ class RegistrationTest extends TestCase
         Notification::assertSentTo($user, VerifyEmail::class);
     }
 
-    public function test_new_user_receives_signup_bonus_and_referral_code(): void
+    public function test_new_user_does_not_receive_signup_bonus_before_email_verification(): void
     {
         $this->post('/register', [
             'email' => 'bonus@example.com',
@@ -49,18 +49,15 @@ class RegistrationTest extends TestCase
         ]);
 
         $user = User::where('email', 'bonus@example.com')->firstOrFail();
-        $bonus = (float) config('versus.signup_bonus');
 
-        $this->assertSame($bonus, (float) $user->balance);
+        $this->assertSame(0.0, (float) $user->balance);
         $this->assertNotEmpty($user->referral_code);
         $this->assertMatchesRegularExpression('/^[A-Z0-9]{8}$/', $user->referral_code);
         $this->assertNull($user->referred_by_id);
 
-        $this->assertDatabaseHas('transactions', [
+        $this->assertDatabaseMissing('transactions', [
             'user_id' => $user->id,
             'type' => Transaction::TYPE_SIGNUP_BONUS,
-            'amount' => number_format($bonus, 2, '.', ''),
-            'balance_after' => number_format($bonus, 2, '.', ''),
         ]);
     }
 

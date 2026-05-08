@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Users\CreditSignupBonusAction;
 use App\Actions\Users\RegisterUserAction;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\CaptureReferralCode;
@@ -23,7 +24,7 @@ class GoogleAuthController extends Controller
         return $response;
     }
 
-    public function callback(RegisterUserAction $register): RedirectResponse
+    public function callback(RegisterUserAction $register, CreditSignupBonusAction $creditSignupBonus): RedirectResponse
     {
         try {
             $googleUser = Socialite::driver('google')->user();
@@ -69,6 +70,8 @@ class GoogleAuthController extends Controller
                     'google_id' => $googleId,
                     'email_verified_at' => now(),
                 ])->save();
+
+                $creditSignupBonus($user);
 
                 event(new Registered($user));
                 $isNewUser = true;
