@@ -49,7 +49,7 @@ class EmailVerificationTest extends TestCase
             'amount' => number_format($bonus, 2, '.', ''),
             'balance_after' => number_format($bonus, 2, '.', ''),
         ]);
-        $response->assertRedirect(route('welcome', absolute: false));
+        $response->assertRedirect(route('home', absolute: false));
         $response->assertSessionHas('show_verified_welcome', true);
     }
 

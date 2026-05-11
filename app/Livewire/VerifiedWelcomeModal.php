@@ -3,18 +3,17 @@
 namespace App\Livewire;
 
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-class VerifiedWelcomePage extends Component
+class VerifiedWelcomeModal extends Component
 {
+    public bool $open = false;
+
     public int $slide = 0;
 
     public function mount(): void
     {
-        if (! session()->get('show_verified_welcome')) {
-            $this->redirectRoute('home');
-        }
+        $this->open = (bool) session()->get('show_verified_welcome');
     }
 
     public function next(): void
@@ -30,12 +29,12 @@ class VerifiedWelcomePage extends Component
     public function start(): void
     {
         session()->forget('show_verified_welcome');
-        $this->redirect(route('home'), navigate: true);
+        $this->open = false;
+        $this->slide = 0;
     }
 
-    #[Layout('layouts.app')]
     public function render(): View
     {
-        return view('livewire.verified-welcome-page');
+        return view('livewire.verified-welcome-modal');
     }
 }

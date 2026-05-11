@@ -35,6 +35,11 @@
             @include('layouts.bottom-nav')
         </div>
 
+        @auth
+            @if (auth()->user()->hasVerifiedEmail())
+                <livewire:verified-welcome-modal />
+            @endif
+        @endauth
         <livewire:search-overlay />
     </body>
 </html>
