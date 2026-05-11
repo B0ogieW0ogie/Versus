@@ -7,6 +7,7 @@ use App\Livewire\BattleShow;
 use App\Livewire\CategoryShow;
 use App\Livewire\Leaderboard;
 use App\Livewire\ProfilePage;
+use App\Livewire\VerifiedWelcomePage;
 use App\Livewire\WalletPage;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/welcome', VerifiedWelcomePage::class)->name('welcome');
     Route::get('/wallet', WalletPage::class)->name('wallet');
     Route::get('/profile', ProfilePage::class)->name('profile.edit');
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');

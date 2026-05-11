@@ -49,7 +49,8 @@ class EmailVerificationTest extends TestCase
             'amount' => number_format($bonus, 2, '.', ''),
             'balance_after' => number_format($bonus, 2, '.', ''),
         ]);
-        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+        $response->assertRedirect(route('welcome', absolute: false));
+        $response->assertSessionHas('show_verified_welcome', true);
     }
 
     public function test_signup_bonus_is_not_credited_twice_if_verification_route_reopened(): void

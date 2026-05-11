@@ -18,14 +18,17 @@ class VerifyEmailController extends Controller
         if ($request->user()->hasVerifiedEmail()) {
             $creditSignupBonus($request->user());
 
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+            return redirect()->intended(route('home', absolute: false));
         }
 
         if ($request->user()->markEmailAsVerified()) {
             $creditSignupBonus($request->user());
             event(new Verified($request->user()));
+            $request->session()->put('show_verified_welcome', true);
+
+            return redirect()->intended(route('welcome', absolute: false));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        return redirect()->intended(route('home', absolute: false));
     }
 }
