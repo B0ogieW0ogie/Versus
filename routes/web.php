@@ -5,6 +5,7 @@ use App\Livewire\BattleCreate;
 use App\Livewire\BattleIndex;
 use App\Livewire\BattleShow;
 use App\Livewire\CategoryShow;
+use App\Livewire\FeedPage;
 use App\Livewire\Leaderboard;
 use App\Livewire\ProfilePage;
 use App\Livewire\WalletPage;
@@ -22,6 +23,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/feed', FeedPage::class)->name('feed');
     Route::get('/wallet', WalletPage::class)->name('wallet');
     Route::get('/profile', ProfilePage::class)->name('profile.edit');
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');

@@ -7,11 +7,11 @@
             'icon' => 'home',
         ],
         [
-            'route' => null,
-            'match' => [],
+            'route' => 'feed',
+            'match' => ['feed'],
             'label' => __('nav.feed'),
             'icon' => 'feed',
-            'disabled' => true,
+            'auth' => true,
         ],
         [
             'route' => 'battles.create',
@@ -42,6 +42,7 @@
                 @if (! empty($tab['fab']))
                     @if (! empty($tab['route']) && Route::has($tab['route']))
                         <a href="{{ auth()->check() ? route($tab['route']) : route('login') }}"
+                           data-onboarding-target="fabCreate"
                            class="-mt-7 h-14 w-14 rounded-full bg-gradient-to-br from-vote-blue-from to-vote-purple-to shadow-vote-blue text-white flex items-center justify-center
                                   {{ auth()->check() && request()->routeIs(...$tab['match']) ? 'ring-2 ring-white/55 ring-offset-2 ring-offset-navy-900' : '' }}"
                            @if (auth()->check() && request()->routeIs(...$tab['match'])) aria-current="page" @endif>
@@ -56,13 +57,12 @@
                             <span class="sr-only">{{ $tab['label'] }}</span>
                         </button>
                     @endif
-                @elseif (! empty($tab['disabled']))
-                    <button type="button" disabled aria-disabled="true"
-                            title="{{ __('nav.coming_soon') }}"
-                            class="flex flex-col items-center gap-1 py-2.5 text-[10px] text-white/35 cursor-not-allowed">
+                @elseif (! empty($tab['auth']) && ! auth()->check())
+                    <a href="{{ route('login') }}"
+                       class="flex flex-col items-center gap-1 py-2.5 text-[10px] text-white/55 hover:text-white">
                         <x-dynamic-component :component="'icon.'.$tab['icon']" class="h-5 w-5" />
                         <span>{{ $tab['label'] }}</span>
-                    </button>
+                    </a>
                 @elseif ($tab['route'] && Route::has($tab['route']))
                     <a href="{{ route($tab['route']) }}"
                        class="flex flex-col items-center gap-1 py-2.5 text-[10px] {{ request()->routeIs(...$tab['match']) ? 'text-white' : 'text-white/55 hover:text-white' }}">

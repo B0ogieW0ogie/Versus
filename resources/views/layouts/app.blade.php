@@ -38,8 +38,22 @@
         @auth
             @if (auth()->user()->hasVerifiedEmail())
                 <livewire:verified-welcome-modal />
+                <livewire:onboarding-tour />
             @endif
         @endauth
+
+        @if (session('toast_onboarding'))
+            <div class="fixed bottom-24 left-1/2 z-[80] -translate-x-1/2 max-w-sm px-4 pointer-events-none"
+                 x-data="{ show: true }"
+                 x-show="show"
+                 x-init="setTimeout(() => show = false, 4500)"
+                 x-transition.opacity>
+                <div class="rounded-xl border border-white/15 bg-navy-800/95 px-4 py-3 text-center text-sm text-white shadow-lg backdrop-blur-sm">
+                    {{ session('toast_onboarding') }}
+                </div>
+            </div>
+        @endif
+
         <livewire:search-overlay />
     </body>
 </html>

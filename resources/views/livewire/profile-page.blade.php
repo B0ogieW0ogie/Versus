@@ -42,7 +42,8 @@
 
         {{-- Header row: avatar + stats + edit --}}
         <div class="-mt-12 flex items-end gap-4">
-            <div class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
+            <div data-onboarding-target="avatar"
+                 class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
                 @if ($user->avatarUrl())
                     <img src="{{ $user->avatarUrl() }}" alt="" class="w-full h-full object-cover">
                 @else
@@ -89,9 +90,13 @@
         </div>
 
         {{-- Bio --}}
-        @if ($user->bio)
-            <p class="mt-2 text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
-        @endif
+        <div data-onboarding-target="bio" class="mt-2">
+            @if ($user->bio)
+                <p class="text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
+            @else
+                <p class="text-sm text-white/45">{{ __('profile.bio_placeholder') }}</p>
+            @endif
+        </div>
 
         {{-- Tab bar --}}
         <div class="mt-4 flex items-end gap-4 border-b border-white/5">

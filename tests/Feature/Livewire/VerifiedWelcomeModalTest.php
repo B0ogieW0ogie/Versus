@@ -36,7 +36,7 @@ test('home page includes welcome title when session flag is set', function () {
         ->assertSee(__('welcome.title'));
 });
 
-test('start closes modal and clears session', function () {
+test('start closes modal clears session and starts onboarding on profile', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
     session(['show_verified_welcome' => true]);
@@ -44,8 +44,11 @@ test('start closes modal and clears session', function () {
     Livewire::test(VerifiedWelcomeModal::class)
         ->set('slide', 2)
         ->call('start')
-        ->assertSet('open', false)
-        ->assertSet('slide', 0);
+        ->assertRedirect(route('profile.edit'));
 
     expect(session()->get('show_verified_welcome'))->toBeNull();
+
+    $user->refresh();
+    expect($user->is_first_visit)->toBeTrue()
+        ->and($user->onboarding_step)->toBe(0);
 });

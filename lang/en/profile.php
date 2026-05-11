@@ -36,4 +36,5 @@ return [
     'bio_help' => 'Up to 500 characters.',
     'avatar_label' => 'Avatar',
     'banner_label' => 'Banner',
+    'bio_placeholder' => 'Tell others about you in profile settings — it helps people find you.',
 ];

@@ -63,7 +63,8 @@
 
                     <x-dropdown align="right" width="48" contentClasses="py-1 bg-navy-800 text-white/90">
                         <x-slot name="trigger">
-                            <button class="flex items-center gap-2 rounded-full bg-white/5 hover:bg-white/10 pl-1 pr-3 py-1 transition">
+                            <button type="button" data-onboarding-target="balance"
+                                    class="flex items-center gap-2 rounded-full bg-white/5 hover:bg-white/10 pl-1 pr-3 py-1 transition">
                                 <span class="h-7 w-7 rounded-full bg-navy-700 flex items-center justify-center text-xs font-semibold">
                                     {{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
                                 </span>

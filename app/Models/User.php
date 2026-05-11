@@ -16,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-#[Fillable(['name', 'email', 'google_id', 'password', 'referred_by_id', 'username', 'bio', 'avatar_path', 'banner_path'])]
+#[Fillable(['name', 'email', 'google_id', 'password', 'referred_by_id', 'username', 'bio', 'avatar_path', 'banner_path', 'is_first_visit', 'onboarding_step'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
@@ -30,6 +30,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'password' => 'hashed',
             'balance' => 'decimal:2',
             'is_admin' => 'boolean',
+            'is_first_visit' => 'boolean',
+            'onboarding_step' => 'integer',
         ];
     }
 
