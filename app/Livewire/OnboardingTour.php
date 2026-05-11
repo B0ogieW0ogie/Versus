@@ -46,15 +46,6 @@ class OnboardingTour extends Component
             return;
         }
 
-        if ($next === 4) {
-            $this->redirect(route('home'), navigate: true);
-
-            return;
-        }
-
-        if ($next === 6) {
-            $this->redirect(route('feed'), navigate: true);
-        }
     }
 
     public function copyReferralAndAdvance(): void
@@ -82,7 +73,7 @@ class OnboardingTour extends Component
         ])->save();
 
         session()->flash('toast_onboarding', __('onboarding.complete_toast'));
-        $this->redirect(route('home'), navigate: false);
+        $this->redirect(route('profile.edit'), navigate: false);
     }
 
     public function render(): View

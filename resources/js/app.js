@@ -241,3 +241,73 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 });
+
+const ONBOARDING_KEYS = ['avatar', 'bio', 'referral', 'balance', 'homeBattles', 'fabCreate', 'feed'];
+
+function syncProfileOnboardingCurtains() {
+    const root = document.getElementById('onboarding-curtains');
+    const marker = document.getElementById('onboarding-step-marker');
+    if (!root) {
+        return;
+    }
+    if (!marker) {
+        root.replaceChildren();
+        root.style.display = 'none';
+
+        return;
+    }
+    const raw = marker.dataset.step;
+    if (raw === undefined || raw === '') {
+        root.replaceChildren();
+        root.style.display = 'none';
+
+        return;
+    }
+    const step = Number.parseInt(raw, 10);
+    const key = ONBOARDING_KEYS[step];
+    if (!key) {
+        root.replaceChildren();
+        root.style.display = 'none';
+
+        return;
+    }
+    const target = document.querySelector(`[data-onboarding-target="${key}"]`);
+    root.replaceChildren();
+    if (!target) {
+        root.style.display = 'none';
+
+        return;
+    }
+    const pad = 10;
+    const r = target.getBoundingClientRect();
+    const top = r.top - pad;
+    const left = r.left - pad;
+    const w = r.width + pad * 2;
+    const h = r.height + pad * 2;
+    const appendBar = (styles) => {
+        const el = document.createElement('div');
+        el.className = 'fixed z-[65] bg-navy-950/75 pointer-events-auto';
+        Object.assign(el.style, styles);
+        root.appendChild(el);
+    };
+    appendBar({ top: '0', left: '0', right: '0', height: `${Math.max(0, top)}px` });
+    appendBar({ top: `${top + h}px`, left: '0', right: '0', bottom: '0' });
+    appendBar({ top: `${top}px`, left: '0', width: `${Math.max(0, left)}px`, height: `${h}px` });
+    appendBar({ top: `${top}px`, left: `${left + w}px`, right: '0', height: `${h}px` });
+    root.style.display = 'block';
+}
+
+let onboardingCurtainTimer = null;
+function scheduleProfileOnboardingCurtains() {
+    window.clearTimeout(onboardingCurtainTimer);
+    onboardingCurtainTimer = window.setTimeout(() => {
+        window.requestAnimationFrame(syncProfileOnboardingCurtains);
+    }, 40);
+}
+
+document.addEventListener('livewire:init', () => {
+    Livewire.hook('morph.updated', () => scheduleProfileOnboardingCurtains());
+});
+document.addEventListener('livewire:navigated', () => scheduleProfileOnboardingCurtains());
+window.addEventListener('resize', () => scheduleProfileOnboardingCurtains());
+window.addEventListener('scroll', () => scheduleProfileOnboardingCurtains(), true);

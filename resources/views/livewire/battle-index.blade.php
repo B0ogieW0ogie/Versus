@@ -1,5 +1,5 @@
 <div class="pb-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 lg:max-w-7xl lg:mx-auto lg:px-6">
-    <div data-onboarding-target="homeBattles" class="min-w-0 space-y-6">
+    <div class="min-w-0 space-y-6">
         @if ($sponsored->isNotEmpty())
             <section>
                 <x-carousel :per-page-mobile="1" :per-page-desktop="1" :auto-advance="true">

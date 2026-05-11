@@ -42,7 +42,6 @@
                 @if (! empty($tab['fab']))
                     @if (! empty($tab['route']) && Route::has($tab['route']))
                         <a href="{{ auth()->check() ? route($tab['route']) : route('login') }}"
-                           data-onboarding-target="fabCreate"
                            class="-mt-7 h-14 w-14 rounded-full bg-gradient-to-br from-vote-blue-from to-vote-purple-to shadow-vote-blue text-white flex items-center justify-center
                                   {{ auth()->check() && request()->routeIs(...$tab['match']) ? 'ring-2 ring-white/55 ring-offset-2 ring-offset-navy-900' : '' }}"
                            @if (auth()->check() && request()->routeIs(...$tab['match'])) aria-current="page" @endif>

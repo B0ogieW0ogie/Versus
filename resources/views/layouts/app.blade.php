@@ -38,7 +38,6 @@
         @auth
             @if (auth()->user()->hasVerifiedEmail())
                 <livewire:verified-welcome-modal />
-                <livewire:onboarding-tour />
             @endif
         @endauth
 

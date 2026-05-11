@@ -4,6 +4,17 @@ return [
     'next' => 'Next',
     'copy' => 'Copy',
 
+    'hints_section_label' => 'Where to go next',
+
+    'hint_home_label' => 'Battles',
+    'hint_home_caption' => 'The home page lists every active battle and stakes.',
+
+    'hint_create_label' => 'Create a battle',
+    'hint_create_caption' => 'The “+” tab is the fastest way to publish your own battle.',
+
+    'hint_feed_label' => 'Feed',
+    'hint_feed_caption' => 'The Feed tab will show people you follow.',
+
     'steps' => [
         [
             'body' => 'Upload an avatar and set a banner to stand out.',

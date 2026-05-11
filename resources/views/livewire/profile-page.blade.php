@@ -31,19 +31,19 @@
     </header>
 
     <div class="px-3 lg:max-w-7xl lg:mx-auto lg:px-6">
-        {{-- Banner --}}
-        <div class="aspect-[16/7] bg-white/5 flex items-center justify-center overflow-hidden">
-            @if ($user->bannerUrl())
-                <img src="{{ $user->bannerUrl() }}" alt="" class="w-full h-full object-cover">
-            @else
-                <x-icon.image-placeholder class="h-12 w-12 text-white/20" />
-            @endif
-        </div>
+        <div data-onboarding-target="avatar" class="relative">
+            {{-- Banner --}}
+            <div class="aspect-[16/7] bg-white/5 flex items-center justify-center overflow-hidden rounded-lg">
+                @if ($user->bannerUrl())
+                    <img src="{{ $user->bannerUrl() }}" alt="" class="w-full h-full object-cover">
+                @else
+                    <x-icon.image-placeholder class="h-12 w-12 text-white/20" />
+                @endif
+            </div>
 
-        {{-- Header row: avatar + stats + edit --}}
-        <div class="-mt-12 flex items-end gap-4">
-            <div data-onboarding-target="avatar"
-                 class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
+            {{-- Header row: avatar + stats + edit --}}
+            <div class="-mt-12 flex items-end gap-4">
+                <div class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
                 @if ($user->avatarUrl())
                     <img src="{{ $user->avatarUrl() }}" alt="" class="w-full h-full object-cover">
                 @else
@@ -52,9 +52,9 @@
                         <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.418 0-8 2.686-8 6v2h16v-2c0-3.314-3.582-6-8-6z"/>
                     </svg>
                 @endif
-            </div>
+                </div>
 
-            <div class="flex-1 flex items-end justify-between pb-1">
+                <div class="flex-1 flex items-end justify-between pb-1">
                 <div class="flex gap-6">
                     <div class="text-center">
                         <div class="text-lg font-bold text-white">352</div>
@@ -65,10 +65,11 @@
                         <div class="text-[11px] text-white/55">{{ __('profile.following') }}</div>
                     </div>
                 </div>
-                <a href="{{ route('profile.settings') }}"
-                   class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition">
-                    {{ __('profile.edit') }}
-                </a>
+                    <a href="{{ route('profile.settings') }}"
+                       class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition">
+                        {{ __('profile.edit') }}
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -130,5 +131,44 @@
             @default
                 @include('livewire.profile.tabs.activity')
         @endswitch
+
+        @if ($user->is_first_visit && $user->onboarding_step !== null && (int) $user->onboarding_step >= 4)
+            <section class="mt-8 space-y-3" aria-label="{{ __('onboarding.hints_section_label') }}">
+                <div data-onboarding-target="homeBattles"
+                     class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
+                        <x-icon.home class="h-5 w-5" />
+                    </span>
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-wide text-white/50">{{ __('onboarding.hint_home_label') }}</div>
+                        <div class="text-sm text-white/80">{{ __('onboarding.hint_home_caption') }}</div>
+                    </div>
+                </div>
+                <div data-onboarding-target="fabCreate"
+                     class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-vote-blue-from to-vote-purple-to text-white shadow-vote-blue">
+                        <x-icon.plus class="h-5 w-5" />
+                    </span>
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-wide text-white/50">{{ __('onboarding.hint_create_label') }}</div>
+                        <div class="text-sm text-white/80">{{ __('onboarding.hint_create_caption') }}</div>
+                    </div>
+                </div>
+                <div data-onboarding-target="feed"
+                     class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
+                        <x-icon.feed class="h-5 w-5" />
+                    </span>
+                    <div>
+                        <div class="text-xs font-semibold uppercase tracking-wide text-white/50">{{ __('onboarding.hint_feed_label') }}</div>
+                        <div class="text-sm text-white/80">{{ __('onboarding.hint_feed_caption') }}</div>
+                    </div>
+                </div>
+            </section>
+        @endif
+
+        @if ($user->is_first_visit && $user->onboarding_step !== null)
+            <livewire:onboarding-tour />
+        @endif
     </div>
 </div>
