@@ -4,6 +4,7 @@ return [
     'battles' => 'Battles',
     'create_battle' => 'Create battle',
     'balance' => 'Balance',
+    'wallet' => 'Wallet',
     'login' => 'Sign in',
     'register' => 'Register',
     'profile' => 'Profile',

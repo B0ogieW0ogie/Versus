@@ -82,6 +82,10 @@
                         </x-slot>
 
                         <x-slot name="content">
+                            <x-dropdown-link :href="route('wallet')"
+                                             class="!text-white/80 hover:!bg-white/10 hover:!text-white">
+                                {{ __('nav.wallet') }}
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('profile.edit')"
                                              class="!text-white/80 hover:!bg-white/10 hover:!text-white">
                                 {{ __('nav.profile') }}

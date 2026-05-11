@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'signup_bonus' => 1000,
+    'signup_bonus' => 10,
 
     'max_vote_amount' => 10000,
 

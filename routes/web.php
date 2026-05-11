@@ -7,6 +7,7 @@ use App\Livewire\BattleShow;
 use App\Livewire\CategoryShow;
 use App\Livewire\Leaderboard;
 use App\Livewire\ProfilePage;
+use App\Livewire\WalletPage;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', BattleIndex::class)->name('home');
@@ -21,6 +22,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/wallet', WalletPage::class)->name('wallet');
     Route::get('/profile', ProfilePage::class)->name('profile.edit');
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');
     Route::patch('/profile/settings', [ProfileController::class, 'update'])->name('profile.settings.update');

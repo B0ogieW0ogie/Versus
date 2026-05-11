@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,5 +50,12 @@ class Transaction extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function userFacingLabel(): string
+    {
+        $key = 'transactions.types.'.$this->type;
+
+        return Lang::has($key) ? __($key) : $this->type;
     }
 }
