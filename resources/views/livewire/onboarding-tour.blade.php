@@ -16,7 +16,7 @@
                     $nextTick(() => {
                         const keys = ['avatar','bio','referral','balance','homeBattles','fabCreate','feed'];
                         const key = keys[{{ $step }}];
-                        const target = document.querySelector('[data-onboarding-target=\"' + key + '\"]');
+                        const target = document.querySelector(`[data-onboarding-target='${key}']`);
                         const card = $el;
                         card.style.position = 'fixed';
                         if (! target) {
