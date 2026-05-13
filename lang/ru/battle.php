@@ -51,8 +51,6 @@ return [
     'create_side_second_aria' => 'Второй вариант',
     'create_placeholder_side_a' => 'Введите первый вариант (например, iPhone 15)',
     'create_placeholder_side_b' => 'Введите второй вариант (например, Samsung S24)',
-    'create_field_side_a_sub' => 'Подзаголовок A (необязательно)',
-    'create_field_side_b_sub' => 'Подзаголовок B (необязательно)',
     'create_field_image_a' => 'Картинка стороны A (необязательно)',
     'create_field_image_b' => 'Картинка стороны B (необязательно)',
     'create_field_opens_at' => 'Открытие (необязательно)',

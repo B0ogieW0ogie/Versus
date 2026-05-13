@@ -23,10 +23,6 @@ class BattleCreate extends Component
 
     public string $side_b_label = '';
 
-    public string $side_a_subtitle = '';
-
-    public string $side_b_subtitle = '';
-
     /** @var mixed */
     public $side_a_image = null;
 
@@ -59,8 +55,6 @@ class BattleCreate extends Component
         $this->validate([
             'side_a_label' => ['required', 'string', 'max:255'],
             'side_b_label' => ['required', 'string', 'max:255'],
-            'side_a_subtitle' => ['nullable', 'string', 'max:120'],
-            'side_b_subtitle' => ['nullable', 'string', 'max:120'],
             'side_a_image' => ['nullable', 'image', 'max:2048'],
             'side_b_image' => ['nullable', 'image', 'max:2048'],
             'opens_at' => ['nullable', 'date'],
@@ -92,8 +86,6 @@ class BattleCreate extends Component
         $battle = $action($user, [
             'side_a_label' => $this->side_a_label,
             'side_b_label' => $this->side_b_label,
-            'side_a_subtitle' => $this->side_a_subtitle === '' ? null : $this->side_a_subtitle,
-            'side_b_subtitle' => $this->side_b_subtitle === '' ? null : $this->side_b_subtitle,
             'side_a_image' => $imageA,
             'side_b_image' => $imageB,
             'opens_at' => $opensAt,

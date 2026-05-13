@@ -3,38 +3,23 @@
     <p class="mt-3 text-sm text-white/60 leading-relaxed">{{ __('battle.create_intro') }}</p>
 
     <form wire:submit.prevent="store" class="mt-8 space-y-6">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
-            <div class="min-w-0 flex-1">
+        <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-x-2 sm:gap-x-4">
+            <div class="flex min-w-0 flex-col">
                 <label for="side_a_label" class="sr-only">{{ __('battle.create_side_first_aria') }}</label>
                 <input id="side_a_label" type="text" wire:model="side_a_label"
                        placeholder="{{ __('battle.create_placeholder_side_a') }}"
                        class="block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2.5 text-sm text-white placeholder-white/35 focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
                 @error('side_a_label') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
             </div>
-            <div class="flex shrink-0 items-center justify-center px-2 py-1 sm:w-16 sm:self-stretch sm:py-0">
-                <span class="select-none text-2xl font-black tracking-tight text-cyan-300 drop-shadow-[0_0_12px_rgba(34,211,238,0.35)] sm:text-3xl" aria-hidden="true">{{ __('battle.vs') }}</span>
+            <div class="flex w-10 shrink-0 flex-col items-center justify-center sm:w-14" aria-hidden="true">
+                <span class="select-none text-xl font-black tracking-tight text-cyan-300 drop-shadow-[0_0_12px_rgba(34,211,238,0.35)] sm:text-3xl">{{ __('battle.vs') }}</span>
             </div>
-            <div class="min-w-0 flex-1">
+            <div class="flex min-w-0 flex-col">
                 <label for="side_b_label" class="sr-only">{{ __('battle.create_side_second_aria') }}</label>
                 <input id="side_b_label" type="text" wire:model="side_b_label"
                        placeholder="{{ __('battle.create_placeholder_side_b') }}"
                        class="block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2.5 text-sm text-white placeholder-white/35 focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
                 @error('side_b_label') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
-            </div>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-                <label for="side_a_subtitle" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_side_a_sub') }}</label>
-                <input id="side_a_subtitle" type="text" wire:model="side_a_subtitle"
-                       class="mt-1 block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
-                @error('side_a_subtitle') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label for="side_b_subtitle" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_side_b_sub') }}</label>
-                <input id="side_b_subtitle" type="text" wire:model="side_b_subtitle"
-                       class="mt-1 block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
-                @error('side_b_subtitle') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
             </div>
         </div>
 

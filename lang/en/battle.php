@@ -51,8 +51,6 @@ return [
     'create_side_second_aria' => 'Second option',
     'create_placeholder_side_a' => 'Enter the first option (e.g. iPhone 15)',
     'create_placeholder_side_b' => 'Enter the second option (e.g. Samsung S24)',
-    'create_field_side_a_sub' => 'Side A subtitle (optional)',
-    'create_field_side_b_sub' => 'Side B subtitle (optional)',
     'create_field_image_a' => 'Side A image (optional)',
     'create_field_image_b' => 'Side B image (optional)',
     'create_field_opens_at' => 'Opens at (optional)',

@@ -10,7 +10,8 @@ class CreateUserBattleAction
 {
     /**
      * @param  array<string, mixed>  $data  Validated keys only (sides, images, dates, category). Title is derived as
-     *                                      "side_a_label VS side_b_label" (truncated); description is always null.
+     *                                      "side_a_label VS side_b_label" (truncated); description and side subtitles
+     *                                      are always null (subtitles/description are admin-sponsored only).
      *                                      Must not include user-controlled status or pool fields.
      */
     public function __invoke(User $user, array $data): Battle
@@ -36,8 +37,8 @@ class CreateUserBattleAction
             'description' => null,
             'side_a_label' => $data['side_a_label'],
             'side_b_label' => $data['side_b_label'],
-            'side_a_subtitle' => $data['side_a_subtitle'] ?? null,
-            'side_b_subtitle' => $data['side_b_subtitle'] ?? null,
+            'side_a_subtitle' => null,
+            'side_b_subtitle' => null,
             'side_a_image' => $data['side_a_image'] ?? null,
             'side_b_image' => $data['side_b_image'] ?? null,
             'opens_at' => $data['opens_at'] ?? null,
