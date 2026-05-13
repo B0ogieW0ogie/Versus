@@ -66,6 +66,22 @@
                 @endforeach
             </div>
             @error('duration_preset') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
+
+            <div class="mt-5 space-y-3 border-t border-white/10 pt-5">
+                <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-white/10 bg-navy-900/40 px-3 py-3 transition hover:border-white/15">
+                    <input id="pin_to_charts" type="checkbox" wire:model.live="pin_to_charts"
+                           class="mt-0.5 size-4 shrink-0 rounded border-white/30 bg-navy-900 text-cyan-500 focus:ring-cyan-400/50"/>
+                    <span class="text-sm leading-snug text-white/90">{{ __('battle.create_pin_checkbox') }}</span>
+                </label>
+                @if ($pin_to_charts)
+                    <p class="pl-7 text-sm font-semibold tabular-nums text-cyan-200">
+                        {{ __('battle.create_pin_total', ['amount' => $this->formattedPinningTotal()]) }}
+                    </p>
+                @endif
+                <div class="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-3 text-sm leading-relaxed text-white/65">
+                    {{ __('battle.create_pin_info') }}
+                </div>
+            </div>
         </div>
 
         <div class="flex items-center gap-4">

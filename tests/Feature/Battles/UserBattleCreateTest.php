@@ -82,6 +82,16 @@ class UserBattleCreateTest extends TestCase
         }
     }
 
+    public function test_pin_to_charts_total_is_hours_times_rate(): void
+    {
+        $component = Livewire::test(BattleCreate::class)
+            ->set('pin_to_charts', true)
+            ->set('duration_preset', '9h');
+
+        $this->assertSame(9000, $component->instance()->pinningTotalVs());
+        $this->assertSame('9,000', $component->instance()->formattedPinningTotal());
+    }
+
     public function test_create_requires_category(): void
     {
         $user = User::factory()->create();

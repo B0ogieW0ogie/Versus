@@ -22,6 +22,8 @@ class BattleCreate extends Component
     /** @var list<string> */
     public const DURATION_PRESETS = ['1h', '3h', '9h', '24h', '48h', '72h'];
 
+    public const PIN_VS_PER_HOUR = 1000;
+
     public string $side_a_label = '';
 
     public string $side_b_label = '';
@@ -33,6 +35,8 @@ class BattleCreate extends Component
     public $side_b_image = null;
 
     public string $duration_preset = '24h';
+
+    public bool $pin_to_charts = false;
 
     public string $category_id = '';
 
@@ -55,6 +59,7 @@ class BattleCreate extends Component
             'side_a_image' => ['nullable', 'image', 'max:2048'],
             'side_b_image' => ['nullable', 'image', 'max:2048'],
             'duration_preset' => ['required', Rule::in(self::DURATION_PRESETS)],
+            'pin_to_charts' => ['boolean'],
             'category_id' => ['required', 'exists:categories,id'],
         ]);
 
@@ -114,6 +119,20 @@ class BattleCreate extends Component
             'categories' => $categories,
             'durationPresets' => self::DURATION_PRESETS,
         ]);
+    }
+
+    public function pinningTotalVs(): int
+    {
+        if (! $this->pin_to_charts) {
+            return 0;
+        }
+
+        return $this->durationHours() * self::PIN_VS_PER_HOUR;
+    }
+
+    public function formattedPinningTotal(): string
+    {
+        return number_format($this->pinningTotalVs(), 0, '.', ',');
     }
 
     private function durationHours(): int
