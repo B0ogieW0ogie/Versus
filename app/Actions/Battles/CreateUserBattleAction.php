@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class CreateUserBattleAction
 {
     /**
-     * @param  array<string, mixed>  $data  Validated keys only (sides, images, dates, category). Title is derived as
+     * @param  array<string, mixed>  $data  Validated keys only (sides, images, dates, category id). Title is derived as
      *                                      "side_a_label VS side_b_label" (truncated); description and side subtitles
      *                                      are always null (subtitles/description are admin-sponsored only).
      *                                      Must not include user-controlled status or pool fields.

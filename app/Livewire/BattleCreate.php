@@ -59,15 +59,10 @@ class BattleCreate extends Component
             'side_b_image' => ['nullable', 'image', 'max:2048'],
             'opens_at' => ['nullable', 'date'],
             'closes_at' => $closesRules,
-            'category_id' => ['nullable', 'string'],
+            'category_id' => ['required', 'exists:categories,id'],
         ]);
 
-        $categoryId = $this->category_id === '' ? null : (int) $this->category_id;
-        if ($categoryId !== null && ! Category::query()->whereKey($categoryId)->exists()) {
-            $this->addError('category_id', __('validation.exists', ['attribute' => 'category']));
-
-            return;
-        }
+        $categoryId = (int) $this->category_id;
 
         $opensAt = filled($this->opens_at) ? Carbon::parse($this->opens_at) : null;
         $closesAt = Carbon::parse((string) $this->closes_at);
