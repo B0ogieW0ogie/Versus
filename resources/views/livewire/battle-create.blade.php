@@ -52,10 +52,20 @@
         </div>
 
         <div>
-            <label for="closes_at" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_closes_at') }}</label>
-            <input id="closes_at" type="datetime-local" wire:model="closes_at"
-                   class="mt-1 block w-full max-w-md rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
-            @error('closes_at') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
+            <p id="battle-create-duration" class="mb-2 block text-sm font-medium text-white/80">{{ __('battle.create_duration_label') }}</p>
+            <div class="flex flex-wrap gap-2" role="group" aria-labelledby="battle-create-duration">
+                @foreach ($durationPresets as $preset)
+                    <button type="button" wire:click="$set('duration_preset', '{{ $preset }}')"
+                            @class([
+                                'rounded-lg border px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-cyan-400/40',
+                                'border-cyan-400/60 bg-cyan-500/15 text-white shadow-[0_0_16px_rgba(34,211,238,0.12)]' => $duration_preset === $preset,
+                                'border-white/15 bg-navy-900 text-white/85 hover:border-white/25 hover:bg-white/5' => $duration_preset !== $preset,
+                            ])>
+                        {{ __('battle.create_duration_'.$preset) }}
+                    </button>
+                @endforeach
+            </div>
+            @error('duration_preset') <p class="mt-2 text-sm text-red-400">{{ $message }}</p> @enderror
         </div>
 
         <div class="flex items-center gap-4">

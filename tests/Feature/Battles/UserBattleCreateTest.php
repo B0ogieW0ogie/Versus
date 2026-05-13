@@ -7,6 +7,7 @@ use App\Models\Battle;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -16,37 +17,69 @@ class UserBattleCreateTest extends TestCase
 
     public function test_authenticated_user_can_create_battle_with_expected_defaults(): void
     {
-        $user = User::factory()->create();
-        $category = Category::factory()->create();
-        $closesAt = now()->addDays(7)->startOfMinute();
+        $fixed = Carbon::parse('2026-05-13 14:30:00', config('app.timezone'));
+        Carbon::setTestNow($fixed);
 
-        Livewire::actingAs($user)
-            ->test(BattleCreate::class)
-            ->set('side_a_label', 'Tabs')
-            ->set('side_b_label', 'Spaces')
-            ->set('category_id', (string) $category->id)
-            ->set('closes_at', $closesAt->format('Y-m-d\TH:i'))
-            ->call('store')
-            ->assertHasNoErrors();
+        try {
+            $user = User::factory()->create();
+            $category = Category::factory()->create();
 
-        $this->assertDatabaseHas('battles', [
-            'title' => 'Tabs VS Spaces',
-            'description' => null,
-            'status' => Battle::STATUS_ACTIVE,
-            'created_by_id' => $user->id,
-            'category_id' => $category->id,
-            'winning_side' => null,
-        ]);
+            Livewire::actingAs($user)
+                ->test(BattleCreate::class)
+                ->set('side_a_label', 'Tabs')
+                ->set('side_b_label', 'Spaces')
+                ->set('category_id', (string) $category->id)
+                ->call('store')
+                ->assertHasNoErrors();
 
-        $battle = Battle::query()->where('title', 'Tabs VS Spaces')->first();
-        $this->assertNotNull($battle);
-        $this->assertNull($battle->side_a_subtitle);
-        $this->assertNull($battle->side_b_subtitle);
-        $this->assertNull($battle->opens_at);
-        $this->assertNull($battle->ai_screened_at);
-        $this->assertNotEmpty($battle->slug);
-        $this->assertSame(0.0, (float) $battle->total_pool);
-        $this->assertFalse($battle->is_sponsored);
+            $this->assertDatabaseHas('battles', [
+                'title' => 'Tabs VS Spaces',
+                'description' => null,
+                'status' => Battle::STATUS_ACTIVE,
+                'created_by_id' => $user->id,
+                'category_id' => $category->id,
+                'winning_side' => null,
+            ]);
+
+            $battle = Battle::query()->where('title', 'Tabs VS Spaces')->first();
+            $this->assertNotNull($battle);
+            $this->assertTrue($battle->closes_at->equalTo($fixed->copy()->addHours(24)));
+            $this->assertNull($battle->side_a_subtitle);
+            $this->assertNull($battle->side_b_subtitle);
+            $this->assertNull($battle->opens_at);
+            $this->assertNull($battle->ai_screened_at);
+            $this->assertNotEmpty($battle->slug);
+            $this->assertSame(0.0, (float) $battle->total_pool);
+            $this->assertFalse($battle->is_sponsored);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_duration_preset_sets_closes_at(): void
+    {
+        $fixed = Carbon::parse('2026-06-01 09:00:00', config('app.timezone'));
+        Carbon::setTestNow($fixed);
+
+        try {
+            $user = User::factory()->create();
+            $category = Category::factory()->create();
+
+            Livewire::actingAs($user)
+                ->test(BattleCreate::class)
+                ->set('side_a_label', 'X')
+                ->set('side_b_label', 'Y')
+                ->set('category_id', (string) $category->id)
+                ->set('duration_preset', '72h')
+                ->call('store')
+                ->assertHasNoErrors();
+
+            $battle = Battle::query()->where('title', 'X VS Y')->first();
+            $this->assertNotNull($battle);
+            $this->assertTrue($battle->closes_at->equalTo($fixed->copy()->addHours(72)));
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_create_requires_category(): void
@@ -57,7 +90,6 @@ class UserBattleCreateTest extends TestCase
             ->test(BattleCreate::class)
             ->set('side_a_label', 'A')
             ->set('side_b_label', 'B')
-            ->set('closes_at', now()->addDay()->format('Y-m-d\TH:i'))
             ->call('store')
             ->assertHasErrors(['category_id']);
     }

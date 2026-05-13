@@ -7,9 +7,9 @@ use App\Models\Battle;
 use App\Models\Category;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -18,6 +18,9 @@ use Livewire\WithFileUploads;
 class BattleCreate extends Component
 {
     use WithFileUploads;
+
+    /** @var list<string> */
+    public const DURATION_PRESETS = ['1h', '3h', '9h', '24h', '48h', '72h'];
 
     public string $side_a_label = '';
 
@@ -29,7 +32,7 @@ class BattleCreate extends Component
     /** @var mixed */
     public $side_b_image = null;
 
-    public ?string $closes_at = null;
+    public string $duration_preset = '24h';
 
     public string $category_id = '';
 
@@ -46,20 +49,18 @@ class BattleCreate extends Component
             return;
         }
 
-        $closesRules = ['required', 'date', 'after:now'];
-
         $this->validate([
             'side_a_label' => ['required', 'string', 'max:255'],
             'side_b_label' => ['required', 'string', 'max:255'],
             'side_a_image' => ['nullable', 'image', 'max:2048'],
             'side_b_image' => ['nullable', 'image', 'max:2048'],
-            'closes_at' => $closesRules,
+            'duration_preset' => ['required', Rule::in(self::DURATION_PRESETS)],
             'category_id' => ['required', 'exists:categories,id'],
         ]);
 
         $categoryId = (int) $this->category_id;
 
-        $closesAt = Carbon::parse((string) $this->closes_at);
+        $closesAt = now()->addHours($this->durationHours());
 
         $imageA = null;
         if ($this->side_a_image) {
@@ -111,6 +112,20 @@ class BattleCreate extends Component
 
         return view('livewire.battle-create', [
             'categories' => $categories,
+            'durationPresets' => self::DURATION_PRESETS,
         ]);
+    }
+
+    private function durationHours(): int
+    {
+        return match ($this->duration_preset) {
+            '1h' => 1,
+            '3h' => 3,
+            '9h' => 9,
+            '24h' => 24,
+            '48h' => 48,
+            '72h' => 72,
+            default => 24,
+        };
     }
 }
