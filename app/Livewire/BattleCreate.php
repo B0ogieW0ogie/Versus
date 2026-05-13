@@ -19,10 +19,6 @@ class BattleCreate extends Component
 {
     use WithFileUploads;
 
-    public string $title = '';
-
-    public string $description = '';
-
     public string $side_a_label = '';
 
     public string $side_b_label = '';
@@ -61,8 +57,6 @@ class BattleCreate extends Component
             : ['required', 'date', 'after:now'];
 
         $this->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:5000'],
             'side_a_label' => ['required', 'string', 'max:255'],
             'side_b_label' => ['required', 'string', 'max:255'],
             'side_a_subtitle' => ['nullable', 'string', 'max:120'],
@@ -96,8 +90,6 @@ class BattleCreate extends Component
         }
 
         $battle = $action($user, [
-            'title' => $this->title,
-            'description' => $this->description === '' ? null : $this->description,
             'side_a_label' => $this->side_a_label,
             'side_b_label' => $this->side_b_label,
             'side_a_subtitle' => $this->side_a_subtitle === '' ? null : $this->side_a_subtitle,

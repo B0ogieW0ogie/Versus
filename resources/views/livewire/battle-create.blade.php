@@ -3,20 +3,6 @@
     <p class="mt-3 text-sm text-white/60 leading-relaxed">{{ __('battle.create_intro') }}</p>
 
     <form wire:submit.prevent="store" class="mt-8 space-y-6">
-        <div>
-            <label for="title" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_title') }}</label>
-            <input id="title" type="text" wire:model="title"
-                   class="mt-1 block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white placeholder-white/40 focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
-            @error('title') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
-        </div>
-
-        <div>
-            <label for="description" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_description') }}</label>
-            <textarea id="description" wire:model="description" rows="3"
-                      class="mt-1 block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white placeholder-white/40 focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"></textarea>
-            @error('description') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
-        </div>
-
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
                 <label for="side_a_label" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_side_a') }}</label>

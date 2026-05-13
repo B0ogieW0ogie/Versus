@@ -20,8 +20,6 @@ class UserBattleCreateTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(BattleCreate::class)
-            ->set('title', 'Tabs vs Spaces')
-            ->set('description', 'Editor wars.')
             ->set('side_a_label', 'Tabs')
             ->set('side_b_label', 'Spaces')
             ->set('closes_at', $closesAt->format('Y-m-d\TH:i'))
@@ -29,13 +27,14 @@ class UserBattleCreateTest extends TestCase
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('battles', [
-            'title' => 'Tabs vs Spaces',
+            'title' => 'Tabs VS Spaces',
+            'description' => null,
             'status' => Battle::STATUS_ACTIVE,
             'created_by_id' => $user->id,
             'winning_side' => null,
         ]);
 
-        $battle = Battle::query()->where('title', 'Tabs vs Spaces')->first();
+        $battle = Battle::query()->where('title', 'Tabs VS Spaces')->first();
         $this->assertNotNull($battle);
         $this->assertNull($battle->ai_screened_at);
         $this->assertNotEmpty($battle->slug);

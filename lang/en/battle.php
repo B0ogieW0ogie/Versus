@@ -46,9 +46,7 @@ return [
     'status_settled' => 'settled',
 
     'create_title' => 'Create a battle',
-    'create_intro' => 'Set up both sides and when voting closes. Your battle goes live as soon as you publish.',
-    'create_field_title' => 'Title',
-    'create_field_description' => 'Description (optional)',
+    'create_intro' => 'Name both sides and when voting closes. The battle title is built from the two labels (A VS B). Your battle goes live as soon as you publish.',
     'create_field_side_a' => 'Side A label',
     'create_field_side_b' => 'Side B label',
     'create_field_side_a_sub' => 'Side A subtitle (optional)',

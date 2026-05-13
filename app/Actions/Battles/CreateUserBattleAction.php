@@ -9,11 +9,22 @@ use Illuminate\Support\Str;
 class CreateUserBattleAction
 {
     /**
-     * @param  array<string, mixed>  $data  Validated keys only; must not include user-controlled status or pool fields.
+     * @param  array<string, mixed>  $data  Validated keys only (sides, images, dates, category). Title is derived as
+     *                                      "side_a_label VS side_b_label" (truncated); description is always null.
+     *                                      Must not include user-controlled status or pool fields.
      */
     public function __invoke(User $user, array $data): Battle
     {
-        $baseSlug = Str::slug($data['title']);
+        $title = Str::limit(
+            trim((string) $data['side_a_label']).' VS '.trim((string) $data['side_b_label']),
+            255,
+            '',
+        );
+
+        $baseSlug = Str::slug($title);
+        if ($baseSlug === '') {
+            $baseSlug = 'battle';
+        }
         $slug = $baseSlug;
         while (Battle::query()->where('slug', $slug)->exists()) {
             $slug = $baseSlug.'-'.Str::lower(Str::random(4));
@@ -21,8 +32,8 @@ class CreateUserBattleAction
 
         return Battle::query()->create([
             'slug' => $slug,
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
+            'title' => $title,
+            'description' => null,
             'side_a_label' => $data['side_a_label'],
             'side_b_label' => $data['side_b_label'],
             'side_a_subtitle' => $data['side_a_subtitle'] ?? null,
