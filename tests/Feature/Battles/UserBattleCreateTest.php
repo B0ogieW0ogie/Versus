@@ -42,6 +42,7 @@ class UserBattleCreateTest extends TestCase
         $this->assertNotNull($battle);
         $this->assertNull($battle->side_a_subtitle);
         $this->assertNull($battle->side_b_subtitle);
+        $this->assertNull($battle->opens_at);
         $this->assertNull($battle->ai_screened_at);
         $this->assertNotEmpty($battle->slug);
         $this->assertSame(0.0, (float) $battle->total_pool);

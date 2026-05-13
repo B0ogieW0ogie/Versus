@@ -29,8 +29,6 @@ class BattleCreate extends Component
     /** @var mixed */
     public $side_b_image = null;
 
-    public ?string $opens_at = null;
-
     public ?string $closes_at = null;
 
     public string $category_id = '';
@@ -48,23 +46,19 @@ class BattleCreate extends Component
             return;
         }
 
-        $closesRules = filled($this->opens_at)
-            ? ['required', 'date', 'after:opens_at', 'after:now']
-            : ['required', 'date', 'after:now'];
+        $closesRules = ['required', 'date', 'after:now'];
 
         $this->validate([
             'side_a_label' => ['required', 'string', 'max:255'],
             'side_b_label' => ['required', 'string', 'max:255'],
             'side_a_image' => ['nullable', 'image', 'max:2048'],
             'side_b_image' => ['nullable', 'image', 'max:2048'],
-            'opens_at' => ['nullable', 'date'],
             'closes_at' => $closesRules,
             'category_id' => ['required', 'exists:categories,id'],
         ]);
 
         $categoryId = (int) $this->category_id;
 
-        $opensAt = filled($this->opens_at) ? Carbon::parse($this->opens_at) : null;
         $closesAt = Carbon::parse((string) $this->closes_at);
 
         $imageA = null;
@@ -83,7 +77,6 @@ class BattleCreate extends Component
             'side_b_label' => $this->side_b_label,
             'side_a_image' => $imageA,
             'side_b_image' => $imageB,
-            'opens_at' => $opensAt,
             'closes_at' => $closesAt,
             'category_id' => $categoryId,
         ]);

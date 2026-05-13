@@ -53,7 +53,6 @@ return [
     'create_placeholder_side_b' => 'Введите второй вариант (например, Samsung S24)',
     'create_field_image_a' => 'Картинка стороны A (необязательно)',
     'create_field_image_b' => 'Картинка стороны B (необязательно)',
-    'create_field_opens_at' => 'Открытие (необязательно)',
     'create_field_closes_at' => 'Закрытие',
     'create_field_category' => 'Категория',
     'create_category_prompt' => 'Выберите категорию',

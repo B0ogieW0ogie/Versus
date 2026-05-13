@@ -53,7 +53,6 @@ return [
     'create_placeholder_side_b' => 'Enter the second option (e.g. Samsung S24)',
     'create_field_image_a' => 'Side A image (optional)',
     'create_field_image_b' => 'Side B image (optional)',
-    'create_field_opens_at' => 'Opens at (optional)',
     'create_field_closes_at' => 'Closes at',
     'create_field_category' => 'Category',
     'create_category_prompt' => 'Choose a category',

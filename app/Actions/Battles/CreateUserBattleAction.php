@@ -9,9 +9,9 @@ use Illuminate\Support\Str;
 class CreateUserBattleAction
 {
     /**
-     * @param  array<string, mixed>  $data  Validated keys only (sides, images, dates, category id). Title is derived as
-     *                                      "side_a_label VS side_b_label" (truncated); description and side subtitles
-     *                                      are always null (subtitles/description are admin-sponsored only).
+     * @param  array<string, mixed>  $data  Validated keys only (sides, images, closes_at, category id). Title is derived as
+     *                                      "side_a_label VS side_b_label" (truncated); description, side subtitles,
+     *                                      and opens_at are always null (opens/description/subtitles admin path).
      *                                      Must not include user-controlled status or pool fields.
      */
     public function __invoke(User $user, array $data): Battle
@@ -41,7 +41,7 @@ class CreateUserBattleAction
             'side_b_subtitle' => null,
             'side_a_image' => $data['side_a_image'] ?? null,
             'side_b_image' => $data['side_b_image'] ?? null,
-            'opens_at' => $data['opens_at'] ?? null,
+            'opens_at' => null,
             'closes_at' => $data['closes_at'] ?? null,
             'status' => Battle::STATUS_ACTIVE,
             'total_pool' => 0,

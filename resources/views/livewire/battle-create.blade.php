@@ -51,20 +51,11 @@
             @error('category_id') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
         </div>
 
-        <div class="grid grid-cols-[minmax(0,1fr)_2.5rem_minmax(0,1fr)] gap-x-2 gap-y-2 sm:grid-cols-[minmax(0,1fr)_3.5rem_minmax(0,1fr)] sm:gap-x-4">
-            <div class="min-w-0">
-                <label for="opens_at" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_opens_at') }}</label>
-                <input id="opens_at" type="datetime-local" wire:model="opens_at"
-                       class="mt-1 block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
-                @error('opens_at') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
-            </div>
-            <div aria-hidden="true"></div>
-            <div class="min-w-0">
-                <label for="closes_at" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_closes_at') }}</label>
-                <input id="closes_at" type="datetime-local" wire:model="closes_at"
-                       class="mt-1 block w-full rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
-                @error('closes_at') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
-            </div>
+        <div>
+            <label for="closes_at" class="block text-sm font-medium text-white/80">{{ __('battle.create_field_closes_at') }}</label>
+            <input id="closes_at" type="datetime-local" wire:model="closes_at"
+                   class="mt-1 block w-full max-w-md rounded-lg border border-white/15 bg-navy-900 px-3 py-2 text-sm text-white focus:border-cyan-400/60 focus:outline-none focus:ring-1 focus:ring-cyan-400/40"/>
+            @error('closes_at') <p class="mt-1 text-sm text-red-400">{{ $message }}</p> @enderror
         </div>
 
         <div class="flex items-center gap-4">
