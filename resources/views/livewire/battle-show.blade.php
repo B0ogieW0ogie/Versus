@@ -15,7 +15,7 @@
                     </header>
 
                     <div class="relative mx-4 mt-4 aspect-[2/1] overflow-hidden rounded-xl bg-navy-900 sm:mx-6 sm:mt-6">
-                        <div class="absolute inset-y-0 left-0 w-[55%] bg-navy-900 ring-2 ring-inset ring-sky-400/90"
+                        <div class="absolute inset-y-0 left-0 w-[55%] bg-navy-900"
                              style="clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);">
                             @if ($battle->side_a_image)
                                 <img src="{{ $battle->side_a_image }}" alt="{{ $battle->side_a_label }}"
@@ -23,8 +23,11 @@
                             @else
                                 <div class="h-full w-full bg-gradient-to-br from-vote-blue-from to-vote-blue-to"></div>
                             @endif
+                            <div class="pointer-events-none absolute inset-0 z-[1] [box-shadow:inset_0_0_0_2px_rgba(56,189,248,0.95),inset_0_0_48px_rgba(56,189,248,0.14)]"
+                                 style="clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);"
+                                 aria-hidden="true"></div>
                         </div>
-                        <div class="absolute inset-y-0 right-0 w-[55%] bg-navy-900 ring-2 ring-inset ring-rose-500/85"
+                        <div class="absolute inset-y-0 right-0 w-[55%] bg-navy-900"
                              style="clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);">
                             @if ($battle->side_b_image)
                                 <img src="{{ $battle->side_b_image }}" alt="{{ $battle->side_b_label }}"
@@ -32,6 +35,9 @@
                             @else
                                 <div class="h-full w-full bg-gradient-to-br from-vote-purple-from to-vote-purple-to"></div>
                             @endif
+                            <div class="pointer-events-none absolute inset-0 z-[1] [box-shadow:inset_0_0_0_2px_rgba(251,113,133,0.95),inset_0_0_48px_rgba(244,63,94,0.16)]"
+                                 style="clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);"
+                                 aria-hidden="true"></div>
                         </div>
 
                         <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
