@@ -149,18 +149,8 @@ document.addEventListener('alpine:init', () => {
         err: null,
         errTimer: null,
         _poolPollTimer: null,
-        modalOpen: false,
-        pendingSide: null,
-        pendingAmount: 0,
-        _onEscape: null,
 
         init() {
-            this._onEscape = (e) => {
-                if (e.key === 'Escape' && this.modalOpen) {
-                    this.cancelPendingVote();
-                }
-            };
-            document.addEventListener('keydown', this._onEscape);
             if (this.poolPollUrl) {
                 this._poolPollTimer = setInterval(() => {
                     this.pollTotalPool();
@@ -169,10 +159,6 @@ document.addEventListener('alpine:init', () => {
         },
 
         destroy() {
-            if (this._onEscape) {
-                document.removeEventListener('keydown', this._onEscape);
-                this._onEscape = null;
-            }
             if (this._poolPollTimer) {
                 clearInterval(this._poolPollTimer);
                 this._poolPollTimer = null;
@@ -275,39 +261,6 @@ document.addEventListener('alpine:init', () => {
             if (this.amountB > this.max) {
                 this.amountB = this.max;
             }
-        },
-
-        stakeModalTitle() {
-            return this.i18n.stakeModalTitle.replace('{{amount}}', String(this.pendingAmount));
-        },
-
-        requestSubmit(side) {
-            this.clamp(side, true);
-            if (!this.canSubmit(side)) {
-                return;
-            }
-            this.pendingSide = side;
-            this.pendingAmount = side === 'A' ? this.amountA : this.amountB;
-            this.modalOpen = true;
-        },
-
-        cancelPendingVote() {
-            this.modalOpen = false;
-            this.pendingSide = null;
-            this.pendingAmount = 0;
-        },
-
-        confirmPendingVote() {
-            if (!this.pendingSide || !this.canSubmit(this.pendingSide)) {
-                this.cancelPendingVote();
-
-                return;
-            }
-            const side = this.pendingSide;
-            this.modalOpen = false;
-            this.pendingSide = null;
-            this.pendingAmount = 0;
-            this.submit(side);
         },
 
         submit(side) {
