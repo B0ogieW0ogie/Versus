@@ -35,8 +35,7 @@ class BattleVoteWidgetTest extends TestCase
 
         Livewire::actingAs($user)
             ->test(BattleVoteWidget::class, ['battle' => $battle])
-            ->assertViewHas('poolA', 300.0)
-            ->assertViewHas('poolB', 100.0)
+            ->assertViewHas('totalPool', 400.0)
             ->assertViewHas('maxAllowed', 500)
             ->assertViewHas('canVote', true)
             ->assertSee(__('battle.widget_chip_max'))

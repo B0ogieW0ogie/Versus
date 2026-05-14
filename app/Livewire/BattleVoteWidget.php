@@ -58,14 +58,9 @@ class BattleVoteWidget extends Component
 
     public function render(): View
     {
-        $stats = Vote::query()
+        $totalPool = (float) Vote::query()
             ->where('battle_id', $this->battle->id)
-            ->selectRaw('side, COALESCE(SUM(amount), 0) AS amount_sum')
-            ->groupBy('side')
-            ->pluck('amount_sum', 'side');
-
-        $poolA = (float) ($stats['A'] ?? 0);
-        $poolB = (float) ($stats['B'] ?? 0);
+            ->sum('amount');
 
         $user = Auth::user();
         $userStakeA = 0.0;
@@ -89,12 +84,10 @@ class BattleVoteWidget extends Component
         $defaultSide = $userStakeB > $userStakeA ? Battle::SIDE_B : Battle::SIDE_A;
 
         return view('livewire.battle-vote-widget', [
-            'poolA' => $poolA,
-            'poolB' => $poolB,
+            'totalPool' => $totalPool,
             'userBalance' => $userBalance,
             'maxAllowed' => $maxAllowed,
             'maxVoteAmount' => $maxVoteAmount,
-            'winnersCut' => (float) config('versus.distribution.winners'),
             'defaultSide' => $defaultSide,
             'closesAtIso' => optional($this->battle->closes_at)->toIso8601String(),
             'canVote' => Auth::check()

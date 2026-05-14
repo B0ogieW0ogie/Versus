@@ -133,62 +133,19 @@ document.addEventListener('alpine:init', () => {
     }));
 
     window.Alpine.data('voteBattleDual', ({
-        poolA,
-        poolB,
+        totalPool,
         max,
         maxCap,
-        winnersCut,
-        sideALabel,
-        sideBLabel,
         i18n,
     }) => ({
-        poolA: Math.max(0, Number(poolA) || 0),
-        poolB: Math.max(0, Number(poolB) || 0),
+        totalPool: Math.max(0, Number(totalPool) || 0),
         max: Math.max(0, Number(max) || 0),
         maxCap: Math.max(0, Number(maxCap) || 0),
-        winnersCut: Number(winnersCut) || 0,
         amountA: 0,
         amountB: 0,
         err: null,
         errTimer: null,
 
-        get totalPool() {
-            return this.poolA + this.poolB;
-        },
-        chosenPool(side) {
-            return side === 'A' ? this.poolA : this.poolB;
-        },
-        multiplierFor(side) {
-            const chosen = this.chosenPool(side);
-            if (chosen === 0) {
-                return null;
-            }
-
-            return (this.winnersCut * this.totalPool) / chosen;
-        },
-        payoutFor(side) {
-            const m = this.multiplierFor(side);
-            const amt = side === 'A' ? this.amountA : this.amountB;
-            if (m === null || amt < 1) {
-                return null;
-            }
-
-            return Math.round(amt * m);
-        },
-        payoutLabelFor(side) {
-            const amt = side === 'A' ? this.amountA : this.amountB;
-            const payout = this.payoutFor(side);
-            const m = this.multiplierFor(side);
-            if (amt < 1 || payout === null || m === null) {
-                return null;
-            }
-            const label = side === 'A' ? sideALabel : sideBLabel;
-
-            return i18n.payoutPreview
-                .replace(':side', label)
-                .replace(':payout', String(payout))
-                .replace(':multiplier', m.toFixed(2));
-        },
         canSubmit(side) {
             const amt = side === 'A' ? this.amountA : this.amountB;
 

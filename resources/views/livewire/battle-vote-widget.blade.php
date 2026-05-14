@@ -1,11 +1,4 @@
 <div>
-    @php
-        $distribution = config('versus.distribution');
-        $winPct = (int) round(($distribution['winners'] ?? 0) * 100);
-        $projectPct = (int) round(($distribution['project'] ?? 0) * 100);
-        $drawPct = (int) round(($distribution['reward_pool'] ?? 0) * 100);
-    @endphp
-
     @guest
         <div class="border-t border-white/10 bg-navy-950/80 px-4 py-6 text-center text-sm text-white/90">
             <a href="{{ route('login') }}" class="font-semibold text-glow-cyan underline hover:text-white">
@@ -19,18 +12,13 @@
             </div>
         @else
             <div class="border-t border-white/10 bg-navy-950/90"
-                 wire:key="vote-dual-{{ $battle->id }}-{{ number_format($poolA, 2, '.', '') }}-{{ number_format($poolB, 2, '.', '') }}-{{ (int) $userBalance }}"
+                 wire:key="vote-dual-{{ $battle->id }}-{{ number_format($totalPool, 2, '.', '') }}-{{ (int) $userBalance }}"
                  x-data="voteBattleDual({
-                    poolA: {{ (float) $poolA }},
-                    poolB: {{ (float) $poolB }},
+                    totalPool: {{ (float) $totalPool }},
                     max: {{ (int) $maxAllowed }},
                     maxCap: {{ (int) $maxVoteAmount }},
-                    winnersCut: {{ (float) $winnersCut }},
-                    sideALabel: @js(mb_strtoupper($battle->side_a_label)),
-                    sideBLabel: @js(mb_strtoupper($battle->side_b_label)),
                     i18n: @js([
                         'clamp' => __('battle.amount_clamped'),
-                        'payoutPreview' => __('battle.widget_payout_preview'),
                     ]),
                  })"
                  x-on:balance-updated.window="onBalance($event.detail.balance)">
@@ -65,11 +53,6 @@
                                    inputmode="numeric"
                                    class="w-20 shrink-0 bg-transparent text-right font-mono text-lg font-bold text-white
                                           focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
-                        </div>
-                        <div x-show="payoutLabelFor('A')"
-                             x-cloak
-                             class="rounded-lg border border-glow-cyan/15 bg-navy-900/80 px-2 py-1.5 text-[11px] text-white/75">
-                            <span x-text="payoutLabelFor('A')"></span>
                         </div>
                         <button type="button"
                                 @click="submit('A')"
@@ -137,11 +120,6 @@
                                    class="w-20 shrink-0 bg-transparent text-right font-mono text-lg font-bold text-white
                                           focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                         </div>
-                        <div x-show="payoutLabelFor('B')"
-                             x-cloak
-                             class="rounded-lg border border-glow-cyan/15 bg-navy-900/80 px-2 py-1.5 text-[11px] text-white/75">
-                            <span x-text="payoutLabelFor('B')"></span>
-                        </div>
                         <button type="button"
                                 @click="submit('B')"
                                 :disabled="!canSubmit('B')"
@@ -163,12 +141,10 @@
                     <p class="px-4 pb-3 text-center text-sm text-emerald-400 lg:px-6">{{ session('battle-status') }}</p>
                 @endif
 
-                <div class="flex flex-col items-center gap-2 border-t border-white/5 px-4 py-4 text-[11px] text-white/50 lg:flex-row lg:justify-center lg:gap-6">
+                <div class="border-t border-white/5 px-4 py-4 text-center text-[11px] text-white/50">
                     <span>{{ __('battle.widget_balance') }}:
                         <span class="font-mono text-white/85">{{ number_format((int) $userBalance) }} 🪙</span>
                     </span>
-                    <span class="hidden text-white/25 lg:inline">·</span>
-                    <span class="text-center leading-snug">{{ __('battle.distribution', ['win' => $winPct, 'project' => $projectPct, 'draw' => $drawPct]) }}</span>
                 </div>
             </div>
         @endif
