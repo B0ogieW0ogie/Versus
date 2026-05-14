@@ -26,6 +26,11 @@ return [
     'widget_amount_label' => 'Сумма',
     'widget_chip_max' => 'Макс',
     'widget_submit_vote' => 'Проголосовать',
+
+    'stake_modal_title' => 'Ваша ставка: {{amount}} VS',
+    'stake_modal_body' => 'Отправка токенов в пул без подтверждения.',
+    'stake_modal_cancel' => 'Отмена',
+    'stake_modal_confirm' => 'Отправить в пул',
     'widget_payout_preview' => 'Если :side побеждает → :payout 🪙 (×:multiplier)',
     'widget_cta_prefix' => 'Проголосовать за',
     'widget_balance' => 'Баланс',

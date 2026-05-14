@@ -20,6 +20,10 @@
                     poolPollUrl: @js(route('battles.pool-total', $battle)),
                     i18n: @js([
                         'clamp' => __('battle.amount_clamped'),
+                        'stakeModalTitle' => __('battle.stake_modal_title'),
+                        'stakeModalBody' => __('battle.stake_modal_body'),
+                        'stakeModalCancel' => __('battle.stake_modal_cancel'),
+                        'stakeModalConfirm' => __('battle.stake_modal_confirm'),
                     ]),
                  })"
                  x-on:balance-updated.window="onBalance($event.detail.balance)">
@@ -56,7 +60,7 @@
                                           focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                         </div>
                         <button type="button"
-                                @click="submit('A')"
+                                @click="requestSubmit('A')"
                                 :disabled="!canSubmit('A')"
                                 wire:loading.attr="disabled"
                                 @disabled(! $canVote)
@@ -124,7 +128,7 @@
                                           focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
                         </div>
                         <button type="button"
-                                @click="submit('B')"
+                                @click="requestSubmit('B')"
                                 :disabled="!canSubmit('B')"
                                 wire:loading.attr="disabled"
                                 @disabled(! $canVote)
@@ -148,6 +152,34 @@
                     <span>{{ __('battle.widget_balance') }}:
                         <span class="font-mono text-white/85">{{ number_format((int) $userBalance) }} 🪙</span>
                     </span>
+                </div>
+
+                <div x-show="modalOpen"
+                     x-cloak
+                     x-transition.opacity.duration.200ms
+                     class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
+                     role="dialog"
+                     aria-modal="true"
+                     aria-labelledby="stake-modal-title"
+                     @click.self="cancelPendingVote()">
+                    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-navy-800 p-6 shadow-2xl shadow-black/50"
+                         @click.stop>
+                        <h2 id="stake-modal-title" class="text-lg font-semibold text-white" x-text="stakeModalTitle()"></h2>
+                        <p class="mt-3 text-sm leading-relaxed text-white/75" x-text="i18n.stakeModalBody"></p>
+                        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                            <button type="button"
+                                    class="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-white/90 hover:bg-white/5"
+                                    @click="cancelPendingVote()">
+                                <span x-text="i18n.stakeModalCancel"></span>
+                            </button>
+                            <button type="button"
+                                    class="rounded-xl bg-gradient-to-r from-glow-cyan/90 to-sky-600 px-4 py-2.5 text-sm font-bold text-navy-900 shadow-lg hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                                    wire:loading.attr="disabled"
+                                    @click="confirmPendingVote()">
+                                <span x-text="i18n.stakeModalConfirm"></span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         @endif

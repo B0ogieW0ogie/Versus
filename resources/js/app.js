@@ -139,6 +139,7 @@ document.addEventListener('alpine:init', () => {
         i18n,
         poolPollUrl = '',
     }) => ({
+        i18n,
         totalPool: Math.max(0, Number(totalPool) || 0),
         max: Math.max(0, Number(max) || 0),
         maxCap: Math.max(0, Number(maxCap) || 0),
@@ -148,8 +149,18 @@ document.addEventListener('alpine:init', () => {
         err: null,
         errTimer: null,
         _poolPollTimer: null,
+        modalOpen: false,
+        pendingSide: null,
+        pendingAmount: 0,
+        _onEscape: null,
 
         init() {
+            this._onEscape = (e) => {
+                if (e.key === 'Escape' && this.modalOpen) {
+                    this.cancelPendingVote();
+                }
+            };
+            document.addEventListener('keydown', this._onEscape);
             if (this.poolPollUrl) {
                 this._poolPollTimer = setInterval(() => {
                     this.pollTotalPool();
@@ -158,6 +169,10 @@ document.addEventListener('alpine:init', () => {
         },
 
         destroy() {
+            if (this._onEscape) {
+                document.removeEventListener('keydown', this._onEscape);
+                this._onEscape = null;
+            }
             if (this._poolPollTimer) {
                 clearInterval(this._poolPollTimer);
                 this._poolPollTimer = null;
@@ -241,7 +256,7 @@ document.addEventListener('alpine:init', () => {
                 this[key] = n;
             }
             if (changed && n === this.max && this.max > 0) {
-                this.flash(i18n.clamp);
+                this.flash(this.i18n.clamp);
             }
         },
         flash(msg) {
@@ -261,6 +276,40 @@ document.addEventListener('alpine:init', () => {
                 this.amountB = this.max;
             }
         },
+
+        stakeModalTitle() {
+            return this.i18n.stakeModalTitle.replace('{{amount}}', String(this.pendingAmount));
+        },
+
+        requestSubmit(side) {
+            this.clamp(side, true);
+            if (!this.canSubmit(side)) {
+                return;
+            }
+            this.pendingSide = side;
+            this.pendingAmount = side === 'A' ? this.amountA : this.amountB;
+            this.modalOpen = true;
+        },
+
+        cancelPendingVote() {
+            this.modalOpen = false;
+            this.pendingSide = null;
+            this.pendingAmount = 0;
+        },
+
+        confirmPendingVote() {
+            if (!this.pendingSide || !this.canSubmit(this.pendingSide)) {
+                this.cancelPendingVote();
+
+                return;
+            }
+            const side = this.pendingSide;
+            this.modalOpen = false;
+            this.pendingSide = null;
+            this.pendingAmount = 0;
+            this.submit(side);
+        },
+
         submit(side) {
             this.clamp(side, true);
             if (!this.canSubmit(side)) {

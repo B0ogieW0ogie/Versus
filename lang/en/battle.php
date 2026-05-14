@@ -26,6 +26,11 @@ return [
     'widget_amount_label' => 'Amount',
     'widget_chip_max' => 'Max',
     'widget_submit_vote' => 'Vote',
+
+    'stake_modal_title' => 'Your bet: {{amount}} VS',
+    'stake_modal_body' => 'Tokens are sent to the pool immediately without a second confirmation.',
+    'stake_modal_cancel' => 'Cancel',
+    'stake_modal_confirm' => 'Send to pool',
     'widget_payout_preview' => 'If :side wins → :payout 🪙 (×:multiplier)',
     'widget_cta_prefix' => 'Vote for',
     'widget_balance' => 'Balance',
