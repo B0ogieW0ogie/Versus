@@ -21,7 +21,7 @@ class BattleVoteWidgetTest extends TestCase
 
         Livewire::test(BattleVoteWidget::class, ['battle' => $battle])
             ->assertSee(__('battle.sign_in_to_vote'))
-            ->assertDontSee(__('battle.widget_amount_label'));
+            ->assertDontSee(__('battle.widget_submit_vote'));
     }
 
     public function test_authed_user_sees_form_with_pool_stats(): void
@@ -39,7 +39,8 @@ class BattleVoteWidgetTest extends TestCase
             ->assertViewHas('poolB', 100.0)
             ->assertViewHas('maxAllowed', 500)
             ->assertViewHas('canVote', true)
-            ->assertSee(__('battle.widget_amount_label'));
+            ->assertSee(__('battle.widget_chip_max'))
+            ->assertSee(__('battle.widget_submit_vote'));
     }
 
     public function test_cast_vote_delegates_to_action_and_dispatches_events(): void
@@ -92,7 +93,7 @@ class BattleVoteWidgetTest extends TestCase
             ->test(BattleVoteWidget::class, ['battle' => $battle])
             ->assertViewHas('canVote', false)
             ->assertSee(__('battle.voting_closed'))
-            ->assertDontSee(__('battle.widget_amount_label'));
+            ->assertDontSee(__('battle.widget_submit_vote'));
     }
 
     public function test_over_cap_amount_surfaces_vote_error(): void

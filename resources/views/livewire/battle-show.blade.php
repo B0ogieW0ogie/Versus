@@ -1,33 +1,21 @@
-<div class="bg-navy-900 text-white min-h-screen">
+<div class="min-h-screen bg-gradient-to-b from-violet-950 via-navy-900 to-navy-900 text-white">
     @php
         $closesIso = optional($battle->closes_at)->toIso8601String();
     @endphp
 
-    <div class="max-w-7xl mx-auto px-4 py-8 grid gap-6 lg:grid-cols-[1fr_320px]">
-        <main class="space-y-6 min-w-0">
-            {{-- =================== Central battle card =================== --}}
-            <article class="relative overflow-hidden rounded-2xl bg-navy-800 p-6 sm:p-8
-                            bg-[radial-gradient(ellipse_at_top,_rgba(99,102,241,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,_rgba(168,85,247,0.12),transparent_55%)]">
-                <div class="pointer-events-none absolute inset-0 opacity-40
-                            bg-[radial-gradient(1px_1px_at_20%_30%,white,transparent),radial-gradient(1px_1px_at_70%_60%,white,transparent),radial-gradient(1px_1px_at_40%_80%,white,transparent),radial-gradient(1px_1px_at_85%_20%,white,transparent)]
-                            bg-[length:400px_400px]"></div>
+    <div class="mx-auto max-w-7xl px-4 py-8 lg:grid lg:grid-cols-[1fr_300px] lg:gap-8">
+        <main class="min-w-0 space-y-6">
+            <article class="relative overflow-hidden rounded-2xl border border-white/10 bg-navy-800 shadow-xl shadow-black/40">
+                <div class="pointer-events-none absolute inset-0 opacity-30
+                            bg-[radial-gradient(ellipse_at_top,_rgba(139,92,246,0.25),transparent_55%),radial-gradient(ellipse_at_bottom,_rgba(59,130,246,0.12),transparent_50%)]"></div>
 
                 <div class="relative">
-                    <header class="flex flex-col items-center gap-4 text-center">
-                        <h1 class="text-2xl sm:text-3xl font-semibold">{{ $battle->title }}</h1>
-                        @if ($closesIso)
-                            <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-sm">
-                                <span class="text-white/70">{{ __('battle.ends_in') }}</span>
-                                <span class="font-mono font-semibold"
-                                      x-data="countdown('{{ $closesIso }}')"
-                                      x-init="start()"
-                                      x-text="label"></span>
-                            </span>
-                        @endif
+                    <header class="px-6 pb-2 pt-6 text-center sm:px-8 sm:pt-8">
+                        <h1 class="text-2xl font-semibold sm:text-3xl">{{ $battle->title }}</h1>
                     </header>
 
-                    <div class="mt-8 relative overflow-hidden rounded-2xl aspect-[2/1] bg-navy-900">
-                        <div class="absolute inset-y-0 left-0 w-[55%] bg-navy-900"
+                    <div class="relative mx-4 mt-4 aspect-[2/1] overflow-hidden rounded-xl bg-navy-900 sm:mx-6 sm:mt-6">
+                        <div class="absolute inset-y-0 left-0 w-[55%] bg-navy-900 ring-2 ring-inset ring-sky-400/90"
                              style="clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);">
                             @if ($battle->side_a_image)
                                 <img src="{{ $battle->side_a_image }}" alt="{{ $battle->side_a_label }}"
@@ -36,7 +24,7 @@
                                 <div class="h-full w-full bg-gradient-to-br from-vote-blue-from to-vote-blue-to"></div>
                             @endif
                         </div>
-                        <div class="absolute inset-y-0 right-0 w-[55%] bg-navy-900"
+                        <div class="absolute inset-y-0 right-0 w-[55%] bg-navy-900 ring-2 ring-inset ring-rose-500/85"
                              style="clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);">
                             @if ($battle->side_b_image)
                                 <img src="{{ $battle->side_b_image }}" alt="{{ $battle->side_b_label }}"
@@ -46,73 +34,67 @@
                             @endif
                         </div>
 
-                        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none"></div>
+                        <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
-                        <div class="absolute bottom-4 left-5 max-w-[40%]">
-                            <p class="text-lg sm:text-xl font-bold uppercase tracking-wide text-white drop-shadow">{{ $battle->side_a_label }}</p>
+                        <div class="pointer-events-none absolute bottom-4 left-5 max-w-[40%]">
+                            <p class="text-lg font-bold uppercase tracking-wide text-white drop-shadow sm:text-xl">{{ $battle->side_a_label }}</p>
                             @if ($battle->side_a_subtitle)
                                 <p class="text-xs text-white/70 drop-shadow">{{ $battle->side_a_subtitle }}</p>
                             @endif
                         </div>
-                        <div class="absolute bottom-4 right-5 max-w-[40%] text-right">
-                            <p class="text-lg sm:text-xl font-bold uppercase tracking-wide text-white drop-shadow">{{ $battle->side_b_label }}</p>
+                        <div class="pointer-events-none absolute bottom-4 right-5 max-w-[40%] text-right">
+                            <p class="text-lg font-bold uppercase tracking-wide text-white drop-shadow sm:text-xl">{{ $battle->side_b_label }}</p>
                             @if ($battle->side_b_subtitle)
                                 <p class="text-xs text-white/70 drop-shadow">{{ $battle->side_b_subtitle }}</p>
                             @endif
                         </div>
 
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                                    flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full
-                                    bg-navy-700 text-sm sm:text-base font-bold tracking-wider shadow-vs-glow ring-1 ring-glow-cyan/40">
+                        <div class="pointer-events-none absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full
+                                    bg-indigo-950 text-sm font-bold tracking-wider text-white shadow-vs-glow ring-2 ring-white/25 sm:h-16 sm:w-16 sm:text-base">
                             {{ __('battle.vs') }}
                         </div>
                     </div>
 
-                    <p class="mt-8 text-center text-sm text-white/70">
-                        {{ __('battle.total_prize_pool') }}:
-                        <span class="font-semibold text-white">{{ number_format($totalPool, 0) }}</span>
-                        {{ __('battle.tokens') }}
-                    </p>
+                    <livewire:battle-vote-widget :battle="$battle" />
                 </div>
             </article>
 
             {{-- =================== Comments (dark, with SUPPORT) =================== --}}
-            <section class="rounded-2xl bg-navy-800 border border-white/5 p-6">
+            <section class="rounded-2xl border border-white/5 bg-navy-800 p-6">
                 <h3 class="text-lg font-semibold">{{ __('comments.heading') }}</h3>
 
                 <ul class="mt-4 space-y-3">
                     @forelse ($comments as $c)
                         <li class="flex items-start gap-3 rounded-xl bg-navy-900/60 p-4">
-                            <div class="h-10 w-10 shrink-0 rounded-full bg-navy-700 flex items-center justify-center
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy-700
                                         text-sm font-semibold text-white/80">
                                 {{ mb_strtoupper(mb_substr($c->user->name, 0, 1)) }}
                             </div>
-                            <div class="flex-1 min-w-0">
+                            <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-2">
                                     <strong class="text-sm">{{ $c->user->name }}</strong>
                                     <span class="text-[11px] text-white/40">{{ $c->created_at->diffForHumans() }}</span>
                                 </div>
-                                <p class="mt-1 text-sm text-white/80 whitespace-pre-line break-words">{{ $c->body }}</p>
+                                <p class="mt-1 whitespace-pre-line break-words text-sm text-white/80">{{ $c->body }}</p>
                             </div>
 
                             @if ($c->side)
-                                <div class="flex items-center gap-2 shrink-0">
+                                <div class="flex shrink-0 items-center gap-2">
                                     <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/80">
                                         {{ number_format((int) $c->author_side_votes_sum) }}
                                         <span class="text-white/50">{{ __('comments.votes') }}</span>
-                                        <span class="text-white/40 ml-1">›</span>
+                                        <span class="ml-1 text-white/40">›</span>
                                     </span>
                                     @auth
                                         @if ($battle->isOpenForVoting())
                                             <button type="button"
                                                     wire:click="supportFor({{ $c->id }})"
                                                     wire:loading.attr="disabled"
-                                                    class="rounded-lg px-3 py-2 text-[11px] font-bold uppercase tracking-wider
+                                                    class="rounded-lg px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition
+                                                           hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100
                                                            {{ $c->side === 'A'
                                                                ? 'bg-gradient-to-r from-vote-blue-from to-vote-blue-to shadow-vote-blue'
-                                                               : 'bg-gradient-to-r from-vote-purple-from to-vote-purple-to shadow-vote-purple' }}
-                                                           transition hover:brightness-110
-                                                           disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100">
+                                                               : 'bg-gradient-to-r from-vote-purple-from to-vote-purple-to shadow-vote-purple' }}">
                                                 {{ __('comments.support') }}
                                                 {{ mb_strtoupper($c->side === 'A' ? $battle->side_a_label : $battle->side_b_label) }}
                                             </button>
@@ -130,7 +112,7 @@
                     <form wire:submit="comment" class="mt-5 space-y-2">
                         <div class="flex items-center gap-2 rounded-xl bg-navy-900/60 p-2">
                             <select wire:model="commentSide"
-                                    class="shrink-0 bg-navy-700 text-xs text-white/90 border-0 rounded px-2 py-1
+                                    class="shrink-0 rounded border-0 bg-navy-700 px-2 py-1 text-xs text-white/90
                                            focus:ring-1 focus:ring-glow-cyan/50">
                                 <option value="">{{ __('comments.side_select_none') }}</option>
                                 <option value="A">{{ $battle->side_a_label }}</option>
@@ -138,11 +120,10 @@
                             </select>
                             <input wire:model="commentBody" type="text"
                                    placeholder="{{ __('comments.add_your_argument') }}"
-                                   class="flex-1 min-w-0 bg-transparent border-0 text-sm text-white
-                                          placeholder:text-white/40 focus:ring-0">
+                                   class="min-w-0 flex-1 border-0 bg-transparent text-sm text-white placeholder:text-white/40 focus:ring-0">
                             <button type="submit"
                                     class="shrink-0 rounded-md bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-wider
-                                           text-white hover:bg-white/20 transition">
+                                           text-white transition hover:bg-white/20">
                                 {{ __('comments.post') }}
                             </button>
                         </div>
@@ -154,9 +135,7 @@
             </section>
         </main>
 
-        {{-- =================== Sidebar =================== --}}
-        <aside class="lg:sticky lg:top-6 lg:self-start space-y-4">
-            <livewire:battle-vote-widget :battle="$battle" />
+        <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
             <livewire:sidebar-widgets :battle="$battle" />
         </aside>
     </div>

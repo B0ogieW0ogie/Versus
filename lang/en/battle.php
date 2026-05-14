@@ -25,6 +25,7 @@ return [
     'widget_closes_on' => 'Closes :date',
     'widget_amount_label' => 'Amount',
     'widget_chip_max' => 'Max',
+    'widget_submit_vote' => 'Vote',
     'widget_payout_preview' => 'If :side wins → :payout 🪙 (×:multiplier)',
     'widget_cta_prefix' => 'Vote for',
     'widget_balance' => 'Balance',

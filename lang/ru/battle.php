@@ -25,6 +25,7 @@ return [
     'widget_closes_on' => 'Завершается :date',
     'widget_amount_label' => 'Сумма',
     'widget_chip_max' => 'Макс',
+    'widget_submit_vote' => 'Проголосовать',
     'widget_payout_preview' => 'Если :side побеждает → :payout 🪙 (×:multiplier)',
     'widget_cta_prefix' => 'Проголосовать за',
     'widget_balance' => 'Баланс',

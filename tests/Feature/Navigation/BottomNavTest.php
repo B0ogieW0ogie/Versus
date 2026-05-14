@@ -21,11 +21,11 @@ class BottomNavTest extends TestCase
         $response->assertSee(__('nav.profile'), false);
     }
 
-    public function test_feed_tab_is_disabled_placeholder(): void
+    public function test_guest_bottom_nav_has_no_disabled_tabs(): void
     {
         $html = $this->get(route('home'))->assertOk()->getContent();
 
-        $this->assertSame(1, substr_count($html, 'aria-disabled="true"'));
+        $this->assertSame(0, substr_count($html, 'aria-disabled="true"'));
     }
 
     public function test_create_fab_links_guest_to_login(): void

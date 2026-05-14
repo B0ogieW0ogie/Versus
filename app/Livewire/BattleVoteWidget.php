@@ -96,6 +96,7 @@ class BattleVoteWidget extends Component
             'maxVoteAmount' => $maxVoteAmount,
             'winnersCut' => (float) config('versus.distribution.winners'),
             'defaultSide' => $defaultSide,
+            'closesAtIso' => optional($this->battle->closes_at)->toIso8601String(),
             'canVote' => Auth::check()
                 && $this->battle->isOpenForVoting()
                 && $userBalance >= 1,

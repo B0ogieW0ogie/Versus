@@ -132,6 +132,135 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    window.Alpine.data('voteBattleDual', ({
+        poolA,
+        poolB,
+        max,
+        maxCap,
+        winnersCut,
+        sideALabel,
+        sideBLabel,
+        i18n,
+    }) => ({
+        poolA: Math.max(0, Number(poolA) || 0),
+        poolB: Math.max(0, Number(poolB) || 0),
+        max: Math.max(0, Number(max) || 0),
+        maxCap: Math.max(0, Number(maxCap) || 0),
+        winnersCut: Number(winnersCut) || 0,
+        amountA: 0,
+        amountB: 0,
+        err: null,
+        errTimer: null,
+
+        get totalPool() {
+            return this.poolA + this.poolB;
+        },
+        chosenPool(side) {
+            return side === 'A' ? this.poolA : this.poolB;
+        },
+        multiplierFor(side) {
+            const chosen = this.chosenPool(side);
+            if (chosen === 0) {
+                return null;
+            }
+
+            return (this.winnersCut * this.totalPool) / chosen;
+        },
+        payoutFor(side) {
+            const m = this.multiplierFor(side);
+            const amt = side === 'A' ? this.amountA : this.amountB;
+            if (m === null || amt < 1) {
+                return null;
+            }
+
+            return Math.round(amt * m);
+        },
+        payoutLabelFor(side) {
+            const amt = side === 'A' ? this.amountA : this.amountB;
+            const payout = this.payoutFor(side);
+            const m = this.multiplierFor(side);
+            if (amt < 1 || payout === null || m === null) {
+                return null;
+            }
+            const label = side === 'A' ? sideALabel : sideBLabel;
+
+            return i18n.payoutPreview
+                .replace(':side', label)
+                .replace(':payout', String(payout))
+                .replace(':multiplier', m.toFixed(2));
+        },
+        canSubmit(side) {
+            const amt = side === 'A' ? this.amountA : this.amountB;
+
+            return amt >= 1 && amt <= this.max;
+        },
+        addChip(side, delta) {
+            const key = side === 'A' ? 'amountA' : 'amountB';
+            const base = Number.isFinite(parseInt(this[key], 10)) ? parseInt(this[key], 10) : 0;
+            const next = Math.max(1, Math.min(this.max, base + (Number(delta) || 0)));
+            this[key] = next;
+        },
+        setMax(side) {
+            const key = side === 'A' ? 'amountA' : 'amountB';
+            this[key] = this.max;
+        },
+        clamp(side, onBlur = false) {
+            const key = side === 'A' ? 'amountA' : 'amountB';
+            let n = parseInt(this[key], 10);
+            let changed = false;
+            if (Number.isNaN(n)) {
+                if (onBlur) {
+                    n = 0;
+                    changed = true;
+                } else {
+                    return;
+                }
+            } else if (n < 0) {
+                n = 0;
+                changed = true;
+            } else if (n > this.max) {
+                n = this.max;
+                changed = true;
+            }
+            if (n !== this[key]) {
+                this[key] = n;
+            }
+            if (changed && n === this.max && this.max > 0) {
+                this.flash(i18n.clamp);
+            }
+        },
+        flash(msg) {
+            this.err = msg;
+            clearTimeout(this.errTimer);
+            this.errTimer = setTimeout(() => {
+                this.err = null;
+            }, 2000);
+        },
+        onBalance(newBalance) {
+            const b = Math.max(0, Number(newBalance) || 0);
+            this.max = Math.min(b, this.maxCap);
+            if (this.amountA > this.max) {
+                this.amountA = this.max;
+            }
+            if (this.amountB > this.max) {
+                this.amountB = this.max;
+            }
+        },
+        submit(side) {
+            this.clamp(side, true);
+            if (!this.canSubmit(side)) {
+                return;
+            }
+            const amt = side === 'A' ? this.amountA : this.amountB;
+            this.$wire.castVote(side, amt);
+            if (side === 'A') {
+                this.amountA = 0;
+            } else {
+                this.amountB = 0;
+            }
+        },
+    }));
+
     window.Alpine.data('carousel', ({
         perPageMobile = 2,
         perPageDesktop = 4,
