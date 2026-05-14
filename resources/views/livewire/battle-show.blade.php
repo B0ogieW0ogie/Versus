@@ -40,6 +40,26 @@
                                  aria-hidden="true"></div>
                         </div>
 
+                        <svg class="pointer-events-none absolute inset-0 z-[4] h-full w-full"
+                             viewBox="0 0 100 50"
+                             preserveAspectRatio="none"
+                             aria-hidden="true">
+                            <defs>
+                                <linearGradient id="versus-seam-fire-{{ $battle->id }}"
+                                                gradientUnits="userSpaceOnUse"
+                                                x1="55" y1="0" x2="45" y2="50">
+                                    <stop offset="0%" stop-color="#fde047"/>
+                                    <stop offset="40%" stop-color="#fb923c"/>
+                                    <stop offset="100%" stop-color="#dc2626"/>
+                                </linearGradient>
+                            </defs>
+                            <line x1="55" y1="0" x2="45" y2="50"
+                                  stroke="url(#versus-seam-fire-{{ $battle->id }})"
+                                  stroke-width="2.25"
+                                  stroke-linecap="round"
+                                  vector-effect="non-scaling-stroke"/>
+                        </svg>
+
                         <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
 
                         <div class="pointer-events-none absolute bottom-4 left-5 max-w-[40%]">
@@ -55,9 +75,12 @@
                             @endif
                         </div>
 
-                        <div class="pointer-events-none absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full
-                                    bg-indigo-950 text-sm font-bold tracking-wider text-white shadow-vs-glow ring-2 ring-white/25 sm:h-16 sm:w-16 sm:text-base">
-                            {{ __('battle.vs') }}
+                        <div class="pointer-events-none absolute left-1/2 top-1/2 z-[6] -translate-x-1/2 -translate-y-1/2 rounded-full
+                                    bg-gradient-to-br from-amber-300 via-orange-500 to-red-600 p-[2.5px]
+                                    shadow-[0_0_26px_rgba(251,146,60,0.55),0_0_12px_rgba(239,68,68,0.35)]">
+                            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-950 text-sm font-bold tracking-wider text-white sm:h-16 sm:w-16 sm:text-base">
+                                {{ __('battle.vs') }}
+                            </div>
                         </div>
                     </div>
 
