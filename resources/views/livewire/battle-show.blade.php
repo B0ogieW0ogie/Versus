@@ -91,7 +91,23 @@
 
             {{-- =================== Comments (dark, with SUPPORT) =================== --}}
             <section class="rounded-2xl border border-white/5 bg-navy-800 p-6">
-                <h3 class="text-lg font-semibold">{{ __('comments.heading') }}</h3>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <h3 class="text-lg font-semibold">{{ __('comments.heading') }}</h3>
+                    <div class="flex flex-wrap items-center gap-2" role="group" aria-label="{{ __('comments.sort_label') }}">
+                        <div class="inline-flex rounded-lg border border-white/10 bg-navy-900/80 p-0.5">
+                            <button type="button" wire:click="$set('commentSort', 'popular')"
+                                    class="rounded-md px-3 py-1.5 text-xs font-semibold transition
+                                           {{ $commentSort === 'popular' ? 'bg-white/15 text-white shadow-sm' : 'text-white/55 hover:text-white/80' }}">
+                                {{ __('comments.sort_popular') }}
+                            </button>
+                            <button type="button" wire:click="$set('commentSort', 'new')"
+                                    class="rounded-md px-3 py-1.5 text-xs font-semibold transition
+                                           {{ $commentSort === 'new' ? 'bg-white/15 text-white shadow-sm' : 'text-white/55 hover:text-white/80' }}">
+                                {{ __('comments.sort_new') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <ul class="mt-4 space-y-3">
                     @forelse ($comments as $c)

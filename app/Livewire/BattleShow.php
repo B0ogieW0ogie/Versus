@@ -17,6 +17,8 @@ class BattleShow extends Component
 {
     public Battle $battle;
 
+    public string $commentSort = 'popular';
+
     public string $commentBody = '';
 
     public ?string $commentSide = null;
@@ -78,6 +80,13 @@ class BattleShow extends Component
         $this->commentSide = null;
     }
 
+    public function updatedCommentSort(string $value): void
+    {
+        if (! in_array($value, ['popular', 'new'], true)) {
+            $this->commentSort = 'popular';
+        }
+    }
+
     #[Layout('layouts.app')]
     public function render(): View
     {
@@ -85,22 +94,29 @@ class BattleShow extends Component
             ->where('battle_id', $this->battle->id)
             ->sum('amount');
 
+        $commentsQuery = Comment::query()
+            ->where('battle_id', $this->battle->id)
+            ->with('user:id,name')
+            ->select('comments.*')
+            ->addSelect([
+                'author_side_votes_sum' => Vote::query()
+                    ->selectRaw('COALESCE(SUM(amount), 0)')
+                    ->whereColumn('votes.user_id', 'comments.user_id')
+                    ->whereColumn('votes.battle_id', 'comments.battle_id')
+                    ->whereColumn('votes.side', 'comments.side'),
+            ]);
+
+        if ($this->commentSort === 'new') {
+            $commentsQuery->latest('comments.created_at');
+        } else {
+            $commentsQuery
+                ->orderByDesc('author_side_votes_sum')
+                ->orderByDesc('comments.created_at');
+        }
+
         return view('livewire.battle-show', [
             'totalPool' => $totalPool,
-            'comments' => Comment::query()
-                ->where('battle_id', $this->battle->id)
-                ->with('user:id,name')
-                ->select('comments.*')
-                ->addSelect([
-                    'author_side_votes_sum' => Vote::query()
-                        ->selectRaw('COALESCE(SUM(amount), 0)')
-                        ->whereColumn('votes.user_id', 'comments.user_id')
-                        ->whereColumn('votes.battle_id', 'comments.battle_id')
-                        ->whereColumn('votes.side', 'comments.side'),
-                ])
-                ->latest()
-                ->limit(50)
-                ->get(),
+            'comments' => $commentsQuery->limit(50)->get(),
         ]);
     }
 }
