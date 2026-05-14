@@ -164,7 +164,7 @@
                                 <option value="A">{{ $battle->side_a_label }}</option>
                                 <option value="B">{{ $battle->side_b_label }}</option>
                             </select>
-                            <input wire:model="commentBody" type="text"
+                            <input wire:model="commentBody" type="text" maxlength="500"
                                    placeholder="{{ __('comments.add_your_argument') }}"
                                    class="min-w-0 flex-1 border-0 bg-transparent text-sm text-white placeholder:text-white/40 focus:ring-0">
                             <button type="submit"

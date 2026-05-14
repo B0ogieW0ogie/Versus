@@ -65,7 +65,7 @@ class BattleShow extends Component
     public function comment(): void
     {
         $this->validate([
-            'commentBody' => ['required', 'string', 'max:1000'],
+            'commentBody' => ['required', 'string', 'max:500'],
             'commentSide' => ['nullable', 'in:A,B'],
         ]);
 

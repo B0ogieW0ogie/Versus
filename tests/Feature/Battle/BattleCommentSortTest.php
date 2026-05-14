@@ -90,6 +90,33 @@ test('battle comments new sort orders by created at descending', function () {
     assertHtmlOrder($html, 'COMMENT_NEW_MIDDLE', 'COMMENT_NEW_OLDEST');
 });
 
+test('battle comment rejects body longer than 500 characters', function () {
+    $battle = Battle::factory()->create();
+    $user = User::factory()->create(['balance' => 100]);
+
+    Livewire::actingAs($user)
+        ->test(BattleShow::class, ['battle' => $battle])
+        ->set('commentBody', str_repeat('x', 501))
+        ->call('comment')
+        ->assertHasErrors('commentBody');
+
+    expect(Comment::where('battle_id', $battle->id)->count())->toBe(0);
+});
+
+test('battle comment accepts body of 500 characters', function () {
+    $battle = Battle::factory()->create();
+    $user = User::factory()->create(['balance' => 100]);
+    $body = str_repeat('y', 500);
+
+    Livewire::actingAs($user)
+        ->test(BattleShow::class, ['battle' => $battle])
+        ->set('commentBody', $body)
+        ->call('comment')
+        ->assertHasNoErrors('commentBody');
+
+    expect(Comment::query()->where('battle_id', $battle->id)->where('body', $body)->exists())->toBeTrue();
+});
+
 test('invalid comment sort falls back to popular', function () {
     $battle = Battle::factory()->create();
     $user = User::factory()->create(['balance' => 100]);
