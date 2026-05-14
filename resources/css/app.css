@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+    @keyframes versus-pool-bump {
+        0% {
+            transform: scale(1);
+            color: rgb(255 255 255);
+        }
+
+        50% {
+            transform: scale(1.05);
+            color: #10b981;
+        }
+
+        100% {
+            transform: scale(1);
+            color: rgb(255 255 255);
+        }
+    }
+
+    .versus-pool-bump {
+        animation: versus-pool-bump 300ms ease-out;
+    }
+}

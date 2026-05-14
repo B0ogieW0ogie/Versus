@@ -137,14 +137,72 @@ document.addEventListener('alpine:init', () => {
         max,
         maxCap,
         i18n,
+        poolPollUrl = '',
     }) => ({
         totalPool: Math.max(0, Number(totalPool) || 0),
         max: Math.max(0, Number(max) || 0),
         maxCap: Math.max(0, Number(maxCap) || 0),
+        poolPollUrl: typeof poolPollUrl === 'string' ? poolPollUrl : '',
         amountA: 0,
         amountB: 0,
         err: null,
         errTimer: null,
+        _poolPollTimer: null,
+
+        init() {
+            if (this.poolPollUrl) {
+                this._poolPollTimer = setInterval(() => {
+                    this.pollTotalPool();
+                }, 5000);
+            }
+        },
+
+        destroy() {
+            if (this._poolPollTimer) {
+                clearInterval(this._poolPollTimer);
+                this._poolPollTimer = null;
+            }
+        },
+
+        pollTotalPool() {
+            if (!this.poolPollUrl) {
+                return;
+            }
+            fetch(this.poolPollUrl, {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            })
+                .then((r) => {
+                    if (!r.ok) {
+                        throw new Error('pool poll failed');
+                    }
+
+                    return r.json();
+                })
+                .then((data) => {
+                    const next = Math.max(0, Number(data.total) || 0);
+                    const cur = Math.round(this.totalPool);
+                    const nxt = Math.round(next);
+                    if (nxt !== cur) {
+                        this.totalPool = next;
+                        this.$nextTick(() => this.bumpPoolAmount());
+                    }
+                })
+                .catch(() => {});
+        },
+
+        bumpPoolAmount() {
+            const el = this.$refs.poolAmount;
+            if (!el) {
+                return;
+            }
+            el.classList.remove('versus-pool-bump');
+            void el.offsetWidth;
+            el.addEventListener('animationend', () => {
+                el.classList.remove('versus-pool-bump');
+            }, { once: true });
+            el.classList.add('versus-pool-bump');
+        },
 
         canSubmit(side) {
             const amt = side === 'A' ? this.amountA : this.amountB;

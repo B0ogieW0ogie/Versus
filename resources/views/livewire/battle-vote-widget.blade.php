@@ -17,6 +17,7 @@
                     totalPool: {{ (float) $totalPool }},
                     max: {{ (int) $maxAllowed }},
                     maxCap: {{ (int) $maxVoteAmount }},
+                    poolPollUrl: @js(route('battles.pool-total', $battle)),
                     i18n: @js([
                         'clamp' => __('battle.amount_clamped'),
                     ]),
@@ -70,7 +71,9 @@
                     <div class="order-1 flex flex-col items-center justify-center gap-3 border-y border-white/5 py-4 text-center lg:order-none lg:min-w-[220px] lg:border-x lg:border-y-0 lg:px-4">
                         <p class="text-sm text-white/90">
                             {{ __('battle.total_prize_pool') }}:
-                            <span class="font-semibold tabular-nums text-white" x-text="Math.round(totalPool).toLocaleString()"></span>
+                            <span x-ref="poolAmount"
+                                  class="inline-block font-semibold tabular-nums text-white"
+                                  x-text="Math.round(totalPool).toLocaleString()"></span>
                             {{ __('battle.tokens') }}
                         </p>
                         @if ($closesAtIso)
