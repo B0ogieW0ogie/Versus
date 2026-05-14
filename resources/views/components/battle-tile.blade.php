@@ -25,9 +25,6 @@
                     <x-icon.image-placeholder />
                 </div>
             @endif
-            <div class="pointer-events-none absolute inset-0 z-[1] [box-shadow:inset_0_0_0_2px_rgba(56,189,248,0.9),inset_0_0_36px_rgba(56,189,248,0.12)]"
-                 style="clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);"
-                 aria-hidden="true"></div>
         </div>
         <div class="absolute inset-y-0 right-0 w-[55%] bg-navy-800"
              style="clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);">
@@ -38,9 +35,6 @@
                     <x-icon.image-placeholder />
                 </div>
             @endif
-            <div class="pointer-events-none absolute inset-0 z-[1] [box-shadow:inset_0_0_0_2px_rgba(251,113,133,0.9),inset_0_0_36px_rgba(244,63,94,0.14)]"
-                 style="clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);"
-                 aria-hidden="true"></div>
         </div>
         <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                      h-7 w-7 rounded-full border border-white/20 bg-navy-900
