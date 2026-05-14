@@ -46,7 +46,7 @@ class BattleVoteWidget extends Component
             Auth::user()?->refresh();
             $this->dispatch('battle-voted');
             $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
-            $this->dispatch('stake-info', amount: (int) $amount, side: $side);
+            $this->dispatch('stake-info', amount: (int) $amount, side: $side, battleId: $this->battle->id);
             session()->flash('battle-status', __('battle.vote_cast'));
         } catch (ValidationException $e) {
             foreach ($e->errors() as $messages) {

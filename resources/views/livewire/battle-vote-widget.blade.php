@@ -22,9 +22,10 @@
                     },
                     closeStakeInfo() {
                         this.infoOpen = false;
+                        window.dispatchEvent(new CustomEvent('versus-pool-refresh', { detail: { battleId: {{ (int) $battle->id }} } }));
                     },
                  }"
-                 @stake-info.window="infoAmount = Math.round(Number($event.detail.amount) || 0); infoOpen = true"
+                 @stake-info.window="Number($event.detail?.battleId) === {{ (int) $battle->id }} && (infoAmount = Math.round(Number($event.detail.amount) || 0), infoOpen = true)"
                  @keydown.escape.window="if (infoOpen) closeStakeInfo()">
                 <div class="border-t border-white/10 bg-navy-950/90"
                      wire:key="vote-dual-{{ $battle->id }}-{{ number_format($totalPool, 2, '.', '') }}-{{ (int) $userBalance }}"
@@ -32,12 +33,14 @@
                         totalPool: {{ (float) $totalPool }},
                         max: {{ (int) $maxAllowed }},
                         maxCap: {{ (int) $maxVoteAmount }},
+                        battleId: {{ (int) $battle->id }},
                         poolPollUrl: @js(route('battles.pool-total', $battle)),
                         i18n: @js([
                             'clamp' => __('battle.amount_clamped'),
                         ]),
                      })"
-                     x-on:balance-updated.window="onBalance($event.detail.balance)">
+                     x-on:balance-updated.window="onBalance($event.detail.balance)"
+                     @versus-pool-refresh.window="Number($event.detail?.battleId) === battleId && pollTotalPool()">
                     <div class="flex flex-col gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-stretch lg:gap-6">
                         {{-- Side A --}}
                         <div class="order-2 flex flex-col gap-3 lg:order-none">

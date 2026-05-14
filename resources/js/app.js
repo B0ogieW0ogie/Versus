@@ -138,8 +138,10 @@ document.addEventListener('alpine:init', () => {
         maxCap,
         i18n,
         poolPollUrl = '',
+        battleId = 0,
     }) => ({
         i18n,
+        battleId: Math.max(0, Number(battleId) || 0),
         totalPool: Math.max(0, Number(totalPool) || 0),
         max: Math.max(0, Number(max) || 0),
         maxCap: Math.max(0, Number(maxCap) || 0),
