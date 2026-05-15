@@ -132,10 +132,27 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    window.Alpine.data('versusToast', () => ({
+        visible: false,
+        title: '',
+        body: '',
+        _timer: null,
+        show(detail) {
+            this.title = detail?.title ?? '';
+            this.body = detail?.body ?? '';
+            this.visible = true;
+            clearTimeout(this._timer);
+            this._timer = setTimeout(() => {
+                this.visible = false;
+            }, 4500);
+        },
+    }));
+
     window.Alpine.data('voteBattleDual', ({
         totalPool,
         max,
         maxCap,
+        walletBalance,
         i18n,
         poolPollUrl = '',
         battleId = 0,
@@ -145,6 +162,7 @@ document.addEventListener('alpine:init', () => {
         totalPool: Math.max(0, Number(totalPool) || 0),
         max: Math.max(0, Number(max) || 0),
         maxCap: Math.max(0, Number(maxCap) || 0),
+        walletBalance: Math.max(0, Number(walletBalance) || 0),
         poolPollUrl: typeof poolPollUrl === 'string' ? poolPollUrl : '',
         amountA: 0,
         amountB: 0,
@@ -256,6 +274,7 @@ document.addEventListener('alpine:init', () => {
         },
         onBalance(newBalance) {
             const b = Math.max(0, Number(newBalance) || 0);
+            this.walletBalance = b;
             this.max = Math.min(b, this.maxCap);
             if (this.amountA > this.max) {
                 this.amountA = this.max;
@@ -263,6 +282,12 @@ document.addEventListener('alpine:init', () => {
             if (this.amountB > this.max) {
                 this.amountB = this.max;
             }
+        },
+        onStakeSuccess(detail) {
+            if (Number(detail?.battleId) !== this.battleId) {
+                return;
+            }
+            this.pollTotalPool();
         },
 
         submit(side) {

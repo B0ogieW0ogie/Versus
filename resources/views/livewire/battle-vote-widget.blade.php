@@ -11,28 +11,13 @@
                 {{ __('battle.voting_closed') }}
             </div>
         @else
-            <div x-data="{
-                    infoOpen: false,
-                    infoAmount: 0,
-                    stakeModalTitleTpl: @js(__('battle.stake_modal_title')),
-                    stakeModalBody: @js(__('battle.stake_modal_body')),
-                    stakeModalDismiss: @js(__('battle.stake_modal_dismiss')),
-                    titleLine() {
-                        return this.stakeModalTitleTpl.replace('__N__', String(this.infoAmount));
-                    },
-                    closeStakeInfo() {
-                        this.infoOpen = false;
-                        window.dispatchEvent(new CustomEvent('versus-pool-refresh', { detail: { battleId: {{ (int) $battle->id }} } }));
-                    },
-                 }"
-                 @stake-info.window="Number($event.detail?.battleId) === {{ (int) $battle->id }} && (infoAmount = Math.round(Number($event.detail.amount) || 0), infoOpen = true)"
-                 @keydown.escape.window="if (infoOpen) closeStakeInfo()">
-                <div class="border-t border-white/10 bg-navy-950/90"
+            <div class="border-t border-white/10 bg-navy-950/90"
                      wire:key="vote-dual-{{ $battle->id }}-{{ number_format($totalPool, 2, '.', '') }}-{{ (int) $userBalance }}"
                      x-data="voteBattleDual({
                         totalPool: {{ (float) $totalPool }},
                         max: {{ (int) $maxAllowed }},
                         maxCap: {{ (int) $maxVoteAmount }},
+                        walletBalance: {{ (int) $userBalance }},
                         battleId: {{ (int) $battle->id }},
                         poolPollUrl: @js(route('battles.pool-total', $battle)),
                         i18n: @js([
@@ -40,7 +25,7 @@
                         ]),
                      })"
                      x-on:balance-updated.window="onBalance($event.detail.balance)"
-                     @versus-pool-refresh.window="Number($event.detail?.battleId) === battleId && pollTotalPool()">
+                     @versus-stake-toast.window="onStakeSuccess($event.detail)">
                     <div class="flex flex-col gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-stretch lg:gap-6">
                         {{-- Side A --}}
                         <div class="order-2 flex flex-col gap-3 lg:order-none">
@@ -158,37 +143,12 @@
                         <p class="px-4 pb-3 text-center text-sm text-red-400 lg:px-6">{{ $message }}</p>
                     @enderror
 
-                    @if (session('battle-status'))
-                        <p class="px-4 pb-3 text-center text-sm text-emerald-400 lg:px-6">{{ session('battle-status') }}</p>
-                    @endif
-
                     <div class="border-t border-white/5 px-4 py-4 text-center text-[11px] text-white/50">
                         <span>{{ __('battle.widget_balance') }}:
-                            <span class="font-mono text-white/85">{{ number_format((int) $userBalance) }} 🪙</span>
+                            <span class="font-mono text-white/85" x-text="new Intl.NumberFormat().format(walletBalance) + ' 🪙'"></span>
                         </span>
                     </div>
                 </div>
-
-                <div x-show="infoOpen"
-                     x-cloak
-                     x-transition.opacity.duration.200ms
-                     class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
-                     role="dialog"
-                     aria-modal="true"
-                     aria-labelledby="stake-info-title"
-                     @click.self="closeStakeInfo()">
-                    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-navy-800 p-6 shadow-2xl shadow-black/50"
-                         @click.stop>
-                        <h2 id="stake-info-title" class="text-lg font-semibold text-white" x-text="titleLine()"></h2>
-                        <p class="mt-3 text-sm leading-relaxed text-white/75" x-text="stakeModalBody"></p>
-                        <button type="button"
-                                class="mt-6 w-full rounded-xl bg-gradient-to-r from-glow-cyan/90 to-sky-600 py-3 text-sm font-bold text-navy-900 shadow-lg hover:brightness-110"
-                                @click="closeStakeInfo()">
-                            <span x-text="stakeModalDismiss"></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
         @endif
     @endguest
 </div>

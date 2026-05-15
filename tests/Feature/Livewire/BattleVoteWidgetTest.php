@@ -53,7 +53,12 @@ class BattleVoteWidgetTest extends TestCase
             ->assertHasNoErrors('vote')
             ->assertDispatched('battle-voted')
             ->assertDispatched('balance-updated')
-            ->assertDispatched('stake-info', amount: 200, side: 'A', battleId: $battle->id);
+            ->assertDispatched(
+                'versus-stake-toast',
+                title: str_replace('__N__', '200', __('battle.stake_modal_title')),
+                body: __('battle.stake_modal_body'),
+                battleId: $battle->id,
+            );
 
         $this->assertSame(800.0, (float) $user->fresh()->balance);
         $this->assertSame(200.0, (float) $battle->fresh()->total_pool);

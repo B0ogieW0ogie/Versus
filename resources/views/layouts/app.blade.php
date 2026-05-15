@@ -53,6 +53,18 @@
             </div>
         @endif
 
+        <div class="fixed bottom-24 left-1/2 z-[80] w-full max-w-sm -translate-x-1/2 px-4 pointer-events-none"
+             x-data="versusToast()"
+             @versus-stake-toast.window="show($event.detail)"
+             x-show="visible"
+             x-cloak
+             x-transition.opacity>
+            <div class="rounded-xl border border-white/15 bg-navy-800/95 px-4 py-3 text-center shadow-lg backdrop-blur-sm">
+                <p class="text-sm font-semibold text-white" x-text="title"></p>
+                <p class="mt-1 text-xs leading-relaxed text-white/75" x-show="body" x-text="body"></p>
+            </div>
+        </div>
+
         <livewire:search-overlay />
     </body>
 </html>
