@@ -163,4 +163,61 @@ class VoteTest extends TestCase
         $this->assertSame(20000.0, (float) Vote::where('user_id', $user->id)->sum('amount'));
         $this->assertSame(10000.0, (float) $user->fresh()->balance);
     }
+
+    public function test_user_can_stake_up_to_battle_cap_across_multiple_votes_and_sides(): void
+    {
+        config()->set('versus.max_battle_stake_per_user', 30000);
+
+        $user = User::factory()->create(['balance' => 50000]);
+        $battle = Battle::factory()->create();
+
+        ($this->action())($user, $battle, Battle::SIDE_A, 10000);
+        ($this->action())($user, $battle, Battle::SIDE_B, 10000);
+        ($this->action())($user, $battle, Battle::SIDE_A, 10000);
+
+        $this->assertSame(30000.0, (float) Vote::query()
+            ->where('user_id', $user->id)
+            ->where('battle_id', $battle->id)
+            ->sum('amount'));
+    }
+
+    public function test_user_cannot_exceed_battle_stake_cap_in_same_battle(): void
+    {
+        config()->set('versus.max_battle_stake_per_user', 30000);
+
+        $user = User::factory()->create(['balance' => 50000]);
+        $battle = Battle::factory()->create();
+
+        ($this->action())($user, $battle, Battle::SIDE_A, 10000);
+        ($this->action())($user, $battle, Battle::SIDE_B, 10000);
+        ($this->action())($user, $battle, Battle::SIDE_A, 9000);
+
+        try {
+            ($this->action())($user, $battle, Battle::SIDE_B, 2000);
+            $this->fail('Expected ValidationException for exceeding per-battle stake cap.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('amount', $e->errors());
+        }
+
+        $this->assertSame(29000.0, (float) Vote::query()
+            ->where('user_id', $user->id)
+            ->where('battle_id', $battle->id)
+            ->sum('amount'));
+    }
+
+    public function test_user_can_stake_battle_cap_in_each_of_two_battles(): void
+    {
+        config()->set('versus.max_battle_stake_per_user', 30000);
+        config()->set('versus.max_vote_amount', 30000);
+
+        $user = User::factory()->create(['balance' => 70000]);
+        $battleA = Battle::factory()->create();
+        $battleB = Battle::factory()->create();
+
+        ($this->action())($user, $battleA, Battle::SIDE_A, 30000);
+        ($this->action())($user, $battleB, Battle::SIDE_B, 30000);
+
+        $this->assertSame(30000.0, (float) Vote::query()->where('user_id', $user->id)->where('battle_id', $battleA->id)->sum('amount'));
+        $this->assertSame(30000.0, (float) Vote::query()->where('user_id', $user->id)->where('battle_id', $battleB->id)->sum('amount'));
+    }
 }

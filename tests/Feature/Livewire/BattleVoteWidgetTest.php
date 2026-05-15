@@ -117,6 +117,29 @@ class BattleVoteWidgetTest extends TestCase
         $this->assertSame(50000.0, (float) $user->fresh()->balance);
     }
 
+    public function test_max_allowed_respects_remaining_battle_stake_cap(): void
+    {
+        config()->set('versus.max_battle_stake_per_user', 30000);
+        config()->set('versus.max_vote_amount', 10000);
+
+        $user = User::factory()->create(['balance' => 100000]);
+        $battle = Battle::factory()->create();
+
+        Vote::factory()->create([
+            'user_id' => $user->id,
+            'battle_id' => $battle->id,
+            'side' => 'A',
+            'amount' => 25000,
+            'weight' => 25000,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(BattleVoteWidget::class, ['battle' => $battle])
+            ->assertViewHas('maxAllowed', 5000)
+            ->assertViewHas('remainingBattleStake', 5000)
+            ->assertViewHas('canVote', true);
+    }
+
     public function test_default_side_matches_user_larger_stake(): void
     {
         $user = User::factory()->create(['balance' => 500]);

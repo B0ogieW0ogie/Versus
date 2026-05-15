@@ -6,6 +6,7 @@ use App\Models\Battle;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vote;
+use App\Support\BattleStakeLimit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -40,6 +41,18 @@ class CastVoteAction
             if ($amount > $cap) {
                 throw ValidationException::withMessages([
                     'amount' => __('battle.vote_cap_reached'),
+                ]);
+            }
+
+            $stakedInBattle = BattleStakeLimit::userTotalInBattle($user, $battle);
+            $battleCap = BattleStakeLimit::maxPerUser();
+            if ($stakedInBattle + $amount > $battleCap) {
+                $remaining = BattleStakeLimit::remainingForUser($user, $battle);
+                throw ValidationException::withMessages([
+                    'amount' => __('battle.battle_stake_cap_reached', [
+                        'max' => number_format((int) $battleCap, 0, '.', ' '),
+                        'remaining' => number_format((int) $remaining, 0, '.', ' '),
+                    ]),
                 ]);
             }
 

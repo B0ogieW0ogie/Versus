@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Actions\Battles\CastVoteAction;
 use App\Models\Battle;
 use App\Models\Vote;
+use App\Support\BattleStakeLimit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -85,7 +86,10 @@ class BattleVoteWidget extends Component
 
         $userBalance = $user !== null ? (float) $user->balance : 0.0;
         $maxVoteAmount = (int) config('versus.max_vote_amount');
-        $maxAllowed = (int) min((int) $userBalance, $maxVoteAmount);
+        $remainingBattleStake = $user !== null
+            ? (int) BattleStakeLimit::remainingForUser($user, $this->battle)
+            : 0;
+        $maxAllowed = (int) min((int) $userBalance, $maxVoteAmount, $remainingBattleStake);
 
         $defaultSide = $userStakeB > $userStakeA ? Battle::SIDE_B : Battle::SIDE_A;
 
@@ -94,11 +98,13 @@ class BattleVoteWidget extends Component
             'userBalance' => $userBalance,
             'maxAllowed' => $maxAllowed,
             'maxVoteAmount' => $maxVoteAmount,
+            'remainingBattleStake' => $remainingBattleStake,
             'defaultSide' => $defaultSide,
             'closesAtIso' => optional($this->battle->closes_at)->toIso8601String(),
             'canVote' => Auth::check()
                 && $this->battle->isOpenForVoting()
-                && $userBalance >= 1,
+                && $userBalance >= 1
+                && $remainingBattleStake >= 1,
         ]);
     }
 }

@@ -18,6 +18,7 @@ return [
     'battle_not_open' => 'This battle is not open for voting.',
     'amount_too_small' => 'Vote amount must be at least 1 token.',
     'vote_cap_reached' => 'A single vote cannot exceed 10 000 tokens.',
+    'battle_stake_cap_reached' => 'You can stake at most :max tokens per battle. Remaining in this battle: :remaining.',
     'amount_label' => 'Votes',
     'amount_clamped' => 'Value adjusted to the allowed range.',
     'distribution' => 'Win Share: :win% | Project: :project% | Draw Pool: :draw%',
