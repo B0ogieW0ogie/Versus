@@ -21,7 +21,7 @@
     }
 
     .versus-pool-bump {
-        animation: versus-pool-bump 300ms ease-out;
+        animation: versus-pool-bump 700ms ease-out;
         animation-fill-mode: both;
     }
 }
