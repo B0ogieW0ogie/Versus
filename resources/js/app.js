@@ -171,6 +171,16 @@ document.addEventListener('alpine:init', () => {
         _poolPollTimer: null,
 
         init() {
+            this.$watch('totalPool', (value, oldValue) => {
+                if (oldValue === undefined) {
+                    return;
+                }
+                if (Math.round(value) === Math.round(oldValue)) {
+                    return;
+                }
+                this.$nextTick(() => this.bumpPoolAmount());
+            });
+
             if (this.poolPollUrl) {
                 this._poolPollTimer = setInterval(() => {
                     this.pollTotalPool();
@@ -206,7 +216,6 @@ document.addEventListener('alpine:init', () => {
                     const nxt = Math.round(next);
                     if (nxt !== cur) {
                         this.totalPool = next;
-                        this.$nextTick(() => this.bumpPoolAmount());
                     }
                 })
                 .catch(() => {});
@@ -286,6 +295,9 @@ document.addEventListener('alpine:init', () => {
         onStakeSuccess(detail) {
             if (Number(detail?.battleId) !== this.battleId) {
                 return;
+            }
+            if (detail.poolTotal != null) {
+                this.totalPool = Math.max(0, Number(detail.poolTotal) || 0);
             }
             this.pollTotalPool();
         },

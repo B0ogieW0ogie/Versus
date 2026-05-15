@@ -46,4 +46,6 @@ export default {
     },
 
     plugins: [forms],
+
+    safelist: ['versus-pool-bump'],
 };

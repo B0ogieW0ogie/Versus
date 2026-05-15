@@ -6,7 +6,7 @@
     @keyframes versus-pool-bump {
         0% {
             transform: scale(1);
-            color: rgb(255 255 255);
+            color: #ffffff;
         }
 
         50% {
@@ -16,11 +16,12 @@
 
         100% {
             transform: scale(1);
-            color: rgb(255 255 255);
+            color: #ffffff;
         }
     }
 
     .versus-pool-bump {
         animation: versus-pool-bump 300ms ease-out;
+        animation-fill-mode: both;
     }
 }

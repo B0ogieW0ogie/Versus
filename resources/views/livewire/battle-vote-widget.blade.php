@@ -12,7 +12,7 @@
             </div>
         @else
             <div class="border-t border-white/10 bg-navy-950/90"
-                     wire:key="vote-dual-{{ $battle->id }}-{{ number_format($totalPool, 2, '.', '') }}-{{ (int) $userBalance }}"
+                     wire:key="vote-dual-{{ $battle->id }}"
                      x-data="voteBattleDual({
                         totalPool: {{ (float) $totalPool }},
                         max: {{ (int) $maxAllowed }},
@@ -75,7 +75,7 @@
                             <p class="text-sm text-white/90">
                                 {{ __('battle.total_prize_pool') }}:
                                 <span x-ref="poolAmount"
-                                      class="inline-block font-semibold tabular-nums text-white"
+                                      class="inline-block origin-center font-semibold tabular-nums text-white will-change-transform"
                                       x-text="Math.round(totalPool).toLocaleString()"></span>
                                 {{ __('battle.tokens') }}
                             </p>

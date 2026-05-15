@@ -49,6 +49,7 @@ class BattleVoteWidget extends Component
                 title: str_replace('__N__', (string) (int) $amount, __('battle.stake_modal_title')),
                 body: __('battle.stake_modal_body'),
                 battleId: $this->battle->id,
+                poolTotal: (float) $this->battle->total_pool,
             );
             $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
             $this->dispatch('battle-voted');
