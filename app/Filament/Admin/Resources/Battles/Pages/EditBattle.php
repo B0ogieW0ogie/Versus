@@ -5,10 +5,12 @@ namespace App\Filament\Admin\Resources\Battles\Pages;
 use App\Actions\Battles\SettleBattleAction;
 use App\Filament\Admin\Resources\Battles\BattleResource;
 use App\Models\Battle;
+use App\Support\BattleDurationPreset;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Carbon;
 use Throwable;
 
 class EditBattle extends EditRecord
@@ -22,6 +24,10 @@ class EditBattle extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['deferred_start'] = $this->record->opens_at?->isFuture() ?? false;
+        $data['duration_preset'] = BattleDurationPreset::detect(
+            $this->record->opens_at ?? $this->record->created_at,
+            $this->record->closes_at,
+        );
 
         return $data;
     }
@@ -38,7 +44,11 @@ class EditBattle extends EditRecord
                 : ($this->record->opens_at ?? now());
         }
 
-        unset($data['deferred_start']);
+        $opensAt = Carbon::parse($data['opens_at']);
+        $preset = $data['duration_preset'] ?? BattleDurationPreset::DEFAULT;
+        $data['closes_at'] = BattleDurationPreset::closesAt($preset, $opensAt);
+
+        unset($data['deferred_start'], $data['duration_preset']);
 
         return $data;
     }

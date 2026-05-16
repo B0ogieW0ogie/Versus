@@ -6,6 +6,7 @@ use App\Actions\Battles\CreateUserBattleAction;
 use App\Models\Battle;
 use App\Models\Category;
 use App\Models\User;
+use App\Support\BattleDurationPreset;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -19,9 +20,6 @@ class BattleCreate extends Component
 {
     use WithFileUploads;
 
-    /** @var list<string> */
-    public const DURATION_PRESETS = ['1h', '3h', '9h', '24h', '48h', '72h'];
-
     public const PIN_VS_PER_HOUR = 1000;
 
     public string $side_a_label = '';
@@ -34,7 +32,7 @@ class BattleCreate extends Component
     /** @var mixed */
     public $side_b_image = null;
 
-    public string $duration_preset = '24h';
+    public string $duration_preset = BattleDurationPreset::DEFAULT;
 
     public bool $pin_to_charts = false;
 
@@ -58,14 +56,14 @@ class BattleCreate extends Component
             'side_b_label' => ['required', 'string', 'max:255'],
             'side_a_image' => ['nullable', 'image', 'max:2048'],
             'side_b_image' => ['nullable', 'image', 'max:2048'],
-            'duration_preset' => ['required', Rule::in(self::DURATION_PRESETS)],
+            'duration_preset' => ['required', Rule::in(BattleDurationPreset::PRESETS)],
             'pin_to_charts' => ['boolean'],
             'category_id' => ['required', 'exists:categories,id'],
         ]);
 
         $categoryId = (int) $this->category_id;
 
-        $closesAt = now()->addHours($this->durationHours());
+        $closesAt = BattleDurationPreset::closesAt($this->duration_preset, now());
 
         $imageA = null;
         if ($this->side_a_image) {
@@ -117,7 +115,7 @@ class BattleCreate extends Component
 
         return view('livewire.battle-create', [
             'categories' => $categories,
-            'durationPresets' => self::DURATION_PRESETS,
+            'durationPresets' => BattleDurationPreset::PRESETS,
         ]);
     }
 
@@ -127,24 +125,11 @@ class BattleCreate extends Component
             return 0;
         }
 
-        return $this->durationHours() * self::PIN_VS_PER_HOUR;
+        return BattleDurationPreset::hours($this->duration_preset) * self::PIN_VS_PER_HOUR;
     }
 
     public function formattedPinningTotal(): string
     {
         return number_format($this->pinningTotalVs(), 0, '.', ',');
-    }
-
-    private function durationHours(): int
-    {
-        return match ($this->duration_preset) {
-            '1h' => 1,
-            '3h' => 3,
-            '9h' => 9,
-            '24h' => 24,
-            '48h' => 48,
-            '72h' => 72,
-            default => 24,
-        };
     }
 }

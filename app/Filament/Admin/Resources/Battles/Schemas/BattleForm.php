@@ -4,8 +4,10 @@ namespace App\Filament\Admin\Resources\Battles\Schemas;
 
 use App\Models\Battle;
 use App\Models\Category;
+use App\Support\BattleDurationPreset;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -86,7 +88,13 @@ class BattleForm
                     ->visible(fn (callable $get): bool => (bool) $get('deferred_start'))
                     ->required(fn (callable $get): bool => (bool) $get('deferred_start'))
                     ->minDate(now()),
-                DateTimePicker::make('closes_at')->label('Закрытие')->seconds(false),
+                Radio::make('duration_preset')
+                    ->label('Длительность голосования')
+                    ->options(BattleDurationPreset::options())
+                    ->default(BattleDurationPreset::DEFAULT)
+                    ->inline()
+                    ->required()
+                    ->dehydrated(false),
                 Select::make('winning_side')
                     ->label('Победившая сторона')
                     ->options([

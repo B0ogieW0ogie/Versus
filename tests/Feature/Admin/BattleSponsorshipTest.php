@@ -18,6 +18,7 @@ class BattleSponsorshipTest extends TestCase
         $this->assertStringContainsString("TextInput::make('sponsor_handle')", $source);
         $this->assertStringNotContainsString("Toggle::make('is_featured')", $source);
         $this->assertStringContainsString("Toggle::make('deferred_start')", $source);
+        $this->assertStringContainsString("Radio::make('duration_preset')", $source);
         $this->assertStringContainsString('->default(Battle::STATUS_ACTIVE)', $source);
     }
 

@@ -3,7 +3,9 @@
 namespace App\Filament\Admin\Resources\Battles\Pages;
 
 use App\Filament\Admin\Resources\Battles\BattleResource;
+use App\Support\BattleDurationPreset;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Carbon;
 
 class CreateBattle extends CreateRecord
 {
@@ -19,7 +21,11 @@ class CreateBattle extends CreateRecord
             $data['opens_at'] = now();
         }
 
-        unset($data['deferred_start']);
+        $opensAt = Carbon::parse($data['opens_at']);
+        $preset = $data['duration_preset'] ?? BattleDurationPreset::DEFAULT;
+        $data['closes_at'] = BattleDurationPreset::closesAt($preset, $opensAt);
+
+        unset($data['deferred_start'], $data['duration_preset']);
 
         return $data;
     }
