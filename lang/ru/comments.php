@@ -16,6 +16,8 @@ return [
     'add_your_argument' => 'Ваш аргумент…',
     'post' => 'Отправить',
     'reply' => 'Ответить',
+    'show_replies' => '{1} :count ответ|[2,4] :count ответа|[5,*] :count ответов',
+    'hide_replies' => 'Скрыть ответы',
     'report' => 'Пожаловаться',
     'delete' => 'Удалить',
     'delete_confirm' => 'Удалить комментарий?',

@@ -16,6 +16,8 @@ return [
     'add_your_argument' => 'Add your argument...',
     'post' => 'Post',
     'reply' => 'Reply',
+    'show_replies' => '{1} :count reply|[2,*] :count replies',
+    'hide_replies' => 'Hide replies',
     'report' => 'Report',
     'delete' => 'Delete',
     'delete_confirm' => 'Delete this comment?',

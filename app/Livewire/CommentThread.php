@@ -33,6 +33,9 @@ class CommentThread extends Component
 
     public string $replyToUserName = '';
 
+    /** @var array<int, int> */
+    public array $expandedThreads = [];
+
     #[On('battle-voted')]
     public function refreshBattle(): void
     {
@@ -148,7 +151,29 @@ class CommentThread extends Component
 
         $this->commentBody = '';
         $this->commentSide = null;
+
+        if ($parent !== null) {
+            $this->expandThread($this->rootCommentIdFor($parent));
+        }
+
         $this->cancelReply();
+    }
+
+    public function toggleThread(int $rootCommentId): void
+    {
+        if ($this->isThreadExpanded($rootCommentId)) {
+            $this->expandedThreads = array_values(array_filter(
+                $this->expandedThreads,
+                fn (int $id): bool => $id !== $rootCommentId,
+            ));
+        } else {
+            $this->expandedThreads[] = $rootCommentId;
+        }
+    }
+
+    public function isThreadExpanded(int $rootCommentId): bool
+    {
+        return in_array($rootCommentId, $this->expandedThreads, true);
     }
 
     public function toggleLike(int $commentId, ToggleCommentLikeAction $action): void
@@ -211,6 +236,33 @@ class CommentThread extends Component
         if (! in_array($value, ['popular', 'new'], true)) {
             $this->commentSort = 'popular';
         }
+    }
+
+    private function expandThread(int $rootCommentId): void
+    {
+        if (! $this->isThreadExpanded($rootCommentId)) {
+            $this->expandedThreads[] = $rootCommentId;
+        }
+    }
+
+    private function rootCommentIdFor(Comment $comment): int
+    {
+        $current = $comment;
+
+        while ($current->parent_id !== null) {
+            $parent = Comment::query()
+                ->withTrashed()
+                ->where('battle_id', $this->battle->id)
+                ->find($current->parent_id);
+
+            if ($parent === null) {
+                break;
+            }
+
+            $current = $parent;
+        }
+
+        return $current->id;
     }
 
     /**

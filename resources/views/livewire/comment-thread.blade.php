@@ -22,12 +22,26 @@
             <div wire:key="thread-{{ $comment->id }}">
                 @include('components.comment-thread.item', ['comment' => $comment, 'battle' => $battle])
 
-                @if ($comment->flattenedDescendants()->isNotEmpty())
-                    <div class="ml-11 border-l border-white/5 pl-3">
-                        @foreach ($comment->flattenedDescendants() as $reply)
-                            @include('components.comment-thread.item', ['comment' => $reply, 'battle' => $battle])
-                        @endforeach
-                    </div>
+                @php($replies = $comment->flattenedDescendants())
+                @if ($replies->isNotEmpty())
+                    @if ($this->isThreadExpanded($comment->id))
+                        <div class="ml-11 border-l border-white/5 pl-3">
+                            @foreach ($replies as $reply)
+                                @include('components.comment-thread.item', ['comment' => $reply, 'battle' => $battle])
+                            @endforeach
+                        </div>
+                        <button type="button"
+                                wire:click="toggleThread({{ $comment->id }})"
+                                class="ml-11 mt-1 text-xs font-medium text-[#71aaeb] transition hover:underline">
+                            {{ __('comments.hide_replies') }}
+                        </button>
+                    @else
+                        <button type="button"
+                                wire:click="toggleThread({{ $comment->id }})"
+                                class="ml-11 mt-1 text-xs font-medium text-[#71aaeb] transition hover:underline">
+                            {{ trans_choice('comments.show_replies', $replies->count(), ['count' => $replies->count()]) }}
+                        </button>
+                    @endif
                 @endif
             </div>
         @empty
