@@ -43,6 +43,29 @@ test('wallet lists signup bonus with localized label', function () {
         ->assertSee('Starter bonus');
 });
 
+test('wallet lists vote stake with non-gambling label', function () {
+    $user = User::factory()->create(['balance' => 900]);
+    Transaction::create([
+        'user_id' => $user->id,
+        'type' => Transaction::TYPE_VOTE_STAKE,
+        'amount' => -100,
+        'balance_after' => 900,
+    ]);
+
+    app()->setLocale('en');
+    $this->actingAs($user)
+        ->get('/wallet')
+        ->assertOk()
+        ->assertSee('Vote')
+        ->assertDontSee('Bet');
+
+    app()->setLocale('ru');
+    $this->actingAs($user)
+        ->get('/wallet')
+        ->assertOk()
+        ->assertSee('Голос');
+});
+
 test('livewire wallet component renders for authenticated user', function () {
     $user = User::factory()->create();
 
