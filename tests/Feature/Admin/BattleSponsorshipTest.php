@@ -20,6 +20,9 @@ class BattleSponsorshipTest extends TestCase
         $this->assertStringContainsString("Toggle::make('deferred_start')", $source);
         $this->assertStringContainsString("Radio::make('duration_preset')", $source);
         $this->assertStringContainsString('->default(Battle::STATUS_ACTIVE)', $source);
+
+        $tableSource = file_get_contents(base_path('app/Filament/Admin/Resources/Battles/Tables/BattlesTable.php'));
+        $this->assertStringContainsString('AddPoolRecordAction::make()', $tableSource);
     }
 
     public function test_battle_can_persist_sponsorship_fields(): void

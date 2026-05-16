@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Battles\Tables;
 
+use App\Filament\Admin\Resources\Battles\Actions\AddPoolRecordAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -42,6 +43,7 @@ class BattlesTable
             ])
             ->defaultSort('closes_at', 'desc')
             ->recordActions([
+                AddPoolRecordAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

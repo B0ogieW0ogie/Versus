@@ -2,18 +2,16 @@
 
 namespace App\Filament\Admin\Resources\Battles\Pages;
 
-use App\Actions\Battles\AddBattlePoolAction;
 use App\Actions\Battles\SettleBattleAction;
+use App\Filament\Admin\Resources\Battles\Actions\AddPoolRecordAction;
 use App\Filament\Admin\Resources\Battles\BattleResource;
 use App\Models\Battle;
 use App\Support\BattleDurationPreset;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
-use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Carbon;
-use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class EditBattle extends EditRecord
@@ -59,50 +57,9 @@ class EditBattle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('addPool')
-                ->label('Пополнить пул')
-                ->icon('heroicon-o-banknotes')
-                ->color('warning')
-                ->visible(fn (Battle $record): bool => $record->status !== Battle::STATUS_SETTLED)
-                ->form([
-                    TextInput::make('amount')
-                        ->label('Сумма')
-                        ->numeric()
-                        ->minValue(0.01)
-                        ->required(),
-                    TextInput::make('note')
-                        ->label('Комментарий')
-                        ->maxLength(255),
-                ])
-                ->action(function (Battle $record, array $data, AddBattlePoolAction $add): void {
-                    try {
-                        $battle = $add($record, (float) $data['amount'], $data['note'] ?? null);
-
-                        Notification::make()
-                            ->title('Пул пополнен')
-                            ->body('Новый банк: '.number_format((float) $battle->total_pool, 2, '.', ' '))
-                            ->success()
-                            ->send();
-                    } catch (ValidationException $e) {
-                        Notification::make()
-                            ->title('Не удалось пополнить пул')
-                            ->body(collect($e->errors())->flatten()->first() ?? $e->getMessage())
-                            ->danger()
-                            ->send();
-
-                        return;
-                    } catch (Throwable $e) {
-                        Notification::make()
-                            ->title('Не удалось пополнить пул')
-                            ->body($e->getMessage())
-                            ->danger()
-                            ->send();
-
-                        return;
-                    }
-
-                    $this->redirect(static::getResource()::getUrl('edit', ['record' => $record]));
-                }),
+            AddPoolRecordAction::make(
+                fn (Battle $battle) => $this->redirect(static::getResource()::getUrl('edit', ['record' => $battle])),
+            ),
             Action::make('settle')
                 ->label('Завершить сейчас')
                 ->icon('heroicon-o-check-badge')
