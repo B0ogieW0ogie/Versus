@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\BattleShow;
+use App\Livewire\CommentThread;
 use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\User;
@@ -37,7 +37,7 @@ test('battle comments do not expose vote counts', function () {
     ]);
 
     Livewire::actingAs($user)
-        ->test(BattleShow::class, ['battle' => $battle])
+        ->test(CommentThread::class, ['battle' => $battle])
         ->assertDontSee('19,000')
         ->assertDontSee('19 000')
         ->assertDontSee(__('comments.votes'));
@@ -70,7 +70,7 @@ test('battle comments default to popular sort by author side stake sum', functio
     ]);
 
     $html = Livewire::actingAs($uLow)
-        ->test(BattleShow::class, ['battle' => $battle])
+        ->test(CommentThread::class, ['battle' => $battle])
         ->assertSet('commentSort', 'popular')
         ->html();
 
@@ -105,7 +105,7 @@ test('battle comments new sort orders by created at descending', function () {
     ]);
 
     $html = Livewire::actingAs($uLow)
-        ->test(BattleShow::class, ['battle' => $battle])
+        ->test(CommentThread::class, ['battle' => $battle])
         ->set('commentSort', 'new')
         ->assertSet('commentSort', 'new')
         ->html();
@@ -119,7 +119,7 @@ test('battle comment rejects body longer than 500 characters', function () {
     $user = User::factory()->create(['balance' => 100]);
 
     Livewire::actingAs($user)
-        ->test(BattleShow::class, ['battle' => $battle])
+        ->test(CommentThread::class, ['battle' => $battle])
         ->set('commentBody', str_repeat('x', 501))
         ->call('comment')
         ->assertHasErrors('commentBody');
@@ -133,7 +133,7 @@ test('battle comment accepts body of 500 characters', function () {
     $body = str_repeat('y', 500);
 
     Livewire::actingAs($user)
-        ->test(BattleShow::class, ['battle' => $battle])
+        ->test(CommentThread::class, ['battle' => $battle])
         ->set('commentBody', $body)
         ->call('comment')
         ->assertHasNoErrors('commentBody');
@@ -146,7 +146,7 @@ test('invalid comment sort falls back to popular', function () {
     $user = User::factory()->create(['balance' => 100]);
 
     Livewire::actingAs($user)
-        ->test(BattleShow::class, ['battle' => $battle])
+        ->test(CommentThread::class, ['battle' => $battle])
         ->set('commentSort', 'bogus')
         ->assertSet('commentSort', 'popular');
 });
