@@ -35,6 +35,8 @@ class Transaction extends Model
 
     public const TYPE_ADMIN_GRANT = 'admin_grant';
 
+    public const TYPE_BATTLE_POOL_CREDIT = 'battle_pool_credit';
+
     protected function casts(): array
     {
         return [

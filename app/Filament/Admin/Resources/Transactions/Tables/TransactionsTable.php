@@ -20,6 +20,7 @@ class TransactionsTable
             'reward_pool_credit' => 'Пополнение призового фонда',
             'reward_pool_debit' => 'Списание из призового фонда',
             'admin_grant' => 'Начисление администратором',
+            'battle_pool_credit' => 'Пополнение пула баттла',
         ];
 
         return $table

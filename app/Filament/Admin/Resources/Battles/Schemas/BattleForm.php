@@ -120,7 +120,8 @@ class BattleForm
                     ->label('Общий банк')
                     ->numeric()
                     ->disabled()
-                    ->default(0),
+                    ->default(0)
+                    ->helperText('Ставки пользователей и пополнения через «Пополнить пул» на странице редактирования.'),
                 DateTimePicker::make('settled_at')->label('Завершён в')->disabled(),
             ]);
     }

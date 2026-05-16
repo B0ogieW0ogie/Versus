@@ -7,6 +7,7 @@ return [
         'vote_payout' => 'Выигрыш',
         'referral_reward' => 'Реферальная награда',
         'admin_grant' => 'Начисление администратором',
+        'battle_pool_credit' => 'Пополнение пула баттла',
     ],
 
     'title' => 'Кошелёк',

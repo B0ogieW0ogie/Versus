@@ -28,7 +28,7 @@ class SettleBattleAction
                 ->where('side', Battle::SIDE_B)
                 ->sum('weight');
 
-            $pool = $this->round((float) Vote::where('battle_id', $battle->id)->sum('amount'));
+            $pool = $this->distributablePool($battle);
 
             if ($pool <= 0) {
                 $battle->status = Battle::STATUS_SETTLED;
@@ -214,6 +214,17 @@ class SettleBattleAction
             ->sum('amount');
 
         return $this->round($credit + $debit);
+    }
+
+    private function distributablePool(Battle $battle): float
+    {
+        $stakes = (float) Vote::where('battle_id', $battle->id)->sum('amount');
+        $boosts = (float) Transaction::where('battle_id', $battle->id)
+            ->whereNull('user_id')
+            ->where('type', Transaction::TYPE_BATTLE_POOL_CREDIT)
+            ->sum('amount');
+
+        return $this->round($stakes + $boosts);
     }
 
     private function round(float $value): float

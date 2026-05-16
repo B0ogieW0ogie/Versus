@@ -7,6 +7,7 @@ return [
         'vote_payout' => 'Winnings',
         'referral_reward' => 'Referral reward',
         'admin_grant' => 'Admin grant',
+        'battle_pool_credit' => 'Battle pool top-up',
     ],
 
     'title' => 'Wallet',
