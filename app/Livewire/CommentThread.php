@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Actions\Battles\CastVoteAction;
+use App\Actions\Comments\DeleteCommentAction;
 use App\Actions\Comments\PostCommentAction;
 use App\Actions\Comments\ToggleCommentLikeAction;
 use App\Models\Battle;
@@ -46,8 +47,8 @@ class CommentThread extends Component
             return;
         }
 
-        $comment = $this->battle->comments()->find($commentId);
-        if ($comment === null || ! in_array($comment->side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
+        $comment = $this->battle->comments()->withTrashed()->find($commentId);
+        if ($comment === null || $comment->trashed() || ! in_array($comment->side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
             return;
         }
 
@@ -74,8 +75,8 @@ class CommentThread extends Component
             return;
         }
 
-        $comment = $this->battle->comments()->with('user:id,name')->find($commentId);
-        if ($comment === null) {
+        $comment = $this->battle->comments()->withTrashed()->with('user:id,name')->find($commentId);
+        if ($comment === null || $comment->trashed()) {
             return;
         }
 
@@ -158,12 +159,36 @@ class CommentThread extends Component
             return;
         }
 
-        $comment = $this->battle->comments()->find($commentId);
-        if ($comment === null) {
+        $comment = $this->battle->comments()->withTrashed()->find($commentId);
+        if ($comment === null || $comment->trashed()) {
             return;
         }
 
         $action(Auth::user(), $comment);
+    }
+
+    public function deleteComment(int $commentId, DeleteCommentAction $action): void
+    {
+        if (! Auth::check()) {
+            $this->redirectRoute('login');
+
+            return;
+        }
+
+        $comment = $this->battle->comments()->withTrashed()->find($commentId);
+        if ($comment === null) {
+            return;
+        }
+
+        if ($this->replyingToCommentId === $commentId) {
+            $this->cancelReply();
+        }
+
+        try {
+            $action(Auth::user(), $comment);
+        } catch (ValidationException) {
+            return;
+        }
     }
 
     public function reportComment(int $commentId): void
@@ -196,6 +221,7 @@ class CommentThread extends Component
         $userId = Auth::id();
 
         $all = Comment::query()
+            ->withTrashed()
             ->where('battle_id', $this->battle->id)
             ->with([
                 'user:id,name,avatar_path',
