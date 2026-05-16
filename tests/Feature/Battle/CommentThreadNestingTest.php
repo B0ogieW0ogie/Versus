@@ -68,3 +68,31 @@ test('support argument button appears only on root comments with a side', functi
 
     expect(substr_count($html, $label))->toBe(1);
 });
+
+test('root comment shows supported side label next to author name', function () {
+    $battle = Battle::factory()->create([
+        'side_a_label' => 'Левая сторона',
+        'side_b_label' => 'Правая сторона',
+    ]);
+    $users = User::factory()->count(2)->create(['balance' => 100]);
+
+    $root = Comment::factory()->for($battle)->for($users[0])->create([
+        'body' => 'ROOT_SIDE_LABEL',
+        'side' => 'A',
+    ]);
+    Comment::factory()->for($battle)->for($users[1])->create([
+        'body' => 'REPLY_SIDE_LABEL',
+        'side' => 'A',
+        'parent_id' => $root->id,
+        'reply_to_user_id' => $users[0]->id,
+    ]);
+
+    $sideTag = __('comments.supports', ['side' => 'Левая сторона']);
+
+    $html = Livewire::actingAs($users[0])
+        ->test(CommentThread::class, ['battle' => $battle])
+        ->assertSee($sideTag)
+        ->html();
+
+    expect(substr_count($html, $sideTag))->toBe(1);
+});
