@@ -15,6 +15,34 @@ class EditBattle extends EditRecord
 {
     protected static string $resource = BattleResource::class;
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['deferred_start'] = $this->record->opens_at?->isFuture() ?? false;
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (! ($data['deferred_start'] ?? false)) {
+            $data['opens_at'] = $this->record->opens_at?->isFuture()
+                ? now()
+                : ($this->record->opens_at ?? now());
+        }
+
+        unset($data['deferred_start']);
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

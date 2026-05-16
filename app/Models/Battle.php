@@ -130,6 +130,7 @@ class Battle extends Model
     {
         return $this->status === self::STATUS_ACTIVE
             && $this->closes_at !== null
-            && $this->closes_at->isFuture();
+            && $this->closes_at->isFuture()
+            && ($this->opens_at === null || ! $this->opens_at->isFuture());
     }
 }

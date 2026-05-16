@@ -29,4 +29,26 @@ class BattleScopesTest extends TestCase
 
         $this->assertTrue($battle->category->is($cat));
     }
+
+    public function test_is_open_for_voting_false_when_opens_at_is_in_the_future(): void
+    {
+        $battle = Battle::factory()->create([
+            'status' => Battle::STATUS_ACTIVE,
+            'opens_at' => now()->addHour(),
+            'closes_at' => now()->addDay(),
+        ]);
+
+        $this->assertFalse($battle->isOpenForVoting());
+    }
+
+    public function test_is_open_for_voting_true_when_opens_at_is_null(): void
+    {
+        $battle = Battle::factory()->create([
+            'status' => Battle::STATUS_ACTIVE,
+            'opens_at' => null,
+            'closes_at' => now()->addDay(),
+        ]);
+
+        $this->assertTrue($battle->isOpenForVoting());
+    }
 }

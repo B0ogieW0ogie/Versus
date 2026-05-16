@@ -73,8 +73,19 @@ class BattleForm
                         Battle::STATUS_SETTLED => 'Завершён',
                     ])
                     ->required()
-                    ->default(Battle::STATUS_DRAFT),
-                DateTimePicker::make('opens_at')->label('Открытие')->seconds(false),
+                    ->default(Battle::STATUS_ACTIVE),
+                Toggle::make('deferred_start')
+                    ->label('Отложенный старт')
+                    ->live()
+                    ->dehydrated(false)
+                    ->default(false)
+                    ->helperText('Без галочки баттл открывается сразу после создания.'),
+                DateTimePicker::make('opens_at')
+                    ->label('Дата открытия')
+                    ->seconds(false)
+                    ->visible(fn (callable $get): bool => (bool) $get('deferred_start'))
+                    ->required(fn (callable $get): bool => (bool) $get('deferred_start'))
+                    ->minDate(now()),
                 DateTimePicker::make('closes_at')->label('Закрытие')->seconds(false),
                 Select::make('winning_side')
                     ->label('Победившая сторона')
