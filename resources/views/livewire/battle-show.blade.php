@@ -126,11 +126,6 @@
 
                             @if ($c->side)
                                 <div class="flex shrink-0 items-center gap-2">
-                                    <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/80">
-                                        {{ number_format((int) $c->author_side_votes_sum) }}
-                                        <span class="text-white/50">{{ __('comments.votes') }}</span>
-                                        <span class="ml-1 text-white/40">›</span>
-                                    </span>
                                     @auth
                                         @if ($battle->isOpenForVoting())
                                             <button type="button"

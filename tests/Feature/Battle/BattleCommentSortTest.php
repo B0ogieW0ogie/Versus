@@ -19,6 +19,30 @@ function assertHtmlOrder(string $html, string $first, string $second): void
     expect($p1)->toBeLessThan($p2);
 }
 
+test('battle comments do not expose vote counts', function () {
+    $battle = Battle::factory()->create();
+    $user = User::factory()->create(['balance' => 5000]);
+
+    Vote::factory()->create([
+        'user_id' => $user->id,
+        'battle_id' => $battle->id,
+        'side' => 'A',
+        'amount' => 19_000,
+        'weight' => 19_000,
+    ]);
+
+    Comment::factory()->for($battle)->for($user)->create([
+        'body' => 'Hidden vote total',
+        'side' => 'A',
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(BattleShow::class, ['battle' => $battle])
+        ->assertDontSee('19,000')
+        ->assertDontSee('19 000')
+        ->assertDontSee(__('comments.votes'));
+});
+
 test('battle comments default to popular sort by author side stake sum', function () {
     $battle = Battle::factory()->create();
     $uLow = User::factory()->create(['balance' => 5000]);

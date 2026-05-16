@@ -3,7 +3,7 @@
 return [
     'heading' => 'Discussion',
     'sort_label' => 'Sort',
-    'sort_popular' => 'Popular (by votes)',
+    'sort_popular' => 'Popular',
     'sort_new' => 'New (by time)',
     'placeholder' => 'Share your argument…',
     'side_select_none' => 'Supporting: (optional)',
