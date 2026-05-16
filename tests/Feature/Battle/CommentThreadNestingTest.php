@@ -44,3 +44,27 @@ test('deep thread replies render in a single visual indent under root', function
     preg_match_all('/<div class="ml-11 border-l border-white\/5 pl-3">/', $html, $wrappers);
     expect($wrappers[0])->toHaveCount(1);
 });
+
+test('support argument button appears only on root comments with a side', function () {
+    $battle = Battle::factory()->create();
+    $users = User::factory()->count(2)->create(['balance' => 100]);
+
+    $root = Comment::factory()->for($battle)->for($users[0])->create([
+        'body' => 'ROOT_WITH_SIDE',
+        'side' => 'A',
+    ]);
+    Comment::factory()->for($battle)->for($users[1])->create([
+        'body' => 'REPLY_WITH_SIDE',
+        'side' => 'A',
+        'parent_id' => $root->id,
+        'reply_to_user_id' => $users[0]->id,
+    ]);
+
+    $label = __('comments.support_argument');
+
+    $html = Livewire::actingAs($users[0])
+        ->test(CommentThread::class, ['battle' => $battle])
+        ->html();
+
+    expect(substr_count($html, $label))->toBe(1);
+});

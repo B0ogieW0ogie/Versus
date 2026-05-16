@@ -40,7 +40,7 @@
                     @endif
                 </div>
 
-                @if ($comment->side)
+                @if ($comment->side && $comment->isRoot())
                     @auth
                         @if ($battle->isOpenForVoting())
                             <button type="button"
