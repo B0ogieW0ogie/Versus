@@ -31,11 +31,27 @@
         </div>
 
         <div class="min-w-0 flex-1">
-            <div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                <span class="text-[13px] font-semibold text-white">{{ $comment->user->name }}</span>
-                @if ($comment->replyToUser && $comment->reply_to_user_id !== $comment->user_id)
-                    <span class="text-[13px] text-white/35" aria-hidden="true">·</span>
-                    <span class="text-[13px] font-medium text-white/55">{{ $comment->replyToUser->name }}</span>
+            <div class="flex items-start justify-between gap-2">
+                <div class="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                    <span class="text-[13px] font-semibold text-white">{{ $comment->user->name }}</span>
+                    @if ($comment->replyToUser && $comment->reply_to_user_id !== $comment->user_id)
+                        <span class="text-[13px] text-white/35" aria-hidden="true">·</span>
+                        <span class="text-[13px] font-medium text-white/55">{{ $comment->replyToUser->name }}</span>
+                    @endif
+                </div>
+
+                @if ($comment->side)
+                    @auth
+                        @if ($battle->isOpenForVoting())
+                            <button type="button"
+                                    wire:click="supportFor({{ $comment->id }})"
+                                    wire:loading.attr="disabled"
+                                    class="shrink-0 rounded bg-[#e64646] px-2.5 py-1 text-[11px] font-semibold leading-tight text-white
+                                           transition hover:bg-[#d63c3c] disabled:cursor-not-allowed disabled:opacity-50">
+                                {{ __('comments.support_argument') }}
+                            </button>
+                        @endif
+                    @endauth
                 @endif
             </div>
 
@@ -68,22 +84,6 @@
                         {{ __('comments.report') }}
                     </button>
                 @endauth
-
-                @if ($comment->side)
-                    @auth
-                        @if ($battle->isOpenForVoting())
-                            <button type="button"
-                                    wire:click="supportFor({{ $comment->id }})"
-                                    wire:loading.attr="disabled"
-                                    class="text-[10px] font-bold uppercase tracking-wide transition
-                                           hover:brightness-110 disabled:opacity-50
-                                           {{ $comment->side === 'A' ? 'text-sky-400' : 'text-fuchsia-400' }}">
-                                {{ __('comments.support') }}
-                                {{ mb_strtoupper($comment->side === 'A' ? $battle->side_a_label : $battle->side_b_label) }}
-                            </button>
-                        @endif
-                    @endauth
-                @endif
 
                 <div class="ml-auto flex items-center gap-1">
                     @auth

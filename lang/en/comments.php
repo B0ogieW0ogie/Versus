@@ -12,6 +12,7 @@ return [
     'empty' => 'No comments yet.',
     'votes' => 'Votes',
     'support' => 'SUPPORT',
+    'support_argument' => 'support argument',
     'add_your_argument' => 'Add your argument...',
     'post' => 'Post',
     'reply' => 'Reply',
