@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Lang;
 
 #[Fillable(['user_id', 'type', 'amount', 'balance_after', 'battle_id', 'meta'])]
 class Transaction extends Model
