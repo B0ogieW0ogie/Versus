@@ -166,6 +166,21 @@ class CommentThread extends Component
         $action(Auth::user(), $comment);
     }
 
+    public function reportComment(int $commentId): void
+    {
+        if (! Auth::check()) {
+            $this->redirectRoute('login');
+
+            return;
+        }
+
+        if ($this->battle->comments()->whereKey($commentId)->doesntExist()) {
+            return;
+        }
+
+        // Stub: reporting will be implemented later.
+    }
+
     public function updatedCommentSort(string $value): void
     {
         if (! in_array($value, ['popular', 'new'], true)) {

@@ -15,6 +15,7 @@ return [
     'add_your_argument' => 'Add your argument...',
     'post' => 'Post',
     'reply' => 'Reply',
+    'report' => 'Report',
     'like' => 'Like',
     'cancel' => 'Cancel',
     'body_required' => 'Comment cannot be empty.',

@@ -62,6 +62,11 @@
                             class="text-xs font-medium text-[#76787a] transition hover:text-[#71aaeb]">
                         {{ __('comments.reply') }}
                     </button>
+                    <button type="button"
+                            wire:click="reportComment({{ $comment->id }})"
+                            class="text-xs font-medium text-[#76787a] transition hover:text-white/70">
+                        {{ __('comments.report') }}
+                    </button>
                 @endauth
 
                 @if ($comment->side)
