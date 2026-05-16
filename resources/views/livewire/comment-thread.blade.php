@@ -19,7 +19,17 @@
 
     <div class="mt-2 divide-y divide-white/5">
         @forelse ($rootComments as $comment)
-            @include('components.comment-thread.item', ['comment' => $comment, 'battle' => $battle, 'depth' => 0])
+            <div wire:key="thread-{{ $comment->id }}">
+                @include('components.comment-thread.item', ['comment' => $comment, 'battle' => $battle])
+
+                @if ($comment->flattenedDescendants()->isNotEmpty())
+                    <div class="ml-11 border-l border-white/5 pl-3">
+                        @foreach ($comment->flattenedDescendants() as $reply)
+                            @include('components.comment-thread.item', ['comment' => $reply, 'battle' => $battle])
+                        @endforeach
+                    </div>
+                @endif
+            </div>
         @empty
             <p class="py-8 text-center text-sm text-[#76787a]">{{ __('comments.empty') }}</p>
         @endforelse

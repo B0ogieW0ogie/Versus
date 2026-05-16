@@ -71,6 +71,27 @@ class Comment extends Model
     }
 
     /**
+     * All replies in this thread, depth-first by created_at (single visual indent level).
+     *
+     * @return Collection<int, self>
+     */
+    public function flattenedDescendants(): Collection
+    {
+        $flat = collect();
+
+        $walk = function (self $node) use (&$walk, &$flat): void {
+            foreach ($node->children->sortBy('created_at') as $child) {
+                $flat->push($child);
+                $walk($child);
+            }
+        };
+
+        $walk($this);
+
+        return $flat;
+    }
+
+    /**
      * @param  EloquentCollection<int, self>  $comments
      * @return Collection<int, self>
      */

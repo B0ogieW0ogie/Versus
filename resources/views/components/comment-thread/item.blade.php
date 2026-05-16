@@ -1,7 +1,6 @@
 @props([
     'comment',
     'battle',
-    'depth' => 0,
 ])
 
 @php
@@ -12,13 +11,11 @@
     if ($mentionPrefix !== null && str_starts_with($bodyText, $mentionPrefix)) {
         $bodyText = ltrim(mb_substr($bodyText, mb_strlen($mentionPrefix)));
     }
-    $indent = min($depth, 4) * 2.75;
 @endphp
 
 <article
     id="comment-{{ $comment->id }}"
     class="group"
-    style="padding-left: {{ $depth > 0 ? $indent.'rem' : '0' }}"
     wire:key="comment-{{ $comment->id }}"
 >
     <div class="flex gap-3 py-3">
@@ -141,7 +138,4 @@
         </div>
     </div>
 
-    @foreach ($comment->children as $child)
-        @include('components.comment-thread.item', ['comment' => $child, 'battle' => $battle, 'depth' => $depth + 1])
-    @endforeach
 </article>
