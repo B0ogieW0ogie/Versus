@@ -90,10 +90,6 @@ class BattleShow extends Component
     #[Layout('layouts.app')]
     public function render(): View
     {
-        $totalPool = (float) Vote::query()
-            ->where('battle_id', $this->battle->id)
-            ->sum('amount');
-
         $commentsQuery = Comment::query()
             ->where('battle_id', $this->battle->id)
             ->with('user:id,name')
@@ -115,7 +111,6 @@ class BattleShow extends Component
         }
 
         return view('livewire.battle-show', [
-            'totalPool' => $totalPool,
             'comments' => $commentsQuery->limit(50)->get(),
         ]);
     }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Livewire;
 
+use App\Actions\Battles\AddBattlePoolAction;
 use App\Livewire\BattleVoteWidget;
 use App\Models\Battle;
 use App\Models\Transaction;
@@ -28,7 +29,7 @@ class BattleVoteWidgetTest extends TestCase
     {
         $user = User::factory()->create(['balance' => 500]);
         $other = User::factory()->create(['balance' => 1000]);
-        $battle = Battle::factory()->create();
+        $battle = Battle::factory()->create(['total_pool' => 400]);
 
         Vote::factory()->create(['user_id' => $other->id, 'battle_id' => $battle->id, 'side' => 'A', 'amount' => 300, 'weight' => 300]);
         Vote::factory()->create(['user_id' => $other->id, 'battle_id' => $battle->id, 'side' => 'B', 'amount' => 100, 'weight' => 100]);
@@ -40,6 +41,18 @@ class BattleVoteWidgetTest extends TestCase
             ->assertViewHas('canVote', true)
             ->assertSee(__('battle.widget_chip_max'))
             ->assertSee(__('battle.widget_submit_vote'));
+    }
+
+    public function test_total_pool_reflects_admin_boost(): void
+    {
+        $user = User::factory()->create(['balance' => 500]);
+        $battle = Battle::factory()->create(['total_pool' => 0]);
+
+        app(AddBattlePoolAction::class)($battle, 125_000);
+
+        Livewire::actingAs($user)
+            ->test(BattleVoteWidget::class, ['battle' => $battle->fresh()])
+            ->assertViewHas('totalPool', 125_000.0);
     }
 
     public function test_cast_vote_delegates_to_action_and_dispatches_events(): void

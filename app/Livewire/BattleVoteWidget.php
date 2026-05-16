@@ -65,9 +65,7 @@ class BattleVoteWidget extends Component
 
     public function render(): View
     {
-        $totalPool = (float) Vote::query()
-            ->where('battle_id', $this->battle->id)
-            ->sum('amount');
+        $totalPool = (float) $this->battle->total_pool;
 
         $user = Auth::user();
         $userStakeA = 0.0;
