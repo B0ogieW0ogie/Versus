@@ -17,31 +17,33 @@
         </div>
     </div>
 
-    <div class="mt-2 divide-y divide-white/5">
+    <div class="mt-3 divide-y divide-white/5">
         @forelse ($rootComments as $comment)
-            <div wire:key="thread-{{ $comment->id }}">
+            <div wire:key="thread-{{ $comment->id }}" class="py-1">
                 @include('components.comment-thread.item', ['comment' => $comment, 'battle' => $battle])
 
                 @php($replies = $comment->flattenedDescendants())
                 @if ($replies->isNotEmpty())
-                    @if ($this->isThreadExpanded($comment->id))
-                        <div class="ml-11 border-l border-white/5 pl-3">
-                            @foreach ($replies as $reply)
-                                @include('components.comment-thread.item', ['comment' => $reply, 'battle' => $battle])
-                            @endforeach
-                        </div>
-                        <button type="button"
-                                wire:click="toggleThread({{ $comment->id }})"
-                                class="ml-11 mt-1 text-xs font-medium text-[#71aaeb] transition hover:underline">
-                            {{ __('comments.hide_replies') }}
-                        </button>
-                    @else
-                        <button type="button"
-                                wire:click="toggleThread({{ $comment->id }})"
-                                class="ml-11 mt-1 text-xs font-medium text-[#71aaeb] transition hover:underline">
-                            {{ trans_choice('comments.show_replies', $replies->count(), ['count' => $replies->count()]) }}
-                        </button>
-                    @endif
+                    <div class="ml-12 pb-2">
+                        @if ($this->isThreadExpanded($comment->id))
+                            <div class="mt-1 space-y-0 border-l border-white/5 pl-4">
+                                @foreach ($replies as $reply)
+                                    @include('components.comment-thread.item', ['comment' => $reply, 'battle' => $battle])
+                                @endforeach
+                            </div>
+                            <button type="button"
+                                    wire:click="toggleThread({{ $comment->id }})"
+                                    class="mt-3 text-xs font-medium text-[#71aaeb] transition hover:underline">
+                                {{ __('comments.hide_replies') }}
+                            </button>
+                        @else
+                            <button type="button"
+                                    wire:click="toggleThread({{ $comment->id }})"
+                                    class="mt-2 text-xs font-medium text-[#71aaeb] transition hover:underline">
+                                {{ trans_choice('comments.show_replies', $replies->count(), ['count' => $replies->count()]) }}
+                            </button>
+                        @endif
+                    </div>
                 @endif
             </div>
         @empty

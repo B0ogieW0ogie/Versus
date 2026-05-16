@@ -81,7 +81,7 @@ test('deep thread replies render in a single visual indent under root', function
         ->and($html)->toContain('THREAD_L2')
         ->and($html)->toContain('THREAD_L3');
 
-    preg_match_all('/<div class="ml-11 border-l border-white\/5 pl-3">/', $html, $wrappers);
+    preg_match_all('/<div class="mt-1 space-y-0 border-l border-white\/5 pl-4">/', $html, $wrappers);
     expect($wrappers[0])->toHaveCount(1);
 });
 
