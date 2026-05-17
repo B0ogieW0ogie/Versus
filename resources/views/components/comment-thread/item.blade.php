@@ -19,6 +19,18 @@
         default => null,
     };
 
+    $sideTheme = match ($comment->side) {
+        'A' => [
+            'label' => 'text-vote-blue-from',
+            'button' => 'bg-gradient-to-r from-vote-blue-from to-vote-blue-to shadow-vote-blue hover:brightness-110 disabled:hover:brightness-100',
+        ],
+        'B' => [
+            'label' => 'text-rose-400',
+            'button' => 'bg-gradient-to-r from-rose-500 to-red-700 shadow-lg shadow-rose-900/40 hover:brightness-110 disabled:hover:brightness-100',
+        ],
+        default => ['label' => '', 'button' => ''],
+    };
+
     $showSupportButton = ! $isDeleted
         && $comment->side
         && $comment->isRoot()
@@ -54,7 +66,7 @@
                         @endif
                     </div>
                     @if (! $isDeleted && $comment->isRoot() && $sideLabel !== null)
-                        <p class="mt-0.5 text-[13px] font-medium {{ $comment->side === 'A' ? 'text-sky-400' : 'text-fuchsia-400' }}">
+                        <p class="mt-0.5 text-[13px] font-medium {{ $sideTheme['label'] }}">
                             {{ __('comments.supports', ['side' => $sideLabel]) }}
                         </p>
                     @endif
@@ -76,7 +88,7 @@
 
                 @if (! $isDeleted)
                     @auth
-                        <div class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                        <div class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                             <button type="button"
                                     wire:click="startReply({{ $comment->id }})"
                                     class="text-xs font-medium text-[#76787a] transition hover:text-[#71aaeb]">
@@ -130,10 +142,7 @@
                                 wire:click="supportFor({{ $comment->id }})"
                                 wire:loading.attr="disabled"
                                 class="rounded-md px-3 py-1.5 text-[11px] font-semibold leading-none text-white transition
-                                       disabled:cursor-not-allowed disabled:opacity-50
-                                       {{ $comment->side === 'A'
-                                          ? 'bg-sky-500 hover:bg-sky-600'
-                                          : 'bg-fuchsia-500 hover:bg-fuchsia-600' }}">
+                                       disabled:cursor-not-allowed disabled:opacity-50 {{ $sideTheme['button'] }}">
                             {{ __('comments.support_argument') }}
                         </button>
                     @endif
