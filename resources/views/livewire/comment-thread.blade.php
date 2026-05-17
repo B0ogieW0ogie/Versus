@@ -1,7 +1,7 @@
 <section class="rounded-2xl border border-white/5 bg-[#19191a] px-3 py-5 sm:p-6">
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3 class="text-lg font-semibold text-white">{{ __('comments.heading') }}</h3>
-        <div class="flex flex-wrap items-center gap-2" role="group" aria-label="{{ __('comments.sort_label') }}">
+    <div class="flex items-center justify-between gap-3">
+        <h3 class="shrink-0 text-lg font-semibold text-white">{{ __('comments.heading') }}</h3>
+        <div class="shrink-0" role="group" aria-label="{{ __('comments.sort_label') }}">
             <div class="inline-flex rounded-lg border border-white/10 bg-black/30 p-0.5">
                 <button type="button" wire:click="$set('commentSort', 'popular')"
                         class="rounded-md px-3 py-1.5 text-xs font-semibold transition
