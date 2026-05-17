@@ -135,12 +135,6 @@
                     <p class="px-4 pb-3 text-center text-sm text-red-400 lg:px-6">{{ $message }}</p>
                 @enderror
 
-                <div class="border-t border-white/5 px-4 py-4 text-center text-[11px] text-white/50">
-                    <span>{{ __('battle.widget_balance') }}:
-                        <span class="font-mono text-white/85" x-text="new Intl.NumberFormat().format(walletBalance) + ' 🪙'"></span>
-                    </span>
-                </div>
-
                 {{-- Mobile stake sheet --}}
                 <div x-show="stakeModalSide !== null"
                      x-cloak
