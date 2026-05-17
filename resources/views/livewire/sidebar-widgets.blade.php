@@ -1,6 +1,6 @@
 <div class="space-y-4">
     {{-- Trending Battles --}}
-    <section class="rounded-xl bg-navy-800 border border-white/5 p-4">
+    <section class="hidden rounded-xl bg-navy-800 border border-white/5 p-4 lg:block">
         <header class="flex items-center justify-between">
             <h3 class="font-semibold text-white">{{ __('sidebar.trending_battles') }}</h3>
             <span class="text-white/40 text-xs">›</span>
@@ -30,7 +30,7 @@
     </section>
 
     {{-- Top Players --}}
-    <section class="rounded-xl bg-navy-800 border border-white/5 p-4">
+    <section class="hidden rounded-xl bg-navy-800 border border-white/5 p-4 lg:block">
         <header class="flex items-center justify-between">
             <h3 class="font-semibold text-white">{{ __('sidebar.top_players') }}</h3>
             <span class="text-white/40 text-xs">›</span>
@@ -57,7 +57,7 @@
     </section>
 
     {{-- Lucky Draw Pool --}}
-    <section class="rounded-xl bg-navy-800 border border-white/5 p-4">
+    <section class="hidden rounded-xl bg-navy-800 border border-white/5 p-4 lg:block">
         <header class="flex items-center justify-between">
             <h3 class="font-semibold text-white">{{ __('sidebar.lucky_draw_pool') }}</h3>
             <span class="text-white/40 text-xs">›</span>

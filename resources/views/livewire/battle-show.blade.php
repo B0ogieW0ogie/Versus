@@ -95,7 +95,7 @@
             </div>
         </main>
 
-        <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
+        <aside class="hidden space-y-4 lg:block lg:sticky lg:top-6 lg:self-start">
             <livewire:sidebar-widgets :battle="$battle" />
         </aside>
     </div>
