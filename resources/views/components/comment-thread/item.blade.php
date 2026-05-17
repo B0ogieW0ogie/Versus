@@ -129,8 +129,11 @@
                         <button type="button"
                                 wire:click="supportFor({{ $comment->id }})"
                                 wire:loading.attr="disabled"
-                                class="rounded-md bg-[#e64646] px-3 py-1.5 text-[11px] font-semibold leading-none text-white
-                                       transition hover:bg-[#d63c3c] disabled:cursor-not-allowed disabled:opacity-50">
+                                class="rounded-md px-3 py-1.5 text-[11px] font-semibold leading-none text-white transition
+                                       disabled:cursor-not-allowed disabled:opacity-50
+                                       {{ $comment->side === 'A'
+                                          ? 'bg-sky-500 hover:bg-sky-600'
+                                          : 'bg-fuchsia-500 hover:bg-fuchsia-600' }}">
                             {{ __('comments.support_argument') }}
                         </button>
                     @endif
