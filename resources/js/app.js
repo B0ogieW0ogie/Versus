@@ -166,6 +166,7 @@ document.addEventListener('alpine:init', () => {
         poolPollUrl: typeof poolPollUrl === 'string' ? poolPollUrl : '',
         amountA: 0,
         amountB: 0,
+        stakeModalSide: null,
         err: null,
         errTimer: null,
         _poolPollTimer: null,
@@ -300,6 +301,37 @@ document.addEventListener('alpine:init', () => {
                 this.totalPool = Math.max(0, Number(detail.poolTotal) || 0);
             }
             this.pollTotalPool();
+        },
+
+        openStakeModal(side) {
+            if (side !== 'A' && side !== 'B') {
+                return;
+            }
+            this.stakeModalSide = side;
+            const key = side === 'A' ? 'amountA' : 'amountB';
+            if (this.max >= 1 && (this[key] < 1 || !Number.isFinite(parseInt(this[key], 10)))) {
+                this[key] = 1;
+            }
+            this.clamp(side, true);
+            this.err = null;
+            document.body.classList.add('overflow-y-hidden');
+        },
+
+        closeStakeModal() {
+            this.stakeModalSide = null;
+            document.body.classList.remove('overflow-y-hidden');
+        },
+
+        confirmStakeModal() {
+            if (this.stakeModalSide === null) {
+                return;
+            }
+            this.clamp(this.stakeModalSide, true);
+            if (!this.canSubmit(this.stakeModalSide)) {
+                return;
+            }
+            this.submit(this.stakeModalSide);
+            this.closeStakeModal();
         },
 
         submit(side) {

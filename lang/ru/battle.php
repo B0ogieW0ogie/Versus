@@ -34,6 +34,7 @@ return [
     'widget_payout_preview' => 'Если :side побеждает → :payout 🪙 (×:multiplier)',
     'widget_cta_prefix' => 'Проголосовать за',
     'widget_balance' => 'Баланс',
+    'widget_cancel' => 'Отмена',
     'widget_no_multiplier' => '—',
 
     'pool' => 'Банк',
