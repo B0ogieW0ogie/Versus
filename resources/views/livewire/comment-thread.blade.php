@@ -1,4 +1,4 @@
-<section class="rounded-2xl border border-white/5 bg-[#19191a] p-5 sm:p-6">
+<section class="rounded-2xl border border-white/5 bg-[#19191a] px-3 py-5 sm:p-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 class="text-lg font-semibold text-white">{{ __('comments.heading') }}</h3>
         <div class="flex flex-wrap items-center gap-2" role="group" aria-label="{{ __('comments.sort_label') }}">
@@ -24,9 +24,9 @@
 
                 @php($replies = $comment->flattenedDescendants())
                 @if ($replies->isNotEmpty())
-                    <div class="ml-12 pb-2">
+                    <div class="ml-8 pb-2 sm:ml-12">
                         @if ($this->isThreadExpanded($comment->id))
-                            <div class="mt-1 space-y-0 border-l border-white/5 pl-4">
+                            <div class="mt-1 space-y-0 border-l border-white/5 pl-3 sm:pl-4">
                                 @foreach ($replies as $reply)
                                     @include('components.comment-thread.item', ['comment' => $reply, 'battle' => $battle])
                                 @endforeach

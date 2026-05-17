@@ -90,7 +90,9 @@
             </article>
 
 
-            <livewire:comment-thread :battle="$battle" />
+            <div class="-mx-1 min-w-0 sm:mx-0">
+                <livewire:comment-thread :battle="$battle" />
+            </div>
         </main>
 
         <aside class="space-y-4 lg:sticky lg:top-6 lg:self-start">
