@@ -45,17 +45,18 @@
 
         <div class="flex min-w-0 flex-1 gap-3">
             <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                    <span class="text-[13px] font-semibold text-white">{{ $comment->user->name }}</span>
+                <div>
+                    <div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                        <span class="text-[13px] font-semibold text-white">{{ $comment->user->name }}</span>
+                        @if (! $isDeleted && $comment->replyToUser && $comment->reply_to_user_id !== $comment->user_id)
+                            <span class="text-[13px] text-white/35" aria-hidden="true">·</span>
+                            <span class="text-[13px] font-medium text-white/55">{{ $comment->replyToUser->name }}</span>
+                        @endif
+                    </div>
                     @if (! $isDeleted && $comment->isRoot() && $sideLabel !== null)
-                        <span class="text-[13px] text-white/35" aria-hidden="true">·</span>
-                        <span class="text-[13px] font-medium {{ $comment->side === 'A' ? 'text-sky-400' : 'text-fuchsia-400' }}">
+                        <p class="mt-0.5 text-[13px] font-medium {{ $comment->side === 'A' ? 'text-sky-400' : 'text-fuchsia-400' }}">
                             {{ __('comments.supports', ['side' => $sideLabel]) }}
-                        </span>
-                    @endif
-                    @if (! $isDeleted && $comment->replyToUser && $comment->reply_to_user_id !== $comment->user_id)
-                        <span class="text-[13px] text-white/35" aria-hidden="true">·</span>
-                        <span class="text-[13px] font-medium text-white/55">{{ $comment->replyToUser->name }}</span>
+                        </p>
                     @endif
                 </div>
 
