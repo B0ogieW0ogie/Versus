@@ -1,4 +1,4 @@
-<section class="rounded-2xl border border-white/5 bg-[#19191a] px-3 py-5 sm:p-6">
+<section class="rounded-2xl border border-white/5 bg-[#19191a] px-3 py-3 sm:p-6">
     <div class="flex items-center justify-between gap-3">
         <h3 class="shrink-0 text-lg font-semibold text-white">{{ __('comments.heading') }}</h3>
         <div class="shrink-0" role="group" aria-label="{{ __('comments.sort_label') }}">
