@@ -73,15 +73,9 @@
                     </p>
                 @endif
 
-                <div class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                    <time datetime="{{ $comment->created_at->toIso8601String() }}"
-                          class="text-xs text-[#76787a]"
-                          title="{{ $comment->created_at->format('d.m.Y H:i') }}">
-                        {{ $comment->created_at->diffForHumans() }}
-                    </time>
-
-                    @if (! $isDeleted)
-                        @auth
+                @if (! $isDeleted)
+                    @auth
+                        <div class="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                             <button type="button"
                                     wire:click="startReply({{ $comment->id }})"
                                     class="text-xs font-medium text-[#76787a] transition hover:text-[#71aaeb]">
@@ -100,9 +94,9 @@
                                     {{ __('comments.delete') }}
                                 </button>
                             @endif
-                        @endauth
-                    @endif
-                </div>
+                        </div>
+                    @endauth
+                @endif
 
                 @auth
                     @if (! $isDeleted && $replyingToCommentId === $comment->id)
