@@ -57,10 +57,10 @@
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <div class="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-[#141416] px-3 py-2.5">
                         <select wire:model="commentSide"
-                                class="shrink-0 max-w-[9rem] truncate rounded-md border-0 bg-white/5 px-2 py-1 text-xs text-white/90 focus:ring-1 focus:ring-[#71aaeb]/40">
-                            <option value="">{{ __('comments.side_select_none') }}</option>
-                            <option value="A">{{ $battle->side_a_label }}</option>
-                            <option value="B">{{ $battle->side_b_label }}</option>
+                                class="shrink-0 max-w-[9rem] truncate rounded-md border border-white/10 bg-navy-900 px-2 py-1.5 text-xs text-white [color-scheme:dark] focus:border-[#71aaeb]/40 focus:outline-none focus:ring-1 focus:ring-[#71aaeb]/40">
+                            <option value="" class="bg-navy-900 text-white">{{ __('comments.side_select_none') }}</option>
+                            <option value="A" class="bg-navy-900 text-white">{{ $battle->side_a_label }}</option>
+                            <option value="B" class="bg-navy-900 text-white">{{ $battle->side_b_label }}</option>
                         </select>
                         <input wire:model="commentBody" type="text" maxlength="500"
                                placeholder="{{ __('comments.add_your_argument') }}"
