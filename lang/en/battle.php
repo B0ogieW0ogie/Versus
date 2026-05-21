@@ -5,7 +5,7 @@ return [
     'hot' => 'Hot battles',
     'view_all' => 'View all',
     'total_prize_pool' => 'Total Prize Pool',
-    'tokens' => 'Tokens',
+    'tokens' => 'VRS',
     'votes' => 'Votes',
     'vs' => 'VS',
     'vote_for' => 'VOTE FOR :name',

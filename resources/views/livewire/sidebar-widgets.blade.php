@@ -69,7 +69,7 @@
                 <span class="font-semibold text-glow-cyan">
                     {{ number_format($jackpot, 0) }}
                 </span>
-                <span class="text-white/50">{{ __('sidebar.tokens') }}</span>
+                <span class="text-white/50">{{ __('battle.tokens') }}</span>
             </p>
             <button type="button" disabled title="{{ __('sidebar.coming_soon') }}"
                     class="mt-3 w-full rounded-lg bg-gradient-to-r from-gold-500 to-gold-600

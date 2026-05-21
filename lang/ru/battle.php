@@ -5,7 +5,7 @@ return [
     'hot' => 'Горячие',
     'view_all' => 'Смотреть все',
     'total_prize_pool' => 'Призовой фонд',
-    'tokens' => 'токенов',
+    'tokens' => 'VRS',
     'votes' => 'голосов',
     'vs' => 'VS',
     'vote_for' => 'ГОЛОСОВАТЬ ЗА :name',
