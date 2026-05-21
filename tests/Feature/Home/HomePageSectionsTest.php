@@ -33,6 +33,22 @@ class HomePageSectionsTest extends TestCase
             ->assertSeeHtml('data-sponsor-label');
     }
 
+    public function test_sponsored_slider_enables_infinite_loop_with_two_or_more(): void
+    {
+        Battle::factory()->count(2)->sponsored()->create();
+
+        Livewire::test(BattleIndex::class)
+            ->assertSeeHtml('loop: true');
+    }
+
+    public function test_sponsored_slider_disables_infinite_loop_with_one(): void
+    {
+        Battle::factory()->sponsored()->create();
+
+        Livewire::test(BattleIndex::class)
+            ->assertSeeHtml('loop: false');
+    }
+
     public function test_hot_rail_is_ordered_by_total_pool_desc_and_limited_to_ten(): void
     {
         for ($i = 1; $i <= 12; $i++) {

@@ -2,9 +2,10 @@
     <div class="min-w-0 space-y-6">
         @if ($sponsored->isNotEmpty())
             <section class="px-1 sm:px-0">
-                <x-sponsored-carousel>
+                <x-sponsored-carousel :loop="$sponsored->count() >= 2">
                     @foreach ($sponsored as $battle)
                         <div class="w-[82%] shrink-0 sm:w-[72%] lg:w-[68%] transition-all duration-500 ease-out"
+                             data-slide-index="{{ $loop->index }}"
                              data-sponsor-label="{{ ($battle->is_sponsored && $battle->sponsor_handle) ? __('battle.sponsored_by', ['handle' => $battle->sponsor_handle]) : '' }}"
                              :class="slideClass({{ $loop->index }})">
                             <x-battle-featured-card :battle="$battle" />

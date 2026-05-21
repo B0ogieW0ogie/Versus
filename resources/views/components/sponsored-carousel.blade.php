@@ -1,6 +1,7 @@
 @props([
     'autoAdvance' => true,
     'intervalMs' => 6000,
+    'loop' => false,
 ])
 
 <div
@@ -8,6 +9,7 @@
     x-data="sponsoredPeekCarousel({
         autoAdvance: {{ $autoAdvance ? 'true' : 'false' }},
         intervalMs: {{ (int) $intervalMs }},
+        loop: {{ $loop ? 'true' : 'false' }},
     })"
     x-init="
         total = $refs.track.children.length;
@@ -37,7 +39,7 @@
         <template x-for="i in pageCount" :key="i">
             <button type="button"
                     x-on:click="goTo(i - 1)"
-                    :class="page === (i - 1) ? 'bg-white' : 'bg-white/25 hover:bg-white/50'"
+                    :class="realPage === (i - 1) ? 'bg-white' : 'bg-white/25 hover:bg-white/50'"
                     class="h-1.5 w-1.5 rounded-full transition-colors"
                     :aria-label="'Go to slide ' + i"></button>
         </template>

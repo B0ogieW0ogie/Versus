@@ -481,9 +481,14 @@ document.addEventListener('alpine:init', () => {
         intervalMs = 6000,
         total = 0,
         gapPx = 16,
+        loop = false,
     } = {}) => ({
         page: 0,
+        displayIndex: 0,
         total: Number(total) || 0,
+        realTotal: 0,
+        loop: !!loop,
+        loopReady: false,
         autoAdvance: !!autoAdvance,
         intervalMs: Number(intervalMs) || 6000,
         gapPx: Number(gapPx) || 16,
@@ -494,7 +499,11 @@ document.addEventListener('alpine:init', () => {
         _resizeHandler: null,
 
         init() {
+            this.realTotal = this.total;
             this.$nextTick(() => {
+                if (this.loop && this.realTotal >= 2) {
+                    this.setupInfinite();
+                }
                 this.measure();
                 if (this.autoAdvance && this.pageCount > 1) {
                     this.startTimer();
@@ -502,6 +511,33 @@ document.addEventListener('alpine:init', () => {
             });
             this._resizeHandler = () => requestAnimationFrame(() => this.measure());
             window.addEventListener('resize', this._resizeHandler);
+        },
+        setupInfinite() {
+            const track = this.$refs.track;
+            if (!track || track.dataset.loopReady === '1') {
+                return;
+            }
+            const slides = Array.from(track.children).filter((el) => !el.dataset.clone);
+            if (slides.length < 2) {
+                return;
+            }
+
+            slides.forEach((el, index) => {
+                el.dataset.slideIndex = String(index);
+            });
+
+            const firstClone = slides[0].cloneNode(true);
+            const lastClone = slides[slides.length - 1].cloneNode(true);
+            firstClone.dataset.clone = 'end';
+            lastClone.dataset.clone = 'start';
+            firstClone.setAttribute('aria-hidden', 'true');
+            lastClone.setAttribute('aria-hidden', 'true');
+
+            track.insertBefore(lastClone, slides[0]);
+            track.appendChild(firstClone);
+            track.dataset.loopReady = '1';
+            this.loopReady = true;
+            this.displayIndex = 1;
         },
         destroy() {
             this.stopTimer();
@@ -516,14 +552,32 @@ document.addEventListener('alpine:init', () => {
             if (!track || !viewport || track.children.length === 0) {
                 return;
             }
-            this.slideWidth = track.children[0].offsetWidth;
+            const slide = this.loopReady
+                ? track.querySelector('[data-slide-index]:not([data-clone])')
+                : track.children[0];
+            this.slideWidth = slide?.offsetWidth ?? 0;
             this.viewportWidth = viewport.offsetWidth;
         },
         get pageCount() {
-            return Math.max(1, this.total);
+            return Math.max(1, this.realTotal || this.total);
+        },
+        get realPage() {
+            if (!this.loopReady) {
+                return this.page;
+            }
+            if (this.displayIndex <= 0) {
+                return this.realTotal - 1;
+            }
+            if (this.displayIndex >= this.realTotal + 1) {
+                return 0;
+            }
+
+            return this.displayIndex - 1;
         },
         get sponsorLabel() {
-            const slide = this.$refs.track?.children[this.page];
+            const slide = this.$refs.track?.querySelector(
+                `[data-slide-index="${this.realPage}"]:not([data-clone])`,
+            );
 
             return slide?.dataset?.sponsorLabel ?? '';
         },
@@ -531,13 +585,18 @@ document.addEventListener('alpine:init', () => {
             if (!this.slideWidth || !this.viewportWidth) {
                 return '';
             }
-            const offset = this.page * (this.slideWidth + this.gapPx);
+            const position = this.loopReady ? this.displayIndex : this.page;
+            const offset = position * (this.slideWidth + this.gapPx);
             const centerPad = (this.viewportWidth - this.slideWidth) / 2;
 
             return `transform: translateX(${centerPad - offset}px);`;
         },
         slideClass(index) {
-            const distance = Math.abs(this.page - index);
+            const active = this.realPage;
+            let distance = Math.abs(active - index);
+            if (this.loopReady && this.realTotal > 1) {
+                distance = Math.min(distance, this.realTotal - distance);
+            }
             if (distance === 0) {
                 return 'opacity-100 blur-0 scale-100 z-10';
             }
@@ -547,22 +606,80 @@ document.addEventListener('alpine:init', () => {
 
             return 'opacity-45 blur-md scale-[0.9] z-0';
         },
+        waitForSlideTransition(callback) {
+            const track = this.$refs.track;
+            if (!track) {
+                callback();
+
+                return;
+            }
+            const onEnd = (event) => {
+                if (event.target !== track || event.propertyName !== 'transform') {
+                    return;
+                }
+                track.removeEventListener('transitionend', onEnd);
+                callback();
+            };
+            track.addEventListener('transitionend', onEnd);
+        },
+        snapTo(displayIndex) {
+            const track = this.$refs.track;
+            if (!track) {
+                return;
+            }
+            track.style.transition = 'none';
+            this.displayIndex = displayIndex;
+            this.$nextTick(() => {
+                void track.offsetHeight;
+                track.style.transition = '';
+                this.measure();
+            });
+        },
         next() {
             if (this.pageCount <= 1) {
                 return;
             }
-            this.page = (this.page + 1) % this.pageCount;
-            this.$nextTick(() => this.measure());
+            if (!this.loopReady) {
+                this.page = (this.page + 1) % this.pageCount;
+                this.$nextTick(() => this.measure());
+
+                return;
+            }
+            this.displayIndex += 1;
+            this.$nextTick(() => {
+                this.measure();
+                if (this.displayIndex >= this.realTotal + 1) {
+                    this.waitForSlideTransition(() => this.snapTo(1));
+                }
+            });
         },
         prev() {
             if (this.pageCount <= 1) {
                 return;
             }
-            this.page = (this.page - 1 + this.pageCount) % this.pageCount;
-            this.$nextTick(() => this.measure());
+            if (!this.loopReady) {
+                this.page = (this.page - 1 + this.pageCount) % this.pageCount;
+                this.$nextTick(() => this.measure());
+
+                return;
+            }
+            this.displayIndex -= 1;
+            this.$nextTick(() => {
+                this.measure();
+                if (this.displayIndex <= 0) {
+                    this.waitForSlideTransition(() => this.snapTo(this.realTotal));
+                }
+            });
         },
         goTo(page) {
-            this.page = Math.max(0, Math.min(page, this.pageCount - 1));
+            const target = Math.max(0, Math.min(page, this.pageCount - 1));
+            if (!this.loopReady) {
+                this.page = target;
+                this.$nextTick(() => this.measure());
+
+                return;
+            }
+            this.displayIndex = target + 1;
             this.$nextTick(() => this.measure());
         },
         startTimer() {
