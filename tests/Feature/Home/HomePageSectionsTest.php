@@ -23,6 +23,16 @@ class HomePageSectionsTest extends TestCase
             ->assertViewHas('sponsored', fn ($s) => $s->count() === 1 && $s->first()->is($active));
     }
 
+    public function test_sponsored_slider_shows_sponsor_label_and_peek_carousel(): void
+    {
+        Battle::factory()->sponsored('@Apple')->create();
+
+        Livewire::test(BattleIndex::class)
+            ->assertSee(__('battle.sponsored_by', ['handle' => '@Apple']), escape: false)
+            ->assertSeeHtml('sponsoredPeekCarousel')
+            ->assertSeeHtml('data-sponsor-label');
+    }
+
     public function test_hot_rail_is_ordered_by_total_pool_desc_and_limited_to_ten(): void
     {
         for ($i = 1; $i <= 12; $i++) {

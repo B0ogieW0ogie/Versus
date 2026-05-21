@@ -476,6 +476,137 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    window.Alpine.data('sponsoredPeekCarousel', ({
+        autoAdvance = true,
+        intervalMs = 6000,
+        total = 0,
+        gapPx = 16,
+    } = {}) => ({
+        page: 0,
+        total: Number(total) || 0,
+        autoAdvance: !!autoAdvance,
+        intervalMs: Number(intervalMs) || 6000,
+        gapPx: Number(gapPx) || 16,
+        timer: null,
+        touchStartX: null,
+        slideWidth: 0,
+        viewportWidth: 0,
+        _resizeHandler: null,
+
+        init() {
+            this.$nextTick(() => {
+                this.measure();
+                if (this.autoAdvance && this.pageCount > 1) {
+                    this.startTimer();
+                }
+            });
+            this._resizeHandler = () => requestAnimationFrame(() => this.measure());
+            window.addEventListener('resize', this._resizeHandler);
+        },
+        destroy() {
+            this.stopTimer();
+            if (this._resizeHandler) {
+                window.removeEventListener('resize', this._resizeHandler);
+                this._resizeHandler = null;
+            }
+        },
+        measure() {
+            const track = this.$refs.track;
+            const viewport = this.$refs.viewport;
+            if (!track || !viewport || track.children.length === 0) {
+                return;
+            }
+            this.slideWidth = track.children[0].offsetWidth;
+            this.viewportWidth = viewport.offsetWidth;
+        },
+        get pageCount() {
+            return Math.max(1, this.total);
+        },
+        get sponsorLabel() {
+            const slide = this.$refs.track?.children[this.page];
+
+            return slide?.dataset?.sponsorLabel ?? '';
+        },
+        get trackStyle() {
+            if (!this.slideWidth || !this.viewportWidth) {
+                return '';
+            }
+            const offset = this.page * (this.slideWidth + this.gapPx);
+            const centerPad = (this.viewportWidth - this.slideWidth) / 2;
+
+            return `transform: translateX(${centerPad - offset}px);`;
+        },
+        slideClass(index) {
+            const distance = Math.abs(this.page - index);
+            if (distance === 0) {
+                return 'opacity-100 blur-0 scale-100 z-10';
+            }
+            if (distance === 1) {
+                return 'opacity-75 blur-[5px] scale-[0.94] z-0';
+            }
+
+            return 'opacity-45 blur-md scale-[0.9] z-0';
+        },
+        next() {
+            if (this.pageCount <= 1) {
+                return;
+            }
+            this.page = (this.page + 1) % this.pageCount;
+            this.$nextTick(() => this.measure());
+        },
+        prev() {
+            if (this.pageCount <= 1) {
+                return;
+            }
+            this.page = (this.page - 1 + this.pageCount) % this.pageCount;
+            this.$nextTick(() => this.measure());
+        },
+        goTo(page) {
+            this.page = Math.max(0, Math.min(page, this.pageCount - 1));
+            this.$nextTick(() => this.measure());
+        },
+        startTimer() {
+            this.stopTimer();
+            this.timer = setInterval(() => this.next(), this.intervalMs);
+        },
+        stopTimer() {
+            if (this.timer) {
+                clearInterval(this.timer);
+                this.timer = null;
+            }
+        },
+        onPause() {
+            if (this.autoAdvance) {
+                this.stopTimer();
+            }
+        },
+        onResume() {
+            if (this.autoAdvance && this.pageCount > 1) {
+                this.startTimer();
+            }
+        },
+        onTouchStart(e) {
+            this.touchStartX = e.touches?.[0]?.clientX ?? null;
+            this.onPause();
+        },
+        onTouchEnd(e) {
+            if (this.touchStartX === null) {
+                return;
+            }
+            const endX = e.changedTouches?.[0]?.clientX ?? this.touchStartX;
+            const dx = endX - this.touchStartX;
+            if (Math.abs(dx) > 50) {
+                if (dx < 0) {
+                    this.next();
+                } else {
+                    this.prev();
+                }
+            }
+            this.touchStartX = null;
+            this.onResume();
+        },
+    }));
+
     window.Alpine.data('carousel', ({
         perPageMobile = 2,
         perPageDesktop = 4,

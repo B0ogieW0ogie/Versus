@@ -1,14 +1,16 @@
 <div class="pb-6 lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8 lg:max-w-7xl lg:mx-auto lg:px-6">
     <div class="min-w-0 space-y-6">
         @if ($sponsored->isNotEmpty())
-            <section>
-                <x-carousel :per-page-mobile="1" :per-page-desktop="1" :auto-advance="true">
+            <section class="px-1 sm:px-0">
+                <x-sponsored-carousel>
                     @foreach ($sponsored as $battle)
-                        <div>
+                        <div class="w-[82%] shrink-0 sm:w-[72%] lg:w-[68%] transition-all duration-500 ease-out"
+                             data-sponsor-label="{{ ($battle->is_sponsored && $battle->sponsor_handle) ? __('battle.sponsored_by', ['handle' => $battle->sponsor_handle]) : '' }}"
+                             :class="slideClass({{ $loop->index }})">
                             <x-battle-featured-card :battle="$battle" />
                         </div>
                     @endforeach
-                </x-carousel>
+                </x-sponsored-carousel>
             </section>
         @endif
 
