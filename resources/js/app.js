@@ -166,6 +166,7 @@ document.addEventListener('alpine:init', () => {
         poolPollUrl: typeof poolPollUrl === 'string' ? poolPollUrl : '',
         amountA: 0,
         amountB: 0,
+        modalAmount: 0,
         stakeModalSide: null,
         err: null,
         errTimer: null,
@@ -235,23 +236,36 @@ document.addEventListener('alpine:init', () => {
             el.classList.add('versus-pool-bump');
         },
 
-        canSubmit(side) {
-            const amt = side === 'A' ? this.amountA : this.amountB;
+        parseAmount(key) {
+            const n = parseInt(this[key], 10);
+
+            return Number.isFinite(n) ? n : 0;
+        },
+        canSubmitKey(key) {
+            const amt = this.parseAmount(key);
 
             return amt >= 1 && amt <= this.max;
         },
-        addChip(side, delta) {
+        canSubmit(side) {
             const key = side === 'A' ? 'amountA' : 'amountB';
-            const base = Number.isFinite(parseInt(this[key], 10)) ? parseInt(this[key], 10) : 0;
+
+            return this.canSubmitKey(key);
+        },
+        addChipKey(key, delta) {
+            const base = this.parseAmount(key);
             const next = Math.max(1, Math.min(this.max, base + (Number(delta) || 0)));
             this[key] = next;
         },
-        setMax(side) {
-            const key = side === 'A' ? 'amountA' : 'amountB';
+        addChip(side, delta) {
+            this.addChipKey(side === 'A' ? 'amountA' : 'amountB', delta);
+        },
+        setMaxKey(key) {
             this[key] = this.max;
         },
-        clamp(side, onBlur = false) {
-            const key = side === 'A' ? 'amountA' : 'amountB';
+        setMax(side) {
+            this.setMaxKey(side === 'A' ? 'amountA' : 'amountB');
+        },
+        clampKey(key, onBlur = false) {
             let n = parseInt(this[key], 10);
             let changed = false;
             if (Number.isNaN(n)) {
@@ -275,6 +289,9 @@ document.addEventListener('alpine:init', () => {
                 this.flash(this.i18n.clamp);
             }
         },
+        clamp(side, onBlur = false) {
+            this.clampKey(side === 'A' ? 'amountA' : 'amountB', onBlur);
+        },
         flash(msg) {
             this.err = msg;
             clearTimeout(this.errTimer);
@@ -291,6 +308,9 @@ document.addEventListener('alpine:init', () => {
             }
             if (this.amountB > this.max) {
                 this.amountB = this.max;
+            }
+            if (this.modalAmount > this.max) {
+                this.modalAmount = this.max;
             }
         },
         onStakeSuccess(detail) {
@@ -309,10 +329,9 @@ document.addEventListener('alpine:init', () => {
             }
             this.stakeModalSide = side;
             const key = side === 'A' ? 'amountA' : 'amountB';
-            if (this.max >= 1 && (this[key] < 1 || !Number.isFinite(parseInt(this[key], 10)))) {
-                this[key] = 1;
-            }
-            this.clamp(side, true);
+            const saved = this.parseAmount(key);
+            this.modalAmount = this.max >= 1 && saved < 1 ? 1 : saved;
+            this.clampKey('modalAmount', true);
             this.err = null;
             document.body.classList.add('overflow-y-hidden');
         },
@@ -326,10 +345,12 @@ document.addEventListener('alpine:init', () => {
             if (this.stakeModalSide === null) {
                 return;
             }
-            this.clamp(this.stakeModalSide, true);
-            if (!this.canSubmit(this.stakeModalSide)) {
+            this.clampKey('modalAmount', true);
+            if (!this.canSubmitKey('modalAmount')) {
                 return;
             }
+            const key = this.stakeModalSide === 'A' ? 'amountA' : 'amountB';
+            this[key] = this.modalAmount;
             this.submit(this.stakeModalSide);
             this.closeStakeModal();
         },

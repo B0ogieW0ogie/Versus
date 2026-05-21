@@ -1,36 +1,37 @@
 @props([
     'side',
+    'amountKey' => null,
 ])
 
 @php
     assert(in_array($side, ['A', 'B'], true));
-    $amountModel = $side === 'A' ? 'amountA' : 'amountB';
+    $amountModel = $amountKey ?? ($side === 'A' ? 'amountA' : 'amountB');
     $ringClass = $side === 'A' ? 'ring-sky-500/30' : 'ring-rose-500/35';
 @endphp
 
 <div {{ $attributes->merge(['class' => "flex items-center gap-2 rounded-lg bg-navy-800/90 px-2 py-2 ring-1 {$ringClass}"]) }}>
     <div class="flex flex-1 flex-wrap gap-1">
-        <button type="button" @click="addChip('{{ $side }}', 10)"
+        <button type="button" @click="addChipKey('{{ $amountModel }}', 10)"
                 class="rounded-md bg-navy-900 px-2 py-1 text-[11px] font-semibold text-white/85 hover:bg-navy-700">
             +10
         </button>
-        <button type="button" @click="addChip('{{ $side }}', 100)"
+        <button type="button" @click="addChipKey('{{ $amountModel }}', 100)"
                 class="rounded-md bg-navy-900 px-2 py-1 text-[11px] font-semibold text-white/85 hover:bg-navy-700">
             +100
         </button>
-        <button type="button" @click="addChip('{{ $side }}', 1000)"
+        <button type="button" @click="addChipKey('{{ $amountModel }}', 1000)"
                 class="rounded-md bg-navy-900 px-2 py-1 text-[11px] font-semibold text-white/85 hover:bg-navy-700">
             +1000
         </button>
-        <button type="button" @click="setMax('{{ $side }}')"
+        <button type="button" @click="setMaxKey('{{ $amountModel }}')"
                 class="rounded-md bg-navy-900 px-2 py-1 text-[11px] font-semibold text-white/85 hover:bg-navy-700">
             {{ __('battle.widget_chip_max') }}
         </button>
     </div>
     <input type="number"
            x-model.number="{{ $amountModel }}"
-           @input="clamp('{{ $side }}')"
-           @blur="clamp('{{ $side }}', true)"
+           @input="clampKey('{{ $amountModel }}')"
+           @blur="clampKey('{{ $amountModel }}', true)"
            min="0"
            :max="max"
            inputmode="numeric"

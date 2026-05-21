@@ -166,12 +166,12 @@
                                 </button>
                             </div>
 
-                            <template x-if="stakeModalSide === 'A'">
-                                <x-battle-vote.stake-picker side="A" />
-                            </template>
-                            <template x-if="stakeModalSide === 'B'">
-                                <x-battle-vote.stake-picker side="B" />
-                            </template>
+                            <div x-show="stakeModalSide === 'A'" x-cloak>
+                                <x-battle-vote.stake-picker side="A" amount-key="modalAmount" />
+                            </div>
+                            <div x-show="stakeModalSide === 'B'" x-cloak>
+                                <x-battle-vote.stake-picker side="B" amount-key="modalAmount" />
+                            </div>
 
                             <div class="grid grid-cols-2 gap-3">
                                 <button type="button"
@@ -181,7 +181,7 @@
                                 </button>
                                 <button type="button"
                                         @click="confirmStakeModal()"
-                                        :disabled="!canSubmit(stakeModalSide)"
+                                        :disabled="!canSubmitKey('modalAmount')"
                                         wire:loading.attr="disabled"
                                         class="rounded-xl py-3 text-sm font-bold uppercase tracking-wider text-white transition
                                                disabled:cursor-not-allowed disabled:opacity-50"
