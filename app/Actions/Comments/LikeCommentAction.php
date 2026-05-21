@@ -2,19 +2,17 @@
 
 namespace App\Actions\Comments;
 
-use App\Actions\Battles\CastVoteAction;
 use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\CommentLike;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class LikeCommentAction
 {
-    public function __construct(
-        private readonly CastVoteAction $castVote,
-    ) {}
+    private const float LIKE_AMOUNT = 1.0;
 
     /**
      * @return array{already_liked: bool, liked: bool, likes_count: int}
@@ -44,7 +42,50 @@ class LikeCommentAction
                 ];
             }
 
-            ($this->castVote)($user, $battle, $comment->side, 1.0);
+            /** @var Battle $battle */
+            $battle = Battle::whereKey($battle->id)->lockForUpdate()->firstOrFail();
+
+            if (! $battle->isOpenForVoting()) {
+                throw ValidationException::withMessages(['battle' => __('battle.battle_not_open')]);
+            }
+
+            /** @var User $user */
+            $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            if ($user->id === $comment->user_id) {
+                throw ValidationException::withMessages(['comment' => __('comments.cannot_like_own')]);
+            }
+
+            if ((float) $user->balance < self::LIKE_AMOUNT) {
+                throw ValidationException::withMessages(['amount' => __('battle.insufficient_balance')]);
+            }
+
+            /** @var User $author */
+            $author = User::whereKey($comment->user_id)->lockForUpdate()->firstOrFail();
+
+            $user->balance = $this->round((float) $user->balance - self::LIKE_AMOUNT);
+            $user->save();
+
+            $author->balance = $this->round((float) $author->balance + self::LIKE_AMOUNT);
+            $author->save();
+
+            Transaction::create([
+                'user_id' => $user->id,
+                'type' => Transaction::TYPE_COMMENT_LIKE_DEBIT,
+                'amount' => -self::LIKE_AMOUNT,
+                'balance_after' => $user->balance,
+                'battle_id' => $battle->id,
+                'meta' => ['comment_id' => $comment->id, 'to_user_id' => $author->id],
+            ]);
+
+            Transaction::create([
+                'user_id' => $author->id,
+                'type' => Transaction::TYPE_COMMENT_LIKE_CREDIT,
+                'amount' => self::LIKE_AMOUNT,
+                'balance_after' => $author->balance,
+                'battle_id' => $battle->id,
+                'meta' => ['comment_id' => $comment->id, 'from_user_id' => $user->id],
+            ]);
 
             CommentLike::create([
                 'user_id' => $user->id,
@@ -61,5 +102,10 @@ class LikeCommentAction
                 'likes_count' => $count,
             ];
         });
+    }
+
+    private function round(float $value): float
+    {
+        return round($value, 2);
     }
 }

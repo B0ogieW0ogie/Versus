@@ -8,6 +8,8 @@ return [
         'referral_reward' => 'Referral reward',
         'admin_grant' => 'Admin grant',
         'battle_pool_credit' => 'Battle pool top-up',
+        'comment_like_debit' => 'Comment like',
+        'comment_like_credit' => 'Comment liked',
     ],
 
     'title' => 'Wallet',

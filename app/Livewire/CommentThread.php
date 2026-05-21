@@ -198,7 +198,7 @@ class CommentThread extends Component
                 return;
             }
 
-            $this->afterStakeSuccess(1);
+            $this->afterLikeSuccess();
         } catch (ValidationException $e) {
             $this->surfaceVoteErrors($e);
         }
@@ -357,6 +357,12 @@ class CommentThread extends Component
         }
 
         return $comment;
+    }
+
+    private function afterLikeSuccess(): void
+    {
+        Auth::user()?->refresh();
+        $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
     }
 
     private function afterStakeSuccess(int $amount): void

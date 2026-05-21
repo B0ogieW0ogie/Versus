@@ -26,6 +26,7 @@ return [
     'like' => 'Like',
     'already_liked' => 'You have already liked this argument',
     'cannot_like_without_side' => 'Cannot like a comment without a side.',
+    'cannot_like_own' => 'You cannot like your own comment.',
     'support_modal_title' => 'Support argument',
     'cancel' => 'Cancel',
     'body_required' => 'Comment cannot be empty.',

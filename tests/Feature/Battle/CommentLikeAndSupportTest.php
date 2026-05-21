@@ -12,10 +12,10 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-test('like sends one token and creates permanent like record', function () {
+test('like sends one token to comment author and creates permanent like record', function () {
     $battle = Battle::factory()->create();
     $voter = User::factory()->create(['balance' => 100]);
-    $author = User::factory()->create();
+    $author = User::factory()->create(['balance' => 10]);
 
     $comment = Comment::factory()->for($battle)->for($author)->create([
         'side' => 'A',
@@ -26,13 +26,27 @@ test('like sends one token and creates permanent like record', function () {
         ->test(CommentThread::class, ['battle' => $battle])
         ->call('likeComment', $comment->id)
         ->assertHasNoErrors('vote')
-        ->assertDispatched('battle-voted')
+        ->assertNotDispatched('battle-voted')
         ->assertDispatched('balance-updated');
 
     expect((float) $voter->fresh()->balance)->toBe(99.0);
-    expect((float) $battle->fresh()->total_pool)->toBe(1.0);
+    expect((float) $author->fresh()->balance)->toBe(11.0);
+    expect((float) $battle->fresh()->total_pool)->toBe(0.0);
     expect(CommentLike::query()->where('user_id', $voter->id)->where('comment_id', $comment->id)->exists())->toBeTrue();
-    expect(Vote::query()->where('user_id', $voter->id)->where('amount', 1)->count())->toBe(1);
+    expect(Vote::query()->where('user_id', $voter->id)->count())->toBe(0);
+
+    $this->assertDatabaseHas('transactions', [
+        'user_id' => $voter->id,
+        'battle_id' => $battle->id,
+        'type' => Transaction::TYPE_COMMENT_LIKE_DEBIT,
+        'amount' => '-1.00',
+    ]);
+    $this->assertDatabaseHas('transactions', [
+        'user_id' => $author->id,
+        'battle_id' => $battle->id,
+        'type' => Transaction::TYPE_COMMENT_LIKE_CREDIT,
+        'amount' => '1.00',
+    ]);
 
     $html = Livewire::actingAs($voter)
         ->test(CommentThread::class, ['battle' => $battle->fresh()])
@@ -61,7 +75,25 @@ test('second like shows already liked toast and does not charge again', function
         ->assertDispatched('versus-stake-toast', title: __('comments.already_liked'));
 
     expect((float) $voter->fresh()->balance)->toBe(99.0);
+    expect((float) $author->fresh()->balance)->toBe(1.0);
     expect(CommentLike::query()->where('comment_id', $comment->id)->count())->toBe(1);
+});
+
+test('cannot like own comment', function () {
+    $battle = Battle::factory()->create();
+    $author = User::factory()->create(['balance' => 100]);
+    $comment = Comment::factory()->for($battle)->for($author)->create([
+        'side' => 'A',
+        'body' => 'Mine',
+    ]);
+
+    Livewire::actingAs($author)
+        ->test(CommentThread::class, ['battle' => $battle])
+        ->call('likeComment', $comment->id)
+        ->assertHasErrors('vote');
+
+    expect(CommentLike::query()->count())->toBe(0);
+    expect((float) $author->fresh()->balance)->toBe(100.0);
 });
 
 test('support comment stakes chosen amount on comment side', function () {

@@ -8,6 +8,8 @@ return [
         'referral_reward' => 'Реферальная награда',
         'admin_grant' => 'Начисление администратором',
         'battle_pool_credit' => 'Пополнение пула баттла',
+        'comment_like_debit' => 'Лайк комментария',
+        'comment_like_credit' => 'Лайк на комментарий',
     ],
 
     'title' => 'Кошелёк',
