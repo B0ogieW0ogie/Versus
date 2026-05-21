@@ -5,20 +5,19 @@ namespace App\Filament\Admin\Resources\Battles\Actions;
 use App\Actions\Battles\GenerateDemoBattleAction;
 use App\Filament\Admin\Resources\Battles\BattleResource;
 use App\Models\Category;
-use Filament\Actions\Action as FilamentAction;
+use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
 final class GenerateBattleAction
 {
-    public static function make(): FilamentAction
+    public static function make(): Action
     {
-        return FilamentAction::make('generateBattle')
+        return Action::make('generateBattle')
             ->label('Сгенерировать баттл')
             ->icon('heroicon-o-sparkles')
             ->color('success')
@@ -62,7 +61,7 @@ final class GenerateBattleAction
                         ->body($battle->title)
                         ->success()
                         ->actions([
-                            NotificationAction::make('edit')
+                            Action::make('edit')
                                 ->label('Открыть')
                                 ->url(BattleResource::getUrl('edit', ['record' => $battle])),
                         ])
