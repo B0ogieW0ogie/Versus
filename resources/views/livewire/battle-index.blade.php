@@ -25,7 +25,7 @@
                 <div class="px-3">
                     <x-carousel :per-page-mobile="2" :per-page-md="3" :per-page-desktop="3">
                         @foreach ($hot as $battle)
-                            <div class="h-full pr-2 sm:pr-3">
+                            <div class="pr-2">
                                 <x-battle-tile :battle="$battle" size="lg" />
                             </div>
                         @endforeach
