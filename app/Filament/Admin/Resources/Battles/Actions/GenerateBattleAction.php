@@ -7,9 +7,9 @@ use App\Filament\Admin\Resources\Battles\BattleResource;
 use App\Models\Category;
 use Filament\Actions\Action as FilamentAction;
 use Filament\Forms\Components\CheckboxList;
-use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Actions\Action as NotificationAction;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -62,7 +62,7 @@ final class GenerateBattleAction
                         ->body($battle->title)
                         ->success()
                         ->actions([
-                            Action::make('edit')
+                            NotificationAction::make('edit')
                                 ->label('Открыть')
                                 ->url(BattleResource::getUrl('edit', ['record' => $battle])),
                         ])
