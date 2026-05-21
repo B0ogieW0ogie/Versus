@@ -609,6 +609,7 @@ document.addEventListener('alpine:init', () => {
 
     window.Alpine.data('carousel', ({
         perPageMobile = 2,
+        perPageMd = null,
         perPageDesktop = 4,
         autoAdvance = false,
         intervalMs = 6000,
@@ -624,14 +625,24 @@ document.addEventListener('alpine:init', () => {
         mql: null,
         _resizeHandler: null,
 
+        resolvePerPage() {
+            if (window.matchMedia('(min-width: 1024px)').matches) {
+                return perPageDesktop;
+            }
+            if (window.matchMedia('(min-width: 768px)').matches) {
+                return perPageMd ?? perPageMobile;
+            }
+
+            return perPageMobile;
+        },
         init() {
-            this.mql = window.matchMedia('(min-width: 1024px)');
-            this.perPage = this.mql.matches ? perPageDesktop : perPageMobile;
-            this.mql.addEventListener('change', (e) => {
-                this.perPage = e.matches ? perPageDesktop : perPageMobile;
-                this.page = Math.min(this.page, this.pageCount - 1);
+            this.perPage = this.resolvePerPage();
+            this._onResize = () => {
+                this.perPage = this.resolvePerPage();
+                this.page = Math.min(this.page, Math.max(0, this.pageCount - 1));
                 requestAnimationFrame(() => this.measureArrowY());
-            });
+            };
+            window.addEventListener('resize', this._onResize);
             if (this.autoAdvance && this.pageCount > 1) {
                 this.startTimer();
             }
@@ -641,6 +652,10 @@ document.addEventListener('alpine:init', () => {
         },
         destroy() {
             this.stopTimer();
+            if (this._onResize) {
+                window.removeEventListener('resize', this._onResize);
+                this._onResize = null;
+            }
             if (this._resizeHandler) {
                 window.removeEventListener('resize', this._resizeHandler);
                 this._resizeHandler = null;

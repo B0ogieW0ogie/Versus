@@ -1,5 +1,6 @@
 @props([
     'perPageMobile' => 2,
+    'perPageMd' => null,
     'perPageDesktop' => 4,
     'autoAdvance' => false,
     'intervalMs' => 6000,
@@ -7,10 +8,15 @@
     'showDots' => true,
 ])
 
+@php
+    $perPageMd = $perPageMd ?? $perPageMobile;
+@endphp
+
 <div
     {{ $attributes->merge(['class' => 'relative']) }}
     x-data="carousel({
         perPageMobile: {{ (int) $perPageMobile }},
+        perPageMd: {{ (int) $perPageMd }},
         perPageDesktop: {{ (int) $perPageDesktop }},
         autoAdvance: {{ $autoAdvance ? 'true' : 'false' }},
         intervalMs: {{ (int) $intervalMs }},

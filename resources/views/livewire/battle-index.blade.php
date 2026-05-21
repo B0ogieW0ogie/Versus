@@ -16,16 +16,16 @@
 
         @if ($hot->isNotEmpty())
             <section>
-                <header class="flex items-baseline justify-between px-3 mb-2">
+                <header class="mb-3 flex items-baseline justify-between px-3">
                     <div class="text-[11px] uppercase tracking-wider text-white/55">
                         {{ __('battle.hot') }}
                     </div>
                 </header>
                 <div class="px-3">
-                    <x-carousel>
+                    <x-carousel :per-page-mobile="2" :per-page-md="3" :per-page-desktop="3">
                         @foreach ($hot as $battle)
-                            <div class="pr-2">
-                                <x-battle-tile :battle="$battle" />
+                            <div class="h-full pr-2 sm:pr-3">
+                                <x-battle-tile :battle="$battle" size="lg" />
                             </div>
                         @endforeach
                     </x-carousel>
