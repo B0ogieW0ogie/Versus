@@ -33,6 +33,13 @@ test('like sends one token and creates permanent like record', function () {
     expect((float) $battle->fresh()->total_pool)->toBe(1.0);
     expect(CommentLike::query()->where('user_id', $voter->id)->where('comment_id', $comment->id)->exists())->toBeTrue();
     expect(Vote::query()->where('user_id', $voter->id)->where('amount', 1)->count())->toBe(1);
+
+    $html = Livewire::actingAs($voter)
+        ->test(CommentThread::class, ['battle' => $battle->fresh()])
+        ->html();
+
+    expect($html)->toContain('fill-rose-500');
+    expect($html)->toContain('aria-pressed="true"');
 });
 
 test('second like shows already liked toast and does not charge again', function () {

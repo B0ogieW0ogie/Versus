@@ -8,6 +8,7 @@ use App\Actions\Comments\LikeCommentAction;
 use App\Actions\Comments\PostCommentAction;
 use App\Models\Battle;
 use App\Models\Comment;
+use App\Models\CommentLike;
 use App\Models\User;
 use App\Models\Vote;
 use App\Support\BattleStakeLimit;
@@ -294,9 +295,6 @@ class CommentThread extends Component
                 'replyToUser:id,name',
             ])
             ->withCount('likes')
-            ->when($userId !== null, fn ($q) => $q->withExists([
-                'likes as liked_by_user' => fn ($q) => $q->where('user_id', $userId),
-            ]))
             ->select('comments.*')
             ->addSelect([
                 'author_side_votes_sum' => Vote::query()
@@ -306,6 +304,17 @@ class CommentThread extends Component
                     ->whereColumn('votes.side', 'comments.side'),
             ])
             ->get();
+
+        if ($userId !== null) {
+            $likedCommentIds = CommentLike::query()
+                ->where('user_id', $userId)
+                ->whereIn('comment_id', $all->pluck('id'))
+                ->pluck('comment_id');
+
+            foreach ($all as $comment) {
+                $comment->setAttribute('liked_by_user', $likedCommentIds->contains($comment->id));
+            }
+        }
 
         $tree = Comment::buildTree($all);
 

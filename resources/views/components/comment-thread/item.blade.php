@@ -39,11 +39,18 @@
         && $battle->isOpenForVoting()
         && $canStake;
 
+    $hasLiked = auth()->check() && (bool) ($comment->liked_by_user ?? false);
+
     $canLike = ! $isDeleted
         && in_array($comment->side, ['A', 'B'], true)
         && auth()->check()
         && $battle->isOpenForVoting()
         && $canStake;
+
+    $showLikeButton = ! $isDeleted
+        && in_array($comment->side, ['A', 'B'], true)
+        && auth()->check()
+        && ($hasLiked || $canLike);
 @endphp
 
 <article
@@ -143,7 +150,7 @@
                 @endauth
             </div>
 
-            @if ($showSupportButton || $canLike || (! $isDeleted && $comment->likes_count > 0))
+            @if ($showSupportButton || $showLikeButton || (! $isDeleted && $comment->likes_count > 0 && ! auth()->check()))
                 <div class="flex shrink-0 flex-col items-end justify-between gap-3 self-stretch py-0.5">
                     @if ($showSupportButton)
                         <button type="button"
@@ -154,35 +161,36 @@
                         </button>
                     @endif
 
-                    @if ($canLike || (! $isDeleted && $comment->likes_count > 0))
+                    @if ($showLikeButton)
                         <div class="{{ $showSupportButton ? 'mt-auto' : '' }}">
-                            @if ($canLike)
-                                <button type="button"
-                                        wire:click="likeComment({{ $comment->id }})"
-                                        wire:loading.attr="disabled"
-                                        aria-label="{{ __('comments.like') }}"
-                                        class="group/like flex items-center gap-1 rounded-md p-1 transition disabled:opacity-50">
-                                    <svg class="h-4 w-4 transition
-                                                {{ $comment->liked_by_user ? 'fill-rose-500 text-rose-500' : 'fill-none text-[#76787a] group-hover/like:text-rose-400' }}"
-                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                    </svg>
-                                    @if ($comment->likes_count > 0)
-                                        <span class="text-xs tabular-nums {{ $comment->liked_by_user ? 'text-rose-400' : 'text-[#76787a]' }}">
-                                            {{ $comment->likes_count }}
-                                        </span>
-                                    @endif
-                                </button>
-                            @elseif ($comment->likes_count > 0)
-                                <span class="flex items-center gap-1 text-xs text-[#76787a]">
-                                    <svg class="h-4 w-4 fill-rose-500/80 text-rose-500" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                    </svg>
-                                    {{ $comment->likes_count }}
-                                </span>
-                            @endif
+                            <button type="button"
+                                    wire:click="likeComment({{ $comment->id }})"
+                                    wire:loading.attr="disabled"
+                                    aria-label="{{ __('comments.like') }}"
+                                    aria-pressed="{{ $hasLiked ? 'true' : 'false' }}"
+                                    class="group/like flex items-center gap-1 rounded-md p-1 transition disabled:opacity-50">
+                                <svg class="h-4 w-4 transition
+                                            {{ $hasLiked ? 'fill-rose-500 stroke-rose-500 text-rose-500' : 'fill-none stroke-[#76787a] text-[#76787a] group-hover/like:stroke-rose-400 group-hover/like:text-rose-400' }}"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                                @if ($comment->likes_count > 0)
+                                    <span class="text-xs tabular-nums {{ $hasLiked ? 'text-rose-400' : 'text-[#76787a]' }}">
+                                        {{ $comment->likes_count }}
+                                    </span>
+                                @endif
+                            </button>
+                        </div>
+                    @elseif (! $isDeleted && $comment->likes_count > 0)
+                        <div class="{{ $showSupportButton ? 'mt-auto' : '' }}">
+                            <span class="flex items-center gap-1 text-xs text-[#76787a]" aria-hidden="true">
+                                <svg class="h-4 w-4 fill-rose-500/80 stroke-rose-500 text-rose-500" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                </svg>
+                                {{ $comment->likes_count }}
+                            </span>
                         </div>
                     @endif
                 </div>
