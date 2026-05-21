@@ -4,12 +4,13 @@ namespace App\Livewire;
 
 use App\Actions\Battles\CastVoteAction;
 use App\Actions\Comments\DeleteCommentAction;
+use App\Actions\Comments\LikeCommentAction;
 use App\Actions\Comments\PostCommentAction;
-use App\Actions\Comments\ToggleCommentLikeAction;
 use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\User;
 use App\Models\Vote;
+use App\Support\BattleStakeLimit;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +43,7 @@ class CommentThread extends Component
         $this->battle->refresh();
     }
 
-    public function supportFor(int $commentId, CastVoteAction $action): void
+    public function supportComment(int $commentId, int $amount, CastVoteAction $action): void
     {
         if (! Auth::check()) {
             $this->redirectRoute('login');
@@ -50,23 +51,16 @@ class CommentThread extends Component
             return;
         }
 
-        $comment = $this->battle->comments()->withTrashed()->find($commentId);
-        if ($comment === null || $comment->trashed() || ! in_array($comment->side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
+        $comment = $this->resolveCommentForStake($commentId);
+        if ($comment === null) {
             return;
         }
 
         try {
-            $action(Auth::user(), $this->battle, $comment->side, 1.0);
-            $this->battle->refresh();
-            Auth::user()?->refresh();
-            $this->dispatch('battle-voted');
-            $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
+            $action(Auth::user(), $this->battle, $comment->side, (float) $amount);
+            $this->afterStakeSuccess((int) $amount);
         } catch (ValidationException $e) {
-            foreach ($e->errors() as $messages) {
-                foreach ($messages as $message) {
-                    $this->addError('vote', $message);
-                }
-            }
+            $this->surfaceVoteErrors($e);
         }
     }
 
@@ -176,7 +170,7 @@ class CommentThread extends Component
         return in_array($rootCommentId, $this->expandedThreads, true);
     }
 
-    public function toggleLike(int $commentId, ToggleCommentLikeAction $action): void
+    public function likeComment(int $commentId, LikeCommentAction $action): void
     {
         if (! Auth::check()) {
             $this->redirectRoute('login');
@@ -189,7 +183,24 @@ class CommentThread extends Component
             return;
         }
 
-        $action(Auth::user(), $comment);
+        try {
+            $result = $action(Auth::user(), $comment, $this->battle);
+
+            if ($result['already_liked']) {
+                $this->dispatch(
+                    'versus-stake-toast',
+                    title: __('comments.already_liked'),
+                    body: '',
+                    battleId: $this->battle->id,
+                );
+
+                return;
+            }
+
+            $this->afterStakeSuccess(1);
+        } catch (ValidationException $e) {
+            $this->surfaceVoteErrors($e);
+        }
     }
 
     public function deleteComment(int $commentId, DeleteCommentAction $action): void
@@ -309,8 +320,57 @@ class CommentThread extends Component
 
     public function render(): View
     {
+        $user = Auth::user();
+        $userBalance = $user !== null ? (float) $user->balance : 0.0;
+        $maxVoteAmount = (int) config('versus.max_vote_amount');
+        $remainingBattleStake = $user !== null
+            ? (int) BattleStakeLimit::remainingForUser($user, $this->battle)
+            : 0;
+        $maxAllowed = (int) min((int) $userBalance, $maxVoteAmount, $remainingBattleStake);
+
         return view('livewire.comment-thread', [
             'rootComments' => $this->rootComments(),
+            'maxAllowed' => $maxAllowed,
+            'maxVoteAmount' => $maxVoteAmount,
+            'userBalance' => $userBalance,
+            'canStake' => $user !== null
+                && $this->battle->isOpenForVoting()
+                && $userBalance >= 1
+                && $remainingBattleStake >= 1,
         ]);
+    }
+
+    private function resolveCommentForStake(int $commentId): ?Comment
+    {
+        $comment = $this->battle->comments()->withTrashed()->find($commentId);
+        if ($comment === null || $comment->trashed() || ! in_array($comment->side, [Battle::SIDE_A, Battle::SIDE_B], true)) {
+            return null;
+        }
+
+        return $comment;
+    }
+
+    private function afterStakeSuccess(int $amount): void
+    {
+        $this->battle->refresh();
+        Auth::user()?->refresh();
+        $this->dispatch(
+            'versus-stake-toast',
+            title: str_replace('__N__', (string) $amount, __('battle.stake_modal_title')),
+            body: __('battle.stake_modal_body'),
+            battleId: $this->battle->id,
+            poolTotal: (float) $this->battle->total_pool,
+        );
+        $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
+        $this->dispatch('battle-voted');
+    }
+
+    private function surfaceVoteErrors(ValidationException $e): void
+    {
+        foreach ($e->errors() as $messages) {
+            foreach ($messages as $message) {
+                $this->addError('vote', $message);
+            }
+        }
     }
 }

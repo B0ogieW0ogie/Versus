@@ -370,6 +370,112 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    window.Alpine.data('commentSupportStake', ({
+        max,
+        maxCap,
+        walletBalance,
+        battleId,
+        canStake,
+        i18n,
+    }) => ({
+        i18n,
+        battleId: Math.max(0, Number(battleId) || 0),
+        max: Math.max(0, Number(max) || 0),
+        maxCap: Math.max(0, Number(maxCap) || 0),
+        walletBalance: Math.max(0, Number(walletBalance) || 0),
+        canStake: Boolean(canStake),
+        supportCommentId: null,
+        supportSide: null,
+        modalAmount: 0,
+        err: null,
+        errTimer: null,
+
+        parseAmount(key) {
+            const n = parseInt(this[key], 10);
+
+            return Number.isFinite(n) ? n : 0;
+        },
+        canSubmitKey(key) {
+            const amt = this.parseAmount(key);
+
+            return amt >= 1 && amt <= this.max;
+        },
+        addChipKey(key, delta) {
+            const base = this.parseAmount(key);
+            const next = Math.max(1, Math.min(this.max, base + (Number(delta) || 0)));
+            this[key] = next;
+        },
+        setMaxKey(key) {
+            this[key] = this.max;
+        },
+        clampKey(key, onBlur = false) {
+            let n = parseInt(this[key], 10);
+            let changed = false;
+            if (Number.isNaN(n)) {
+                if (onBlur) {
+                    n = 0;
+                    changed = true;
+                } else {
+                    return;
+                }
+            } else if (n < 0) {
+                n = 0;
+                changed = true;
+            } else if (n > this.max) {
+                n = this.max;
+                changed = true;
+            }
+            if (n !== this[key]) {
+                this[key] = n;
+            }
+            if (changed && n === this.max && this.max > 0) {
+                this.flash(this.i18n.clamp);
+            }
+        },
+        flash(msg) {
+            this.err = msg;
+            clearTimeout(this.errTimer);
+            this.errTimer = setTimeout(() => {
+                this.err = null;
+            }, 2000);
+        },
+        onBalance(newBalance) {
+            const b = Math.max(0, Number(newBalance) || 0);
+            this.walletBalance = b;
+            this.max = Math.min(b, this.maxCap);
+            if (this.modalAmount > this.max) {
+                this.modalAmount = this.max;
+            }
+        },
+        openSupportModal(commentId, side) {
+            if (! this.canStake || (side !== 'A' && side !== 'B')) {
+                return;
+            }
+            this.supportCommentId = Number(commentId) || null;
+            this.supportSide = side;
+            this.modalAmount = this.max >= 1 ? 1 : 0;
+            this.clampKey('modalAmount', true);
+            this.err = null;
+            document.body.classList.add('overflow-y-hidden');
+        },
+        closeSupportModal() {
+            this.supportCommentId = null;
+            this.supportSide = null;
+            document.body.classList.remove('overflow-y-hidden');
+        },
+        confirmSupportModal() {
+            if (this.supportCommentId === null || this.supportSide === null) {
+                return;
+            }
+            this.clampKey('modalAmount', true);
+            if (! this.canSubmitKey('modalAmount')) {
+                return;
+            }
+            this.$wire.supportComment(this.supportCommentId, this.modalAmount);
+            this.closeSupportModal();
+        },
+    }));
+
     window.Alpine.data('carousel', ({
         perPageMobile = 2,
         perPageDesktop = 4,
