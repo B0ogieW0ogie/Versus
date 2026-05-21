@@ -4,6 +4,8 @@
 ])
 
 @php
+    use Illuminate\Support\Str;
+
     /** @var \App\Models\Battle $battle */
     $timeLeft = $battle->closes_at
         ? $battle->closes_at->diff(now())
@@ -13,6 +15,8 @@
         : '—';
 
     $isLarge = $size === 'lg';
+    $sideALabel = Str::title($battle->side_a_label);
+    $sideBLabel = Str::title($battle->side_b_label);
 @endphp
 
 <a href="{{ route('battles.show', $battle) }}"
@@ -51,15 +55,29 @@
     </div>
 
     <div @class([
-        'mt-2 truncate text-sm text-white/90',
-        'md:mt-3 md:text-base md:font-semibold' => $isLarge,
-    ])>{{ $battle->title }}</div>
+        'mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-1',
+        'md:mt-3' => $isLarge,
+    ])>
+        <span @class([
+            'truncate text-sm font-bold text-white',
+            'md:text-base' => $isLarge,
+        ])>{{ $sideALabel }}</span>
+        <span @class([
+            'shrink-0 px-0.5 text-sm font-bold uppercase tracking-wide text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]',
+            'md:text-base' => $isLarge,
+        ])>{{ __('battle.vs') }}</span>
+        <span @class([
+            'truncate text-right text-sm font-bold text-white',
+            'md:text-base' => $isLarge,
+        ])>{{ $sideBLabel }}</span>
+    </div>
 
     <div @class([
-        'mt-1 flex items-center justify-between text-[11px] text-white/55',
+        'mt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-1 text-[11px] text-white/55',
         'md:text-sm' => $isLarge,
     ])>
         <span>💰 {{ $battle->compactPool() }}</span>
-        <span>⏱ {{ $timeLabel }}</span>
+        <span aria-hidden="true"></span>
+        <span class="text-right">⏱ {{ $timeLabel }}</span>
     </div>
 </a>
