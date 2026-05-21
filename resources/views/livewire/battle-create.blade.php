@@ -55,7 +55,7 @@
             <p id="battle-create-duration" class="mb-2 block text-sm font-medium text-white/80">{{ __('battle.create_duration_label') }}</p>
             <div class="flex flex-wrap gap-2" role="group" aria-labelledby="battle-create-duration">
                 @foreach ($durationPresets as $preset)
-                    <button type="button" wire:click="$set('duration_preset', '{{ $preset }}')"
+                    <button type="button" wire:click="setDurationPreset('{{ $preset }}')"
                             @class([
                                 'rounded-lg border px-3 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-cyan-400/40',
                                 'border-cyan-400/60 bg-cyan-500/15 text-white shadow-[0_0_16px_rgba(34,211,238,0.12)]' => $duration_preset === $preset,

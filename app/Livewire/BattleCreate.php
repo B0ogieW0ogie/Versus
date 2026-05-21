@@ -42,6 +42,13 @@ class BattleCreate extends Component
 
     public bool $showAiModal = false;
 
+    public function setDurationPreset(string $preset): void
+    {
+        if (in_array($preset, BattleDurationPreset::PRESETS, true)) {
+            $this->duration_preset = $preset;
+        }
+    }
+
     public function store(CreateUserBattleAction $action): void
     {
         $user = Auth::user();

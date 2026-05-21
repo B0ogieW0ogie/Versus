@@ -3,12 +3,12 @@
         <h3 class="shrink-0 text-lg font-semibold text-white">{{ __('comments.heading') }}</h3>
         <div class="shrink-0" role="group" aria-label="{{ __('comments.sort_label') }}">
             <div class="inline-flex rounded-lg border border-white/10 bg-black/30 p-0.5">
-                <button type="button" wire:click="$set('commentSort', 'popular')"
+                <button type="button" wire:click="setCommentSort('popular')"
                         class="rounded-md px-3 py-1.5 text-xs font-semibold transition
                                {{ $commentSort === 'popular' ? 'bg-white/15 text-white shadow-sm' : 'text-[#76787a] hover:text-white/80' }}">
                     {{ __('comments.sort_popular') }}
                 </button>
-                <button type="button" wire:click="$set('commentSort', 'new')"
+                <button type="button" wire:click="setCommentSort('new')"
                         class="rounded-md px-3 py-1.5 text-xs font-semibold transition
                                {{ $commentSort === 'new' ? 'bg-white/15 text-white shadow-sm' : 'text-[#76787a] hover:text-white/80' }}">
                     {{ __('comments.sort_new') }}
@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <div class="mt-3 divide-y divide-white/5">
+    <div class="mt-3 divide-y divide-white/5" wire:key="comment-roots-{{ $commentSort }}">
         @forelse ($rootComments as $comment)
             <div wire:key="thread-{{ $comment->id }}" class="py-1">
                 @include('components.comment-thread.item', ['comment' => $comment, 'battle' => $battle])

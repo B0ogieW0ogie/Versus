@@ -106,7 +106,7 @@ test('battle comments new sort orders by created at descending', function () {
 
     $html = Livewire::actingAs($uLow)
         ->test(CommentThread::class, ['battle' => $battle])
-        ->set('commentSort', 'new')
+        ->call('setCommentSort', 'new')
         ->assertSet('commentSort', 'new')
         ->html();
 
@@ -147,6 +147,6 @@ test('invalid comment sort falls back to popular', function () {
 
     Livewire::actingAs($user)
         ->test(CommentThread::class, ['battle' => $battle])
-        ->set('commentSort', 'bogus')
+        ->call('setCommentSort', 'bogus')
         ->assertSet('commentSort', 'popular');
 });

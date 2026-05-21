@@ -231,11 +231,14 @@ class CommentThread extends Component
         // Stub: reporting will be implemented later.
     }
 
+    public function setCommentSort(string $sort): void
+    {
+        $this->commentSort = in_array($sort, ['popular', 'new'], true) ? $sort : 'popular';
+    }
+
     public function updatedCommentSort(string $value): void
     {
-        if (! in_array($value, ['popular', 'new'], true)) {
-            $this->commentSort = 'popular';
-        }
+        $this->setCommentSort($value);
     }
 
     private function expandThread(int $rootCommentId): void
