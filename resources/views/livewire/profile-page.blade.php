@@ -40,10 +40,10 @@
                 @endif
             </div>
 
-            {{-- Avatar · identity · stats · edit --}}
-            <div class="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
-                <div class="shrink-0">
-                    <div class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
+            {{-- Row under banner: avatar · name · stats (aligned to banner bottom) --}}
+            <div class="-mt-12 space-y-2">
+                <div class="flex items-end gap-3 sm:gap-5">
+                    <div class="h-24 w-24 shrink-0 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
                         @if ($user->avatarUrl())
                             <img src="{{ $user->avatarUrl() }}" alt="" class="w-full h-full object-cover">
                         @else
@@ -53,39 +53,44 @@
                             </svg>
                         @endif
                     </div>
-                    <div class="mt-2 flex items-center gap-1.5 text-sm text-white/70">
-                        <x-icon.trophy class="h-4 w-4 shrink-0" />
-                        <span class="font-semibold text-white">2,450</span>
-                        <span>{{ __('profile.rp_suffix') }}</span>
+
+                    <div class="min-w-0 flex-1 pb-0.5">
+                        <h2 class="text-2xl font-bold text-vote-purple-to leading-tight">{{ $user->name }}</h2>
+                        <p class="mt-0.5 text-sm text-white/60">{{ $handle }}</p>
                     </div>
-                    <p class="mt-0.5 text-sm font-semibold text-vote-purple-to">{{ __('profile.title_architect') }}</p>
+
+                    <div class="flex flex-wrap items-center justify-end gap-x-4 gap-y-1.5 shrink-0 pb-0.5 sm:gap-x-6">
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-lg font-bold text-white">352</span>
+                            <span class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</span>
+                        </div>
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-lg font-bold text-white">128</span>
+                            <span class="text-[11px] text-white/55">{{ __('profile.following') }}</span>
+                        </div>
+                        <a href="{{ route('profile.settings') }}"
+                           class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition shrink-0">
+                            {{ __('profile.edit') }}
+                        </a>
+                    </div>
                 </div>
 
-                <div class="min-w-0 flex-1 sm:pb-1">
-                    <h2 class="text-2xl font-bold text-vote-purple-to leading-tight">{{ $user->name }}</h2>
-                    <p class="mt-0.5 text-sm text-white/60">{{ $handle }}</p>
-                    <div data-onboarding-target="bio" class="mt-1.5">
+                <div class="flex gap-3 sm:gap-5">
+                    <div class="w-24 shrink-0">
+                        <div class="flex items-center gap-1.5 text-sm text-white/70">
+                            <x-icon.trophy class="h-4 w-4 shrink-0" />
+                            <span class="font-semibold text-white">2,450</span>
+                            <span>{{ __('profile.rp_suffix') }}</span>
+                        </div>
+                        <p class="mt-0.5 text-sm font-semibold text-vote-purple-to">{{ __('profile.title_architect') }}</p>
+                    </div>
+                    <div data-onboarding-target="bio" class="min-w-0 flex-1 pt-0.5">
                         @if ($user->bio)
                             <p class="text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
                         @else
                             <p class="text-sm text-white/45">{{ __('profile.bio_placeholder') }}</p>
                         @endif
                     </div>
-                </div>
-
-                <div class="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 sm:shrink-0 sm:pb-1">
-                    <div class="flex items-baseline gap-1.5">
-                        <span class="text-lg font-bold text-white">352</span>
-                        <span class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</span>
-                    </div>
-                    <div class="flex items-baseline gap-1.5">
-                        <span class="text-lg font-bold text-white">128</span>
-                        <span class="text-[11px] text-white/55">{{ __('profile.following') }}</span>
-                    </div>
-                    <a href="{{ route('profile.settings') }}"
-                       class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition shrink-0">
-                        {{ __('profile.edit') }}
-                    </a>
                 </div>
             </div>
         </div>
