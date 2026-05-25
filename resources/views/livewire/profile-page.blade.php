@@ -73,16 +73,14 @@
                     </div>
                 </div>
 
-                <div class="flex items-end justify-between gap-4 sm:shrink-0 sm:flex-col sm:items-center sm:justify-end sm:gap-3 sm:pb-1">
-                    <div class="flex gap-6 sm:gap-8">
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-white">352</div>
-                            <div class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-lg font-bold text-white">128</div>
-                            <div class="text-[11px] text-white/55">{{ __('profile.following') }}</div>
-                        </div>
+                <div class="flex flex-wrap items-center justify-end gap-x-6 gap-y-2 sm:shrink-0 sm:pb-1">
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-lg font-bold text-white">352</span>
+                        <span class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</span>
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-lg font-bold text-white">128</span>
+                        <span class="text-[11px] text-white/55">{{ __('profile.following') }}</span>
                     </div>
                     <a href="{{ route('profile.settings') }}"
                        class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition shrink-0">
