@@ -123,7 +123,7 @@ class LeaderboardTable
             ->selectRaw('ROUND(COALESCE(SUM(total_pool), 0) * ?, 2) AS metric_value', [$cut])
             ->selectRaw('COUNT(*) AS battles_count')
             ->groupBy('created_by_id')
-            ->havingRaw('metric_value > 0')
+            ->havingRaw('ROUND(COALESCE(SUM(total_pool), 0) * ?, 2) > 0', [$cut])
             ->orderByDesc('metric_value')
             ->orderBy('user_id')
             ->limit(self::LIMIT)
@@ -175,7 +175,7 @@ class LeaderboardTable
             ->selectRaw('user_id')
             ->selectRaw('ROUND(COALESCE(SUM(amount), 0), 2) AS metric_value')
             ->groupBy('user_id')
-            ->havingRaw('metric_value > 0')
+            ->havingRaw('ROUND(COALESCE(SUM(amount), 0), 2) > 0')
             ->toBase();
 
         $likes = CommentLike::query()
@@ -306,7 +306,7 @@ class LeaderboardTable
             ->selectRaw('ROUND(COALESCE(SUM(total_pool), 0) * ?, 2) AS metric_value', [$cut])
             ->selectRaw('COUNT(*) AS battles_count')
             ->groupBy('created_by_id')
-            ->havingRaw('metric_value > 0')
+            ->havingRaw('ROUND(COALESCE(SUM(total_pool), 0) * ?, 2) > 0', [$cut])
             ->orderByDesc('metric_value')
             ->orderBy('user_id')
             ->toBase();
@@ -353,7 +353,7 @@ class LeaderboardTable
             ->selectRaw('user_id')
             ->selectRaw('ROUND(COALESCE(SUM(amount), 0), 2) AS metric_value')
             ->groupBy('user_id')
-            ->havingRaw('metric_value > 0')
+            ->havingRaw('ROUND(COALESCE(SUM(amount), 0), 2) > 0')
             ->toBase();
 
         $likes = CommentLike::query()
@@ -524,7 +524,7 @@ class LeaderboardTable
             ->selectRaw('created_by_id AS user_id')
             ->selectRaw('ROUND(COALESCE(SUM(total_pool), 0) * ?, 2) AS metric_value', [$cut])
             ->groupBy('created_by_id')
-            ->havingRaw('metric_value > 0')
+            ->havingRaw('ROUND(COALESCE(SUM(total_pool), 0) * ?, 2) > 0', [$cut])
             ->toBase();
 
         return (int) DB::query()
@@ -586,7 +586,7 @@ class LeaderboardTable
             ->selectRaw('user_id')
             ->selectRaw('ROUND(COALESCE(SUM(amount), 0), 2) AS metric_value')
             ->groupBy('user_id')
-            ->havingRaw('metric_value > 0')
+            ->havingRaw('ROUND(COALESCE(SUM(amount), 0), 2) > 0')
             ->toBase();
 
         $likes = CommentLike::query()
