@@ -52,7 +52,7 @@ test('shows user name, handle, bio and hardcoded stats', function () {
         ->get('/profile')
         ->assertSee('Vlad Basargin')
         ->assertSee('@vladbasargin')
-        ->assertSee('Architect of Reality')
+        ->assertSee(__('profile.title_architect'))
         ->assertSee('Люблю спорить о футболе', escape: false)
         ->assertSee('352')
         ->assertSee('128')

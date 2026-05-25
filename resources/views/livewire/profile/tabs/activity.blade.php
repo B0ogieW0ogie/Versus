@@ -1,10 +1,10 @@
 <div class="mt-3">
     @if ($votes->isEmpty())
-        <div class="mx-4 rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
+        <div class="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
             {{ __('profile.activity_empty') }}
         </div>
     @else
-        <ul class="space-y-2 px-4">
+        <ul class="space-y-2">
             @foreach ($votes as $battle)
                 @php
                     $status = $this->statusFor($battle);
@@ -61,7 +61,7 @@
             @endforeach
         </ul>
 
-        <div class="px-4 mt-3">
+        <div class="mt-3">
             {{ $votes->links() }}
         </div>
     @endif

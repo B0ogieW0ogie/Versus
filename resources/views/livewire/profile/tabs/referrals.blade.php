@@ -1,4 +1,4 @@
-<div class="mt-4 px-4 space-y-4">
+<div class="mt-4 space-y-4">
     <section data-onboarding-target="referral" class="rounded-xl border border-white/5 bg-white/[0.03] p-4">
         <h3 class="text-sm font-semibold text-white">{{ __('profile.referrals_link_heading') }}</h3>
         <div class="mt-3 flex items-center gap-2"

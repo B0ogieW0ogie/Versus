@@ -6,6 +6,7 @@ return [
     'following' => 'Подписки',
     'edit' => 'РЕДАКТИРОВАТЬ',
     'rp_suffix' => 'RP',
+    'title_architect' => 'Architect',
     'username_fallback_prefix' => 'user',
     'tab_activity' => 'Активность',
     'tab_creation' => 'Versus Creation',

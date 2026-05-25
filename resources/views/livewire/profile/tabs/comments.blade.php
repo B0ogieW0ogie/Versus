@@ -1,10 +1,10 @@
 <div class="mt-3">
     @if ($comments->isEmpty())
-        <div class="mx-4 rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
+        <div class="rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
             {{ __('profile.comments_empty') }}
         </div>
     @else
-        <ul class="space-y-2 px-4">
+        <ul class="space-y-2">
             @foreach ($comments as $comment)
                 <li class="rounded-xl border border-white/5 bg-white/[0.03] p-3">
                     <p class="text-sm text-white/90 whitespace-pre-line">{{ $comment->body }}</p>
@@ -19,7 +19,7 @@
             @endforeach
         </ul>
 
-        <div class="px-4 mt-3">
+        <div class="mt-3">
             {{ $comments->links() }}
         </div>
     @endif

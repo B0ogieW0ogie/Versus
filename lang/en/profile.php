@@ -6,6 +6,7 @@ return [
     'following' => 'Following',
     'edit' => 'EDIT',
     'rp_suffix' => 'RP',
+    'title_architect' => 'Architect',
     'username_fallback_prefix' => 'user',
     'tab_activity' => 'Activity',
     'tab_creation' => 'Versus Creation',

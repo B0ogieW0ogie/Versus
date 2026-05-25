@@ -1,6 +1,5 @@
 @php
     $handle = $user->username ? '@' . $user->username : '@' . __('profile.username_fallback_prefix') . $user->id;
-    $title = 'Architect of Reality';
 @endphp
 
 <div class="pb-20">
@@ -30,10 +29,10 @@
         </div>
     </header>
 
-    <div class="px-3 lg:max-w-7xl lg:mx-auto lg:px-6">
+    <div class="w-full lg:max-w-7xl lg:mx-auto px-4 lg:px-6">
         <div data-onboarding-target="avatar" class="relative">
             {{-- Banner --}}
-            <div class="aspect-[16/7] bg-white/5 flex items-center justify-center overflow-hidden rounded-lg">
+            <div class="aspect-[16/7] bg-white/5 flex items-center justify-center overflow-hidden">
                 @if ($user->bannerUrl())
                     <img src="{{ $user->bannerUrl() }}" alt="" class="w-full h-full object-cover">
                 @else
@@ -41,62 +40,56 @@
                 @endif
             </div>
 
-            {{-- Header row: avatar + stats + edit --}}
-            <div class="-mt-12 flex items-end gap-4">
-                <div class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
-                @if ($user->avatarUrl())
-                    <img src="{{ $user->avatarUrl() }}" alt="" class="w-full h-full object-cover">
-                @else
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                         class="h-12 w-12 text-white/30">
-                        <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.418 0-8 2.686-8 6v2h16v-2c0-3.314-3.582-6-8-6z"/>
-                    </svg>
-                @endif
+            {{-- Avatar · identity · stats · edit --}}
+            <div class="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-5">
+                <div class="shrink-0">
+                    <div class="h-24 w-24 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
+                        @if ($user->avatarUrl())
+                            <img src="{{ $user->avatarUrl() }}" alt="" class="w-full h-full object-cover">
+                        @else
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                 class="h-12 w-12 text-white/30">
+                                <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.418 0-8 2.686-8 6v2h16v-2c0-3.314-3.582-6-8-6z"/>
+                            </svg>
+                        @endif
+                    </div>
+                    <div class="mt-2 flex items-center gap-1.5 text-sm text-white/70">
+                        <x-icon.trophy class="h-4 w-4 shrink-0" />
+                        <span class="font-semibold text-white">2,450</span>
+                        <span>{{ __('profile.rp_suffix') }}</span>
+                    </div>
+                    <p class="mt-0.5 text-sm font-semibold text-vote-purple-to">{{ __('profile.title_architect') }}</p>
                 </div>
 
-                <div class="flex-1 flex items-end justify-between pb-1">
-                <div class="flex gap-6">
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-white">352</div>
-                        <div class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-lg font-bold text-white">128</div>
-                        <div class="text-[11px] text-white/55">{{ __('profile.following') }}</div>
+                <div class="min-w-0 flex-1 sm:pb-1">
+                    <h2 class="text-2xl font-bold text-vote-purple-to leading-tight">{{ $user->name }}</h2>
+                    <p class="mt-0.5 text-sm text-white/60">{{ $handle }}</p>
+                    <div data-onboarding-target="bio" class="mt-1.5">
+                        @if ($user->bio)
+                            <p class="text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
+                        @else
+                            <p class="text-sm text-white/45">{{ __('profile.bio_placeholder') }}</p>
+                        @endif
                     </div>
                 </div>
+
+                <div class="flex items-end justify-between gap-4 sm:shrink-0 sm:flex-col sm:items-center sm:justify-end sm:gap-3 sm:pb-1">
+                    <div class="flex gap-6 sm:gap-8">
+                        <div class="text-center">
+                            <div class="text-lg font-bold text-white">352</div>
+                            <div class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-bold text-white">128</div>
+                            <div class="text-[11px] text-white/55">{{ __('profile.following') }}</div>
+                        </div>
+                    </div>
                     <a href="{{ route('profile.settings') }}"
-                       class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition">
+                       class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition shrink-0">
                         {{ __('profile.edit') }}
                     </a>
                 </div>
             </div>
-        </div>
-
-        {{-- RP --}}
-        <div class="mt-2 flex items-center gap-1.5 text-sm text-white/70">
-            <x-icon.trophy class="h-4 w-4" />
-            <span class="font-semibold text-white">2,450</span>
-            <span>{{ __('profile.rp_suffix') }}</span>
-        </div>
-
-        {{-- Name + handle + title --}}
-        <div class="mt-3">
-            <h2 class="text-2xl font-bold text-white">{{ $user->name }}</h2>
-            <div class="mt-0.5 text-sm text-white/60 flex flex-wrap gap-x-2 items-center">
-                <span>{{ $handle }}</span>
-                <span class="text-white/40">·</span>
-                <span class="text-vote-purple-to font-semibold">{{ $title }}</span>
-            </div>
-        </div>
-
-        {{-- Bio --}}
-        <div data-onboarding-target="bio" class="mt-2">
-            @if ($user->bio)
-                <p class="text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
-            @else
-                <p class="text-sm text-white/45">{{ __('profile.bio_placeholder') }}</p>
-            @endif
         </div>
 
         {{-- Tab bar --}}
