@@ -15,6 +15,10 @@
                        class="transition {{ (request()->routeIs('battles.*') || request()->routeIs('home')) && ! request()->routeIs('battles.create') ? 'text-white' : 'text-white/60 hover:text-white' }}">
                         {{ __('nav.battles') }}
                     </a>
+                    <a href="{{ route('leaderboard') }}"
+                       class="transition {{ request()->routeIs('leaderboard') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                        {{ __('nav.leaderboard') }}
+                    </a>
                     @auth
                         <a href="{{ route('battles.create') }}"
                            class="transition {{ request()->routeIs('battles.create') ? 'text-white' : 'text-white/60 hover:text-white' }}">
