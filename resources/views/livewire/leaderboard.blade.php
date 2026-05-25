@@ -13,7 +13,7 @@
     ];
 @endphp
 
-<div class="max-w-xl mx-auto flex flex-col min-h-[calc(100dvh-4rem)]">
+<div class="flex flex-col min-h-[calc(100dvh-4rem)] w-full lg:max-w-7xl lg:mx-auto lg:px-6">
     <header class="px-4 pt-4 shrink-0">
         <h1 class="text-xl font-semibold text-white">{{ __('leaderboard.title') }}</h1>
     </header>
@@ -108,7 +108,7 @@
             $delta = $me['delta'] ?? null;
         @endphp
         <div class="fixed bottom-20 left-0 right-0 z-20 sm:bottom-0 pointer-events-none">
-            <div class="max-w-xl mx-auto px-4 pointer-events-auto">
+            <div class="w-full lg:max-w-7xl lg:mx-auto px-4 lg:px-6 pointer-events-auto">
                 <div class="rounded-xl border border-glow-cyan/25 bg-navy-900/95 backdrop-blur-md px-4 py-3 shadow-lg">
                     <div class="flex items-center justify-between gap-3 text-sm">
                         <span class="text-white/70">
