@@ -2,10 +2,13 @@
 
 namespace Tests\Feature\Livewire;
 
+use App\Actions\Comments\LikeCommentAction;
 use App\Livewire\Leaderboard;
 use App\Models\Battle;
+use App\Models\Comment;
 use App\Models\User;
 use App\Models\Vote;
+use App\Support\LeaderboardTable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -14,100 +17,159 @@ class LeaderboardTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_ranks_users_by_sum_of_winning_payouts(): void
+    public function test_creators_tab_ranks_by_one_percent_of_settled_pools(): void
     {
-        [$alice, $bob, $carol] = User::factory()->count(3)->create()->all();
+        $alice = User::factory()->create();
+        $bob = User::factory()->create();
 
-        $battle = Battle::factory()->settled(Battle::SIDE_A)->create();
-
-        Vote::factory()->create([
-            'user_id' => $alice->id, 'battle_id' => $battle->id,
-            'side' => 'A', 'amount' => 100, 'weight' => 100, 'payout' => 500,
+        Battle::factory()->settled(Battle::SIDE_A)->create([
+            'created_by_id' => $alice->id,
+            'total_pool' => 1000,
+            'settled_at' => now(),
         ]);
-        Vote::factory()->create([
-            'user_id' => $bob->id, 'battle_id' => $battle->id,
-            'side' => 'A', 'amount' => 50, 'weight' => 50, 'payout' => 250,
-        ]);
-        Vote::factory()->create([
-            'user_id' => $carol->id, 'battle_id' => $battle->id,
-            'side' => 'B', 'amount' => 80, 'weight' => 80, 'payout' => null,
-        ]);
-
-        Livewire::test(Leaderboard::class)
-            ->assertViewHas('rows', function ($rows) use ($alice, $bob, $carol) {
-                $map = $rows->keyBy('id');
-
-                return (float) $map[$alice->id]->total_winnings === 500.0
-                    && (float) $map[$bob->id]->total_winnings === 250.0
-                    && (float) $map[$carol->id]->total_winnings === 0.0;
-            });
-    }
-
-    public function test_refund_votes_do_not_count_as_winnings(): void
-    {
-        $user = User::factory()->create();
-
-        $tiedBattle = Battle::factory()->create([
-            'status' => Battle::STATUS_SETTLED,
-            'winning_side' => null,
+        Battle::factory()->settled(Battle::SIDE_A)->create([
+            'created_by_id' => $bob->id,
+            'total_pool' => 500,
             'settled_at' => now(),
         ]);
 
-        Vote::factory()->create([
-            'user_id' => $user->id, 'battle_id' => $tiedBattle->id,
-            'side' => 'A', 'amount' => 100, 'weight' => 100, 'payout' => 100,
-        ]);
-
         Livewire::test(Leaderboard::class)
-            ->assertViewHas('rows', function ($rows) use ($user) {
-                return (float) $rows->firstWhere('id', $user->id)->total_winnings === 0.0;
+            ->set('tab', LeaderboardTable::TAB_CREATORS)
+            ->assertViewHas('rows', function ($rows) use ($alice) {
+                return (int) $rows->first()->id === $alice->id
+                    && (float) $rows->first()->metric_value === 10.0
+                    && (float) $rows->last()->metric_value === 5.0;
             });
     }
 
-    public function test_ties_break_on_user_id(): void
+    public function test_oracles_tab_requires_minimum_ten_votes_and_sorts_by_win_rate(): void
     {
+        $sharp = User::factory()->create();
+        $casual = User::factory()->create();
+
         $battle = Battle::factory()->settled(Battle::SIDE_A)->create();
 
-        foreach (range(1, 3) as $_) {
-            $u = User::factory()->create();
+        foreach (range(1, 9) as $_) {
             Vote::factory()->create([
-                'user_id' => $u->id, 'battle_id' => $battle->id,
-                'side' => 'A', 'amount' => 10, 'weight' => 10, 'payout' => 10,
+                'user_id' => $casual->id,
+                'battle_id' => $battle->id,
+                'side' => 'A',
+                'amount' => 10,
+                'weight' => 10,
             ]);
         }
 
-        $component = Livewire::test(Leaderboard::class);
-        $ids = $component->viewData('rows')->pluck('id')->all();
-        sort($ids);
-        $this->assertSame($ids, $component->viewData('rows')->pluck('id')->all());
+        foreach (range(1, 10) as $i) {
+            Vote::factory()->create([
+                'user_id' => $sharp->id,
+                'battle_id' => $battle->id,
+                'side' => $i <= 8 ? 'A' : 'B',
+                'amount' => 10,
+                'weight' => 10,
+            ]);
+        }
+
+        Livewire::test(Leaderboard::class)
+            ->set('tab', LeaderboardTable::TAB_ORACLES)
+            ->assertViewHas('rows', function ($rows) use ($sharp, $casual) {
+                return $rows->count() === 1
+                    && (int) $rows->first()->id === $sharp->id
+                    && (float) $rows->first()->metric_value === 80.0
+                    && ! $rows->contains('id', $casual->id);
+            });
     }
 
-    public function test_authed_user_outside_top_100_gets_your_position_row(): void
+    public function test_influencers_tab_ranks_by_comment_like_income(): void
     {
-        $battle = Battle::factory()->settled(Battle::SIDE_A)->create();
+        $author = User::factory()->create(['balance' => 20]);
+        $voter = User::factory()->create(['balance' => 5]);
 
-        // 100 users ahead
-        for ($i = 0; $i < 100; $i++) {
-            $u = User::factory()->create();
-            Vote::factory()->create([
-                'user_id' => $u->id, 'battle_id' => $battle->id,
-                'side' => 'A', 'amount' => 10, 'weight' => 10, 'payout' => 1000,
-            ]);
-        }
-
-        $me = User::factory()->create();
-        Vote::factory()->create([
-            'user_id' => $me->id, 'battle_id' => $battle->id,
-            'side' => 'A', 'amount' => 1, 'weight' => 1, 'payout' => 1,
+        $battle = Battle::factory()->create([
+            'status' => Battle::STATUS_ACTIVE,
+            'closes_at' => now()->addDay(),
         ]);
 
-        Livewire::actingAs($me)
-            ->test(Leaderboard::class)
-            ->assertViewHas('me', fn ($me) => $me !== null && $me['rank'] === 101 && (float) $me['total_winnings'] === 1.0);
+        $comment = Comment::factory()->create([
+            'user_id' => $author->id,
+            'battle_id' => $battle->id,
+            'side' => Battle::SIDE_A,
+        ]);
+
+        app(LikeCommentAction::class)($voter, $comment, $battle);
+        app(LikeCommentAction::class)(User::factory()->create(['balance' => 5]), $comment, $battle);
+
+        Livewire::test(Leaderboard::class)
+            ->set('tab', LeaderboardTable::TAB_INFLUENCERS)
+            ->assertViewHas('rows', function ($rows) use ($author) {
+                return (int) $rows->first()->id === $author->id
+                    && (float) $rows->first()->metric_value === 2.0
+                    && (int) $rows->first()->argument_votes === 2;
+            });
     }
 
-    public function test_guest_sees_no_your_position_row(): void
+    public function test_week_period_excludes_older_settled_battles_for_creators(): void
+    {
+        $user = User::factory()->create();
+
+        Battle::factory()->settled(Battle::SIDE_A)->create([
+            'created_by_id' => $user->id,
+            'total_pool' => 1000,
+            'settled_at' => now()->subDays(10),
+        ]);
+
+        Livewire::test(Leaderboard::class)
+            ->set('tab', LeaderboardTable::TAB_CREATORS)
+            ->set('period', LeaderboardTable::PERIOD_WEEK)
+            ->assertViewHas('rows', fn ($rows) => $rows->isEmpty());
+    }
+
+    public function test_authed_user_gets_pinned_position_with_rank_delta(): void
+    {
+        $leader = User::factory()->create();
+        $user = User::factory()->create();
+
+        Battle::factory()->settled(Battle::SIDE_A)->create([
+            'created_by_id' => $leader->id,
+            'total_pool' => 5000,
+            'settled_at' => now()->subDays(10),
+        ]);
+        Battle::factory()->settled(Battle::SIDE_A)->create([
+            'created_by_id' => $user->id,
+            'total_pool' => 1000,
+            'settled_at' => now()->subDays(10),
+        ]);
+        Battle::factory()->settled(Battle::SIDE_A)->create([
+            'created_by_id' => $user->id,
+            'total_pool' => 10000,
+            'settled_at' => now()->subDays(3),
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(Leaderboard::class)
+            ->set('tab', LeaderboardTable::TAB_CREATORS)
+            ->set('period', LeaderboardTable::PERIOD_WEEK)
+            ->assertViewHas('me', fn ($me) => $me !== null
+                && $me['rank'] === 1
+                && (float) $me['metric_value'] === 100.0
+                && $me['delta'] === 1);
+    }
+
+    public function test_guest_has_no_pinned_position(): void
     {
         Livewire::test(Leaderboard::class)->assertViewHas('me', null);
+    }
+
+    public function test_page_renders_tabs_and_period_chips(): void
+    {
+        $this->get(route('leaderboard'))
+            ->assertOk()
+            ->assertSee(__('leaderboard.tabs.creators'), false)
+            ->assertSee(__('leaderboard.periods.week'), false);
+    }
+
+    public function test_rank_badge_uses_medals_for_top_three(): void
+    {
+        $this->assertSame('#1 🥇', LeaderboardTable::rankBadge(1));
+        $this->assertSame('#4', LeaderboardTable::rankBadge(4));
     }
 }

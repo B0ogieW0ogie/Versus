@@ -18,4 +18,10 @@ return [
     'referral' => [
         'winner_cut' => 0.10,
     ],
+
+    'leaderboard' => [
+        'creator_fee_cut' => 0.01,
+        'argument_referral_cut' => 0.04,
+        'oracle_min_votes' => 10,
+    ],
 ];
