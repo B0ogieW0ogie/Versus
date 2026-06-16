@@ -25,6 +25,8 @@ return [
     'activity_badge_win' => 'WIN',
     'activity_badge_lose' => 'LOSE',
     'activity_badge_active' => 'ACTIVE',
+    'created_badge_closed' => 'CLOSED',
+    'created_empty' => 'No battles created yet.',
     'activity_badge_refund' => 'REFUND',
     'comments_on' => 'on:',
     'referrals_link_heading' => 'Your referral link',

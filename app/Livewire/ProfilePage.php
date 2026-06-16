@@ -126,6 +126,7 @@ class ProfilePage extends Component
             'followersCount' => $user->followers()->count(),
             'followingCount' => $user->following()->count(),
             'votes' => $this->loadVotes($user),
+            'created' => $this->loadCreatedBattles($user),
             'comments' => $this->loadComments($user),
             // Referral details are only ever rendered on the owner's own profile.
             'referrals' => $isOwnProfile ? $this->loadReferrals($user) : new Collection,
@@ -169,6 +170,32 @@ class ProfilePage extends Component
                 $query->where('user_id', $user->id);
             }], 'created_at')
             ->orderByDesc('user_last_voted_at')
+            ->paginate(20);
+    }
+
+    /**
+     * @return LengthAwarePaginator<int, Battle>
+     */
+    private function loadCreatedBattles(User $user): LengthAwarePaginator
+    {
+        return Battle::query()
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'status',
+                'side_a_label',
+                'side_b_label',
+                'side_a_image',
+                'side_b_image',
+                'winning_side',
+                'total_pool',
+                'closes_at',
+                'settled_at',
+                'created_at',
+            ])
+            ->where('created_by_id', $user->id)
+            ->latest()
             ->paginate(20);
     }
 

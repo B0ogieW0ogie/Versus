@@ -102,12 +102,52 @@ test('invalid tab param falls back to activity', function () {
         ->assertSet('tab', 'activity');
 });
 
-test('creation tab shows coming soon', function () {
+test('creation tab lists battles created by the user', function () {
+    $user = User::factory()->create();
+    $other = User::factory()->create();
+
+    Battle::factory()->create([
+        'title' => 'Mine vs Yours',
+        'side_a_label' => 'Mine',
+        'side_b_label' => 'Yours',
+        'created_by_id' => $user->id,
+    ]);
+    Battle::factory()->create([
+        'title' => 'Theirs vs Theirs',
+        'side_a_label' => 'TheirsA',
+        'side_b_label' => 'TheirsB',
+        'created_by_id' => $other->id,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/profile?tab=creation')
+        ->assertSee('Mine')
+        ->assertSee('Yours')
+        ->assertDontSee('TheirsA');
+});
+
+test('creation tab shows empty state when user created no battles', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
         ->get('/profile?tab=creation')
-        ->assertSee(__('profile.coming_soon'));
+        ->assertSee(__('profile.created_empty'));
+});
+
+test('creation tab on another profile shows that user\'s battles', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+
+    Battle::factory()->create([
+        'title' => 'Author Battle',
+        'side_a_label' => 'AuthorSide',
+        'side_b_label' => 'OtherSide',
+        'created_by_id' => $author->id,
+    ]);
+
+    $this->actingAs($viewer)
+        ->get(route('profile.show', $author).'?tab=creation')
+        ->assertSee('AuthorSide');
 });
 
 test('activity tab lists user battles with win/lose/active badges', function () {

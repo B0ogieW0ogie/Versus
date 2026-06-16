@@ -25,6 +25,8 @@ return [
     'activity_badge_win' => 'WIN',
     'activity_badge_lose' => 'LOSE',
     'activity_badge_active' => 'ACTIVE',
+    'created_badge_closed' => 'CLOSED',
+    'created_empty' => 'Пока нет созданных батлов.',
     'activity_badge_refund' => 'REFUND',
     'comments_on' => 'под:',
     'referrals_link_heading' => 'Ваша реферальная ссылка',
