@@ -242,3 +242,41 @@ test('create event never merges with a vote in the same battle', function () {
         ->and($events->pluck('type')->sort()->values()->all())
         ->toBe([FeedEvent::TYPE_CREATE, FeedEvent::TYPE_VOTE]);
 });
+
+test('grouped feed still surfaces events past the window for heavy voters', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    // 10 older battles: a single vote each (must stay reachable past grouping collapse).
+    foreach (range(1, 10) as $i) {
+        $battle = Battle::factory()->create();
+        Vote::factory()->create([
+            'user_id' => $author->id,
+            'battle_id' => $battle->id,
+            'created_at' => now()->subMinutes(100 + $i),
+        ]);
+    }
+
+    // 9 newer battles: TWO votes + one comment each (same-(user,battle) + vote/argue collapse).
+    foreach (range(1, 9) as $i) {
+        $battle = Battle::factory()->create();
+        Vote::factory()->count(2)->create([
+            'user_id' => $author->id,
+            'battle_id' => $battle->id,
+            'created_at' => now()->subMinutes($i),
+        ]);
+        Comment::factory()->create([
+            'user_id' => $author->id,
+            'battle_id' => $battle->id,
+            'created_at' => now()->subMinutes($i),
+        ]);
+    }
+
+    // 19 distinct (user, battle) cards exist. A 16-item window must return a full 16,
+    // proving the grouped result does not collapse below the window while more remain.
+    $events = app(FeedService::class)
+        ->events($viewer, FeedService::FILTER_ALL, null, 16);
+
+    expect($events)->toHaveCount(16);
+});

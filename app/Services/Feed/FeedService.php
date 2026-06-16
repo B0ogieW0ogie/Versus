@@ -23,6 +23,15 @@ class FeedService
     public const FILTER_RESULTS = 'results';
 
     /**
+     * Extra rows fetched per source for the grouped (ALL) view so that VOTE+ARGUE and
+     * same-(user, battle) collapse cannot shrink the result below the caller's
+     * "has more" probe. Heuristic: extreme many-votes-in-few-battles distributions at
+     * the exact page boundary may still under-detect — acceptable for the MVP
+     * growing-limit pagination.
+     */
+    private const GROUP_FETCH_BUFFER = 10;
+
+    /**
      * @return Collection<int, FeedEvent>
      */
     public function events(User $viewer, string $filter = self::FILTER_ALL, ?CarbonInterface $before = null, int $limit = 15): Collection
@@ -30,20 +39,23 @@ class FeedService
         $viewerId = (int) $viewer->getKey();
         $actorIds = $this->actorIds($viewer);
 
+        // Over-fetch per source for the grouped view so collapse can't starve the caller's probe.
+        $fetch = $filter === self::FILTER_ALL ? $limit + self::GROUP_FETCH_BUFFER : $limit;
+
         /** @var Collection<int, FeedEvent> $events */
         $events = collect();
 
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_CREATED], true)) {
-            $events = $events->concat($this->createEvents($actorIds, $viewerId, $before, $limit));
+            $events = $events->concat($this->createEvents($actorIds, $viewerId, $before, $fetch));
         }
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_VOTES], true)) {
-            $events = $events->concat($this->voteEvents($actorIds, $viewerId, $before, $limit));
+            $events = $events->concat($this->voteEvents($actorIds, $viewerId, $before, $fetch));
         }
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_ARGUMENTS], true)) {
-            $events = $events->concat($this->argueEvents($actorIds, $viewerId, $before, $limit));
+            $events = $events->concat($this->argueEvents($actorIds, $viewerId, $before, $fetch));
         }
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_RESULTS], true)) {
-            $events = $events->concat($this->resultEvents($actorIds, $viewerId, $before, $limit));
+            $events = $events->concat($this->resultEvents($actorIds, $viewerId, $before, $fetch));
         }
 
         $events = $events->sortByDesc(fn (FeedEvent $e) => $e->occurredAt->getTimestamp())->values();
