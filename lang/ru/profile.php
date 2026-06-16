@@ -4,6 +4,8 @@ return [
     'title' => 'Профиль',
     'subscribers' => 'Подписчики',
     'following' => 'Подписки',
+    'subscribers_empty' => 'Подписчиков пока нет.',
+    'following_empty' => 'Пока нет подписок.',
     'edit' => 'РЕДАКТИРОВАТЬ',
     'rp_suffix' => 'RP',
     'title_architect' => 'Architect',

@@ -4,6 +4,8 @@ return [
     'title' => 'Profile',
     'subscribers' => 'Subscribers',
     'following' => 'Following',
+    'subscribers_empty' => 'No subscribers yet.',
+    'following_empty' => 'Not following anyone yet.',
     'edit' => 'EDIT',
     'rp_suffix' => 'RP',
     'title_architect' => 'Architect',

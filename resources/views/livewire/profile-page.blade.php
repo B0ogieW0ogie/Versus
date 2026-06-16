@@ -59,15 +59,17 @@
                         <p class="mt-0.5 text-sm text-white/60">{{ $handle }}</p>
                     </div>
 
-                    <div class="flex flex-wrap items-center justify-end gap-x-4 gap-y-1.5 shrink-0 pb-0.5 sm:gap-x-6">
-                        <div class="flex items-baseline gap-1.5">
+                    <div class="flex items-center justify-end gap-x-4 gap-y-1.5 shrink-0 pb-0.5 sm:gap-x-6">
+                        <a href="{{ route('profile.subscribers') }}"
+                           class="flex items-baseline gap-1.5 whitespace-nowrap rounded-md px-1 -mx-1 hover:bg-white/5 transition">
                             <span class="text-lg font-bold text-white">352</span>
                             <span class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</span>
-                        </div>
-                        <div class="flex items-baseline gap-1.5">
+                        </a>
+                        <a href="{{ route('profile.following') }}"
+                           class="flex items-baseline gap-1.5 whitespace-nowrap rounded-md px-1 -mx-1 hover:bg-white/5 transition">
                             <span class="text-lg font-bold text-white">128</span>
                             <span class="text-[11px] text-white/55">{{ __('profile.following') }}</span>
-                        </div>
+                        </a>
                         <a href="{{ route('profile.settings') }}"
                            class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition shrink-0">
                             {{ __('profile.edit') }}

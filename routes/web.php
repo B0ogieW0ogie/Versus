@@ -6,6 +6,7 @@ use App\Livewire\BattleCreate;
 use App\Livewire\BattleIndex;
 use App\Livewire\BattleShow;
 use App\Livewire\CategoryShow;
+use App\Livewire\ConnectionsPage;
 use App\Livewire\FeedPage;
 use App\Livewire\Leaderboard;
 use App\Livewire\ProfilePage;
@@ -28,6 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/feed', FeedPage::class)->name('feed');
     Route::get('/wallet', WalletPage::class)->name('wallet');
     Route::get('/profile', ProfilePage::class)->name('profile.edit');
+    Route::get('/profile/subscribers', ConnectionsPage::class)->defaults('type', 'subscribers')->name('profile.subscribers');
+    Route::get('/profile/following', ConnectionsPage::class)->defaults('type', 'following')->name('profile.following');
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');
     Route::patch('/profile/settings', [ProfileController::class, 'update'])->name('profile.settings.update');
     Route::delete('/profile/settings', [ProfileController::class, 'destroy'])->name('profile.settings.destroy');

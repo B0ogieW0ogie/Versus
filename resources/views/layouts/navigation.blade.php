@@ -11,10 +11,12 @@
                 </a>
 
                 <div class="hidden sm:flex items-center gap-6 text-sm">
-                    <a href="{{ route('home') }}"
-                       class="transition {{ (request()->routeIs('battles.*') || request()->routeIs('home')) && ! request()->routeIs('battles.create') ? 'text-white' : 'text-white/60 hover:text-white' }}">
-                        {{ __('nav.battles') }}
-                    </a>
+                    @auth
+                        <a href="{{ route('feed') }}"
+                           class="transition {{ request()->routeIs('feed') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                            {{ __('nav.feed') }}
+                        </a>
+                    @endauth
                     <a href="{{ route('leaderboard') }}"
                        class="transition {{ request()->routeIs('leaderboard') ? 'text-white' : 'text-white/60 hover:text-white' }}">
                         {{ __('nav.leaderboard') }}
