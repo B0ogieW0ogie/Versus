@@ -80,3 +80,21 @@ test('event card renders an argument quote for a grouped vote+argue', function (
         ->toContain('There is no spoon')
         ->toContain('VOTE WITH');
 });
+
+test('event card shows battle ended for a vote on a closed battle', function () {
+    app()->setLocale('en');
+
+    $actor = User::factory()->create(['username' => 'cypher', 'name' => 'Cypher']);
+    $battle = Battle::factory()->closed()->create();
+    $event = new FeedEvent(
+        FeedEvent::TYPE_VOTE,
+        $actor,
+        $battle,
+        now(),
+    );
+
+    $html = Blade::render('<x-feed.event-card :event="$event" />', ['event' => $event]);
+
+    expect($html)->toContain('BATTLE ENDED')
+        ->not->toContain('VOTE WITH');
+});

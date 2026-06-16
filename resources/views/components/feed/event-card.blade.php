@@ -2,7 +2,6 @@
 
 @php
     use App\Services\Feed\FeedEvent;
-    use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Str;
 
     /** @var FeedEvent $event */
@@ -32,15 +31,15 @@
     };
 
     $isResult = in_array($event->type, [FeedEvent::TYPE_WIN, FeedEvent::TYPE_LOSE], true);
-    $createdAndClosed = $event->type === FeedEvent::TYPE_CREATE && ! $event->isOpen();
+    $endedNonResult = ! $isResult && ! $event->isOpen();
 @endphp
 
 <article class="rounded-2xl border border-white/5 bg-white/[0.035] p-4">
     <div class="flex items-center gap-3">
         <a href="{{ $profileUrl }}" class="shrink-0">
-            @if ($actor->avatar_path)
-                <img src="{{ Storage::disk('public')->url($actor->avatar_path) }}"
-                     alt="{{ $handle }}" class="h-9 w-9 rounded-full object-cover">
+            @if ($actor->avatarUrl())
+                <img src="{{ $actor->avatarUrl() }}"
+                     alt="" class="h-9 w-9 rounded-full object-cover">
             @else
                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-navy-700 text-sm font-bold text-white/80">
                     {{ mb_strtoupper(mb_substr($actor->name, 0, 1)) }}
@@ -71,7 +70,7 @@
                class="block w-full rounded-xl bg-white/10 px-4 py-2.5 text-center text-sm font-semibold text-white/80 transition hover:bg-white/15">
                 {{ __('feed.cta.view_battle') }}
             </a>
-        @elseif ($createdAndClosed)
+        @elseif ($endedNonResult)
             <span class="block w-full cursor-default rounded-xl bg-white/5 px-4 py-2.5 text-center text-sm font-semibold text-white/40">
                 {{ __('feed.cta.battle_ended') }}
             </span>
