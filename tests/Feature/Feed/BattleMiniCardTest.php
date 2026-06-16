@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Battle;
+use App\Models\User;
+use App\Services\Feed\FeedEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 
@@ -38,4 +40,43 @@ test('battle mini card hides the timer for a settled battle', function () {
     $html = Blade::render('<x-battle-mini-card :battle="$battle" />', ['battle' => $battle]);
 
     expect($html)->not->toContain('⏱');
+});
+
+test('event card renders a win headline and view-battle CTA', function () {
+    app()->setLocale('en');
+
+    $actor = User::factory()->create(['username' => 'neo', 'name' => 'Neo']);
+    $battle = Battle::factory()->settled(Battle::SIDE_A)->create();
+    $event = new FeedEvent(
+        FeedEvent::TYPE_WIN,
+        $actor,
+        $battle,
+        $battle->settled_at,
+    );
+
+    $html = Blade::render('<x-feed.event-card :event="$event" />', ['event' => $event]);
+
+    expect($html)->toContain('@neo')
+        ->toContain('@neo won')
+        ->toContain('VIEW BATTLE');
+});
+
+test('event card renders an argument quote for a grouped vote+argue', function () {
+    app()->setLocale('en');
+
+    $actor = User::factory()->create(['username' => 'trinity', 'name' => 'Trinity']);
+    $battle = Battle::factory()->create();
+    $event = new FeedEvent(
+        FeedEvent::TYPE_VOTE_ARGUE,
+        $actor,
+        $battle,
+        now(),
+        'There is no spoon',
+    );
+
+    $html = Blade::render('<x-feed.event-card :event="$event" />', ['event' => $event]);
+
+    expect($html)->toContain('@trinity votes and argues')
+        ->toContain('There is no spoon')
+        ->toContain('VOTE WITH');
 });
