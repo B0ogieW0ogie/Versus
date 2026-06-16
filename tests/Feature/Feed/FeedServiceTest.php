@@ -196,3 +196,49 @@ test('results are ordered by recency even past the over-fetch window', function 
     expect($events->first()->battle->id)->toBe($newest->id)
         ->and($events->first()->type)->toBe(FeedEvent::TYPE_WIN);
 });
+
+test('vote and argue in the same battle merge into one card', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    $battle = Battle::factory()->create();
+    Vote::factory()->create(['user_id' => $author->id, 'battle_id' => $battle->id]);
+    Comment::factory()->create(['user_id' => $author->id, 'battle_id' => $battle->id, 'body' => 'Because reasons']);
+
+    $events = feed($viewer);
+
+    expect($events)->toHaveCount(1)
+        ->and($events->first()->type)->toBe(FeedEvent::TYPE_VOTE_ARGUE)
+        ->and($events->first()->argumentText)->toBe('Because reasons');
+});
+
+test('vote and argue in different battles stay separate', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    Vote::factory()->create(['user_id' => $author->id]);
+    Comment::factory()->create(['user_id' => $author->id]);
+
+    $events = feed($viewer);
+
+    expect($events)->toHaveCount(2)
+        ->and($events->pluck('type')->sort()->values()->all())
+        ->toBe([FeedEvent::TYPE_ARGUE, FeedEvent::TYPE_VOTE]);
+});
+
+test('create event never merges with a vote in the same battle', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    $battle = Battle::factory()->create(['created_by_id' => $author->id]);
+    Vote::factory()->create(['user_id' => $author->id, 'battle_id' => $battle->id]);
+
+    $events = feed($viewer);
+
+    expect($events)->toHaveCount(2)
+        ->and($events->pluck('type')->sort()->values()->all())
+        ->toBe([FeedEvent::TYPE_CREATE, FeedEvent::TYPE_VOTE]);
+});

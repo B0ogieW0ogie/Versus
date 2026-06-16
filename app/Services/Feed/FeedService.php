@@ -48,7 +48,52 @@ class FeedService
 
         $events = $events->sortByDesc(fn (FeedEvent $e) => $e->occurredAt->getTimestamp())->values();
 
+        if ($filter === self::FILTER_ALL) {
+            $events = $this->group($events);
+        }
+
         return $events->take($limit)->values();
+    }
+
+    /**
+     * Collapse VOTE + ARGUE by the same user in the same battle into one card.
+     * CREATE and WIN/LOSE always stay standalone.
+     *
+     * @param  Collection<int, FeedEvent>  $events
+     * @return Collection<int, FeedEvent>
+     */
+    private function group(Collection $events): Collection
+    {
+        /** @var Collection<int, FeedEvent> $groupable */
+        /** @var Collection<int, FeedEvent> $standalone */
+        [$groupable, $standalone] = $events->partition(fn (FeedEvent $e) => $e->isGroupable());
+
+        $merged = $groupable
+            ->groupBy(fn (FeedEvent $e) => $e->groupKey())
+            ->map(function (Collection $group) {
+                /** @var FeedEvent $newest */
+                $newest = $group->sortByDesc(fn (FeedEvent $e) => $e->occurredAt->getTimestamp())->first();
+
+                $hasVote = $group->contains(fn (FeedEvent $e) => $e->type === FeedEvent::TYPE_VOTE);
+                $hasArgue = $group->contains(fn (FeedEvent $e) => $e->type === FeedEvent::TYPE_ARGUE);
+
+                $withArgument = $group->first(fn (FeedEvent $e) => $e->argumentText !== null);
+
+                $type = ($hasVote && $hasArgue) ? FeedEvent::TYPE_VOTE_ARGUE : $newest->type;
+
+                return new FeedEvent(
+                    $type,
+                    $newest->actor,
+                    $newest->battle,
+                    $newest->occurredAt,
+                    $withArgument?->argumentText,
+                );
+            })
+            ->values();
+
+        return $standalone->concat($merged)
+            ->sortByDesc(fn (FeedEvent $e) => $e->occurredAt->getTimestamp())
+            ->values();
     }
 
     /**
