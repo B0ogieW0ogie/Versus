@@ -32,7 +32,7 @@
     <div class="w-full lg:max-w-7xl lg:mx-auto px-4 lg:px-6">
         <div data-onboarding-target="avatar" class="relative">
             {{-- Banner --}}
-            <div class="aspect-[16/7] bg-white/5 flex items-center justify-center overflow-hidden">
+            <div class="aspect-[24/7] bg-white/5 flex items-center justify-center overflow-hidden">
                 @if ($user->bannerUrl())
                     <img src="{{ $user->bannerUrl() }}" alt="" class="w-full h-full object-cover">
                 @else
@@ -41,14 +41,14 @@
             </div>
 
             {{-- Row under banner: avatar · name · stats (aligned to banner bottom) --}}
-            <div class="-mt-12 space-y-2">
+            <div class="-mt-24 space-y-2">
                 <div class="flex items-end gap-3 sm:gap-5">
-                    <div class="h-24 w-24 shrink-0 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
+                    <div class="h-48 w-48 shrink-0 rounded-full bg-navy-700 ring-4 ring-navy-900 overflow-hidden flex items-center justify-center">
                         @if ($user->avatarUrl())
                             <img src="{{ $user->avatarUrl() }}" alt="" class="w-full h-full object-cover">
                         @else
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                 class="h-12 w-12 text-white/30">
+                                 class="h-24 w-24 text-white/30">
                                 <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-4.418 0-8 2.686-8 6v2h16v-2c0-3.314-3.582-6-8-6z"/>
                             </svg>
                         @endif
@@ -76,7 +76,7 @@
                 </div>
 
                 <div class="flex gap-3 sm:gap-5">
-                    <div class="w-24 shrink-0">
+                    <div class="w-48 shrink-0">
                         <div class="flex items-center gap-1.5 text-sm text-white/70">
                             <x-icon.trophy class="h-4 w-4 shrink-0" />
                             <span class="font-semibold text-white">2,450</span>
