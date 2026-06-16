@@ -165,3 +165,34 @@ test('votes filter returns only vote events', function () {
     expect($events)->toHaveCount(1)
         ->and($events->first()->type)->toBe(FeedEvent::TYPE_VOTE);
 });
+
+test('results are ordered by recency even past the over-fetch window', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    // limit = 2 → over-fetch window = limit * 5 = 10. Create 10 older settled
+    // battles (lower primary keys) then one freshly-settled battle (highest key).
+    // Without recency ordering on the over-fetch, the newest would be dropped.
+    foreach (range(1, 10) as $i) {
+        $old = Battle::factory()->create([
+            'status' => Battle::STATUS_SETTLED,
+            'winning_side' => Battle::SIDE_A,
+            'settled_at' => now()->subDays(10 + $i),
+        ]);
+        Vote::factory()->create(['user_id' => $author->id, 'battle_id' => $old->id, 'side' => Battle::SIDE_A]);
+    }
+
+    $newest = Battle::factory()->create([
+        'status' => Battle::STATUS_SETTLED,
+        'winning_side' => Battle::SIDE_A,
+        'settled_at' => now(),
+    ]);
+    Vote::factory()->create(['user_id' => $author->id, 'battle_id' => $newest->id, 'side' => Battle::SIDE_A]);
+
+    $events = app(FeedService::class)
+        ->events($viewer, FeedService::FILTER_RESULTS, null, 2);
+
+    expect($events->first()->battle->id)->toBe($newest->id)
+        ->and($events->first()->type)->toBe(FeedEvent::TYPE_WIN);
+});

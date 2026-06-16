@@ -157,26 +157,25 @@ class FeedService
     private function resultEvents(?array $actorIds, int $viewerId, ?CarbonInterface $before, int $limit): Collection
     {
         $query = Vote::query()
-            ->with(['user', 'battle.category'])
-            ->whereHas('battle', function (Builder $b) use ($before) {
-                $b->where('status', Battle::STATUS_SETTLED)->whereNotNull('winning_side');
-                if ($before !== null) {
-                    $b->where('settled_at', '<', $before);
-                }
-            });
+            ->select('votes.*')
+            ->join('battles', 'battles.id', '=', 'votes.battle_id')
+            ->where('battles.status', Battle::STATUS_SETTLED)
+            ->whereNotNull('battles.winning_side')
+            ->with(['user', 'battle.category']);
 
-        $query = $this->applyActor($query, $actorIds, 'user_id', $viewerId);
+        if ($before !== null) {
+            $query->where('battles.settled_at', '<', $before);
+        }
 
-        // Over-fetch: many votes can collapse into one result per (user, battle).
-        /** @var \Illuminate\Database\Eloquent\Collection<int, Vote> $fetched */
-        $fetched = $query->limit($limit * 5)->get();
+        $query = $this->applyActor($query, $actorIds, 'votes.user_id', $viewerId);
 
-        $votes = $fetched->filter(fn (Vote $v) => $v->user !== null && $v->battle !== null);
+        // Over-fetch (anchored to recency) since many votes collapse into one result per (user, battle).
+        $votes = $query->orderByDesc('battles.settled_at')->limit($limit * 5)->get()
+            ->filter(fn (Vote $v) => $v->user !== null && $v->battle !== null);
 
         return $votes
             ->groupBy(fn (Vote $v) => $v->user_id.':'.$v->battle_id)
             ->map(function (Collection $group) {
-                /** @var Collection<int, Vote> $group */
                 /** @var Vote $first */
                 $first = $group->first();
                 $battle = $first->battle;
