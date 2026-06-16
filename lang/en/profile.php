@@ -7,6 +7,8 @@ return [
     'subscribers_empty' => 'No subscribers yet.',
     'following_empty' => 'Not following anyone yet.',
     'edit' => 'EDIT',
+    'follow' => 'FOLLOW',
+    'unfollow' => 'UNFOLLOW',
     'rp_suffix' => 'RP',
     'title_architect' => 'Architect',
     'username_fallback_prefix' => 'user',

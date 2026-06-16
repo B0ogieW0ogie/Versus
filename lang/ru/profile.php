@@ -7,6 +7,8 @@ return [
     'subscribers_empty' => 'Подписчиков пока нет.',
     'following_empty' => 'Пока нет подписок.',
     'edit' => 'РЕДАКТИРОВАТЬ',
+    'follow' => 'ПОДПИСАТЬСЯ',
+    'unfollow' => 'ОТПИСАТЬСЯ',
     'rp_suffix' => 'RP',
     'title_architect' => 'Architect',
     'username_fallback_prefix' => 'user',

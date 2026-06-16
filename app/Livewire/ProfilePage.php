@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Actions\Users\ToggleFollowAction;
 use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\Transaction;
@@ -25,17 +26,44 @@ class ProfilePage extends Component
     #[Url]
     public string $tab = 'activity';
 
-    public function mount(): void
+    /** Id of the profile being viewed (defaults to the authenticated user). */
+    public int $userId;
+
+    public function mount(?User $user = null): void
     {
-        if (! in_array($this->tab, self::TABS, true)) {
+        $this->userId = $user !== null ? $user->id : (int) Auth::id();
+
+        if (! in_array($this->tab, self::TABS, true) || ! $this->tabIsAllowed($this->tab)) {
             $this->tab = 'activity';
         }
     }
 
     public function selectTab(string $tab): void
     {
-        $this->tab = in_array($tab, self::TABS, true) ? $tab : 'activity';
+        $this->tab = (in_array($tab, self::TABS, true) && $this->tabIsAllowed($tab)) ? $tab : 'activity';
         $this->resetPage();
+    }
+
+    public function isOwnProfile(): bool
+    {
+        return $this->userId === (int) Auth::id();
+    }
+
+    /** Referrals are private to the profile owner. */
+    private function tabIsAllowed(string $tab): bool
+    {
+        return $tab !== 'referrals' || $this->isOwnProfile();
+    }
+
+    public function toggleFollow(ToggleFollowAction $action): void
+    {
+        if ($this->isOwnProfile()) {
+            return;
+        }
+
+        /** @var User $me */
+        $me = Auth::user();
+        $action->execute($me, User::findOrFail($this->userId));
     }
 
     public function statusFor(Battle $battle): string
@@ -85,16 +113,24 @@ class ProfilePage extends Component
     #[Layout('layouts.app')]
     public function render(): View
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = User::findOrFail($this->userId);
+        $isOwnProfile = $this->isOwnProfile();
+
+        /** @var User $viewer */
+        $viewer = Auth::user();
 
         return view('livewire.profile-page', [
             'user' => $user,
+            'isOwnProfile' => $isOwnProfile,
+            'isFollowing' => ! $isOwnProfile && $viewer->isFollowing($user),
+            'followersCount' => $user->followers()->count(),
+            'followingCount' => $user->following()->count(),
             'votes' => $this->loadVotes($user),
             'comments' => $this->loadComments($user),
-            'referrals' => $this->loadReferrals($user),
-            'referralUrl' => url('/?ref='.$user->referral_code),
-            'referralEarned' => $this->loadReferralEarned($user),
+            // Referral details are only ever rendered on the owner's own profile.
+            'referrals' => $isOwnProfile ? $this->loadReferrals($user) : new Collection,
+            'referralUrl' => $isOwnProfile ? url('/?ref='.$user->referral_code) : '',
+            'referralEarned' => $isOwnProfile ? $this->loadReferralEarned($user) : 0.0,
         ]);
     }
 

@@ -41,12 +41,14 @@ test('authenticated user sees the profile page at /profile', function () {
         ->assertSee('Alice');
 });
 
-test('shows user name, handle, bio and hardcoded stats', function () {
+test('shows user name, handle, bio and follower stats', function () {
     $user = User::factory()->create([
         'name' => 'Vlad Basargin',
         'username' => 'vladbasargin',
         'bio' => 'Люблю спорить о футболе',
     ]);
+    $user->followers()->attach(User::factory()->count(3)->create());
+    $user->following()->attach(User::factory()->count(2)->create());
 
     $this->actingAs($user)
         ->get('/profile')
@@ -54,9 +56,8 @@ test('shows user name, handle, bio and hardcoded stats', function () {
         ->assertSee('@vladbasargin')
         ->assertSee(__('profile.title_architect'))
         ->assertSee('Люблю спорить о футболе', escape: false)
-        ->assertSee('352')
-        ->assertSee('128')
-        ->assertSee('2,450');
+        ->assertSee('2,450')
+        ->assertSeeInOrder(['3', __('profile.subscribers'), '2', __('profile.following')]);
 });
 
 test('falls back to @user{id} when username is null', function () {

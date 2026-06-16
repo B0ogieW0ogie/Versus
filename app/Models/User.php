@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -67,6 +68,33 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function referrals(): HasMany
     {
         return $this->hasMany(self::class, 'referred_by_id');
+    }
+
+    /**
+     * Users this user follows.
+     *
+     * @return BelongsToMany<self, $this>
+     */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'follows', 'follower_id', 'followed_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Users who follow this user.
+     *
+     * @return BelongsToMany<self, $this>
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'follows', 'followed_id', 'follower_id')
+            ->withTimestamps();
+    }
+
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()->whereKey($user->getKey())->exists();
     }
 
     public function canAccessPanel(Panel $panel): bool

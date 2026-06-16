@@ -60,20 +60,30 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-x-4 gap-y-1.5 shrink-0 pb-0.5 sm:gap-x-6">
-                        <a href="{{ route('profile.subscribers') }}"
+                        <a href="{{ route('profile.subscribers', $user) }}"
                            class="flex items-baseline gap-1.5 whitespace-nowrap rounded-md px-1 -mx-1 hover:bg-white/5 transition">
-                            <span class="text-lg font-bold text-white">352</span>
+                            <span class="text-lg font-bold text-white">{{ number_format($followersCount) }}</span>
                             <span class="text-[11px] text-white/55">{{ __('profile.subscribers') }}</span>
                         </a>
-                        <a href="{{ route('profile.following') }}"
+                        <a href="{{ route('profile.following', $user) }}"
                            class="flex items-baseline gap-1.5 whitespace-nowrap rounded-md px-1 -mx-1 hover:bg-white/5 transition">
-                            <span class="text-lg font-bold text-white">128</span>
+                            <span class="text-lg font-bold text-white">{{ number_format($followingCount) }}</span>
                             <span class="text-[11px] text-white/55">{{ __('profile.following') }}</span>
                         </a>
-                        <a href="{{ route('profile.settings') }}"
-                           class="text-xs font-semibold text-white border border-white/20 rounded-lg px-4 py-1.5 hover:bg-white/5 transition shrink-0">
-                            {{ __('profile.edit') }}
-                        </a>
+                        @if ($isOwnProfile)
+                            <a href="{{ route('profile.settings') }}"
+                               class="text-xs font-semibold text-vote-purple-to border border-vote-purple-to rounded-lg px-4 py-1.5 hover:bg-vote-purple-to/10 transition shrink-0">
+                                {{ __('profile.edit') }}
+                            </a>
+                        @else
+                            <button type="button" wire:click="toggleFollow"
+                                    class="text-xs font-semibold rounded-lg px-4 py-1.5 transition shrink-0
+                                           {{ $isFollowing
+                                               ? 'text-white/70 border border-white/20 hover:bg-white/5'
+                                               : 'text-white border border-vote-purple-to bg-vote-purple-to/20 hover:bg-vote-purple-to/30' }}">
+                                {{ $isFollowing ? __('profile.unfollow') : __('profile.follow') }}
+                            </button>
+                        @endif
                     </div>
                 </div>
 
@@ -99,7 +109,7 @@
 
         {{-- Tab bar --}}
         <div class="mt-4 flex items-end gap-4 border-b border-white/5">
-            @foreach (['activity', 'creation', 'comments', 'referrals'] as $key)
+            @foreach ($isOwnProfile ? ['activity', 'creation', 'comments', 'referrals'] : ['activity', 'creation', 'comments'] as $key)
                 <button type="button"
                         wire:click="selectTab('{{ $key }}')"
                         class="pb-2 text-xs font-semibold tracking-wide transition
@@ -130,7 +140,7 @@
                 @include('livewire.profile.tabs.activity')
         @endswitch
 
-        @if ($user->is_first_visit && $user->onboarding_step !== null && (int) $user->onboarding_step >= 4)
+        @if ($isOwnProfile && $user->is_first_visit && $user->onboarding_step !== null && (int) $user->onboarding_step >= 4)
             <section class="mt-8 space-y-3" aria-label="{{ __('onboarding.hints_section_label') }}">
                 <div data-onboarding-target="homeBattles"
                      class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
@@ -165,7 +175,7 @@
             </section>
         @endif
 
-        @if ($user->is_first_visit && $user->onboarding_step !== null)
+        @if ($isOwnProfile && $user->is_first_visit && $user->onboarding_step !== null)
             <livewire:onboarding-tour />
         @endif
     </div>

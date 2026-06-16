@@ -29,11 +29,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/feed', FeedPage::class)->name('feed');
     Route::get('/wallet', WalletPage::class)->name('wallet');
     Route::get('/profile', ProfilePage::class)->name('profile.edit');
-    Route::get('/profile/subscribers', ConnectionsPage::class)->defaults('type', 'subscribers')->name('profile.subscribers');
-    Route::get('/profile/following', ConnectionsPage::class)->defaults('type', 'following')->name('profile.following');
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');
     Route::patch('/profile/settings', [ProfileController::class, 'update'])->name('profile.settings.update');
     Route::delete('/profile/settings', [ProfileController::class, 'destroy'])->name('profile.settings.destroy');
+
+    // Wildcard {user} routes come after the literal /profile/settings paths above.
+    Route::get('/profile/{user}', ProfilePage::class)->name('profile.show');
+    Route::get('/profile/{user}/subscribers', ConnectionsPage::class)->defaults('type', 'subscribers')->name('profile.subscribers');
+    Route::get('/profile/{user}/following', ConnectionsPage::class)->defaults('type', 'following')->name('profile.following');
 
     Route::get('/referrals', fn () => redirect()->route('profile.edit', ['tab' => 'referrals'], 301))->name('referrals');
     Route::get('/my-bets', fn () => redirect()->route('profile.edit', ['tab' => 'activity'], 301))->name('my-bets');
