@@ -28,7 +28,7 @@
 
     <div class="mt-5 space-y-4">
         @forelse ($events as $event)
-            <div wire:key="feed-{{ $loop->index }}">
+            <div wire:key="feed-{{ $event->type }}-{{ $event->actor->id }}-{{ $event->battle->id }}-{{ $event->occurredAt->getTimestamp() }}">
                 <x-feed.event-card :event="$event" />
             </div>
         @empty

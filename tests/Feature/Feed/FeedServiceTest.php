@@ -280,3 +280,26 @@ test('grouped feed still surfaces events past the window for heavy voters', func
 
     expect($events)->toHaveCount(16);
 });
+
+test('the before cursor excludes events newer than the given time', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    $recentBattle = Battle::factory()->create([
+        'created_by_id' => $author->id,
+        'created_at' => now()->subMinutes(5),
+    ]);
+    $oldBattle = Battle::factory()->create([
+        'created_by_id' => $author->id,
+        'created_at' => now()->subDays(2),
+    ]);
+
+    // Cursor one hour ago: the 5-minutes-ago battle is newer (excluded),
+    // the 2-days-ago battle is older (included).
+    $events = app(FeedService::class)
+        ->events($viewer, FeedService::FILTER_CREATED, now()->subHour(), 50);
+
+    expect($events)->toHaveCount(1)
+        ->and($events->first()->battle->id)->toBe($oldBattle->id);
+});
