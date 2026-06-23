@@ -42,7 +42,7 @@ test('battle mini card hides the timer for a settled battle', function () {
     expect($html)->not->toContain('⏱');
 });
 
-test('event card renders a win headline and view-battle CTA', function () {
+test('event card renders a win headline with a clickable name and no @', function () {
     app()->setLocale('en');
 
     $actor = User::factory()->create(['username' => 'neo', 'name' => 'Neo']);
@@ -56,18 +56,20 @@ test('event card renders a win headline and view-battle CTA', function () {
 
     $html = Blade::render('<x-feed.event-card :event="$event" />', ['event' => $event]);
 
-    expect($html)->toContain('@neo')
-        ->toContain('@neo won')
+    expect($html)->toContain('neo')
+        ->toContain('won the battle')
+        ->not->toContain('@neo')
+        ->toContain(route('profile.show', $actor))
         ->toContain('VIEW BATTLE');
 });
 
-test('event card renders an argument quote for a grouped vote+argue', function () {
+test('event card renders a like headline with the argument quote', function () {
     app()->setLocale('en');
 
     $actor = User::factory()->create(['username' => 'trinity', 'name' => 'Trinity']);
     $battle = Battle::factory()->create();
     $event = new FeedEvent(
-        FeedEvent::TYPE_VOTE_ARGUE,
+        FeedEvent::TYPE_LIKE,
         $actor,
         $battle,
         now(),
@@ -76,9 +78,8 @@ test('event card renders an argument quote for a grouped vote+argue', function (
 
     $html = Blade::render('<x-feed.event-card :event="$event" />', ['event' => $event]);
 
-    expect($html)->toContain('@trinity votes and argues')
-        ->toContain('There is no spoon')
-        ->toContain('VOTE WITH');
+    expect($html)->toContain('liked an argument')
+        ->toContain('There is no spoon');
 });
 
 test('event card shows battle ended for a vote on a closed battle', function () {
@@ -97,4 +98,23 @@ test('event card shows battle ended for a vote on a closed battle', function () 
 
     expect($html)->toContain('BATTLE ENDED')
         ->not->toContain('VOTE WITH');
+});
+
+test('event card names the chosen side in a vote headline', function () {
+    app()->setLocale('en');
+
+    $actor = User::factory()->create(['username' => 'cypher', 'name' => 'Cypher']);
+    $battle = Battle::factory()->create(['side_a_label' => 'cats', 'side_b_label' => 'dogs']);
+    $event = new FeedEvent(
+        FeedEvent::TYPE_VOTE,
+        $actor,
+        $battle,
+        now(),
+        null,
+        'dogs',
+    );
+
+    $html = Blade::render('<x-feed.event-card :event="$event" />', ['event' => $event]);
+
+    expect($html)->toContain('voted for Dogs in the battle');
 });

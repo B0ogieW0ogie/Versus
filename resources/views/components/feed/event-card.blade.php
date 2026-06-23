@@ -9,18 +9,18 @@
     $battle = $event->battle;
 
     $handle = $actor->username
-        ? '@'.$actor->username
-        : '@'.__('profile.username_fallback_prefix').$actor->id;
+        ? $actor->username
+        : __('profile.username_fallback_prefix').$actor->id;
 
     $profileUrl = route('profile.show', $actor);
 
-    $headline = match ($event->type) {
-        FeedEvent::TYPE_CREATE => __('feed.event.created', ['user' => $handle]),
-        FeedEvent::TYPE_VOTE => __('feed.event.voted', ['user' => $handle]),
-        FeedEvent::TYPE_ARGUE => __('feed.event.argued', ['user' => $handle]),
-        FeedEvent::TYPE_VOTE_ARGUE => __('feed.event.vote_and_argue', ['user' => $handle]),
-        FeedEvent::TYPE_WIN => __('feed.event.won', ['user' => $handle]),
-        FeedEvent::TYPE_LOSE => __('feed.event.lost', ['user' => $handle]),
+    $verb = match ($event->type) {
+        FeedEvent::TYPE_CREATE => __('feed.event.created'),
+        FeedEvent::TYPE_VOTE => __('feed.event.voted', ['side' => Str::title((string) $event->sideLabel)]),
+        FeedEvent::TYPE_ARGUE => __('feed.event.argued'),
+        FeedEvent::TYPE_LIKE => __('feed.event.liked'),
+        FeedEvent::TYPE_WIN => __('feed.event.won'),
+        FeedEvent::TYPE_LOSE => __('feed.event.lost'),
         default => '',
     };
 
@@ -35,7 +35,7 @@
 @endphp
 
 <article class="rounded-2xl border border-white/5 bg-white/[0.035] p-4">
-    <div class="flex items-center gap-3">
+    <div class="flex items-start gap-3">
         <a href="{{ $profileUrl }}" class="shrink-0">
             @if ($actor->avatarUrl())
                 <img src="{{ $actor->avatarUrl() }}"
@@ -46,13 +46,11 @@
                 </span>
             @endif
         </a>
-        <div class="min-w-0">
-            <a href="{{ $profileUrl }}" class="block truncate text-sm font-semibold text-white hover:underline">{{ $handle }}</a>
-            <span class="text-xs text-white/40">{{ __('feed.rank_placeholder') }}</span>
-        </div>
+        <p class="min-w-0 flex-1 text-sm font-medium {{ $headlineColor }}">
+            <a href="{{ $profileUrl }}" class="font-semibold hover:underline">{{ $handle }}</a>
+            {{ $verb }}
+        </p>
     </div>
-
-    <p class="mt-3 text-sm font-medium {{ $headlineColor }}">{{ $headline }}</p>
 
     @if ($event->argumentText)
         <blockquote class="mt-2 rounded-xl bg-[#1A1F2B] p-3 text-sm italic text-white/75">
