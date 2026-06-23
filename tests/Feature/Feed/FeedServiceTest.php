@@ -2,6 +2,7 @@
 
 use App\Models\Battle;
 use App\Models\Comment;
+use App\Models\CommentLike;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\Feed\FeedEvent;
@@ -197,22 +198,6 @@ test('results are ordered by recency even past the over-fetch window', function 
         ->and($events->first()->type)->toBe(FeedEvent::TYPE_WIN);
 });
 
-test('vote and argue in the same battle merge into one card', function () {
-    $viewer = User::factory()->create();
-    $author = User::factory()->create();
-    $viewer->following()->attach($author->id);
-
-    $battle = Battle::factory()->create();
-    Vote::factory()->create(['user_id' => $author->id, 'battle_id' => $battle->id]);
-    Comment::factory()->create(['user_id' => $author->id, 'battle_id' => $battle->id, 'body' => 'Because reasons']);
-
-    $events = feed($viewer);
-
-    expect($events)->toHaveCount(1)
-        ->and($events->first()->type)->toBe(FeedEvent::TYPE_VOTE_ARGUE)
-        ->and($events->first()->argumentText)->toBe('Because reasons');
-});
-
 test('vote and argue in different battles stay separate', function () {
     $viewer = User::factory()->create();
     $author = User::factory()->create();
@@ -243,44 +228,6 @@ test('create event never merges with a vote in the same battle', function () {
         ->toBe([FeedEvent::TYPE_CREATE, FeedEvent::TYPE_VOTE]);
 });
 
-test('grouped feed still surfaces events past the window for heavy voters', function () {
-    $viewer = User::factory()->create();
-    $author = User::factory()->create();
-    $viewer->following()->attach($author->id);
-
-    // 10 older battles: a single vote each (must stay reachable past grouping collapse).
-    foreach (range(1, 10) as $i) {
-        $battle = Battle::factory()->create();
-        Vote::factory()->create([
-            'user_id' => $author->id,
-            'battle_id' => $battle->id,
-            'created_at' => now()->subMinutes(100 + $i),
-        ]);
-    }
-
-    // 9 newer battles: TWO votes + one comment each (same-(user,battle) + vote/argue collapse).
-    foreach (range(1, 9) as $i) {
-        $battle = Battle::factory()->create();
-        Vote::factory()->count(2)->create([
-            'user_id' => $author->id,
-            'battle_id' => $battle->id,
-            'created_at' => now()->subMinutes($i),
-        ]);
-        Comment::factory()->create([
-            'user_id' => $author->id,
-            'battle_id' => $battle->id,
-            'created_at' => now()->subMinutes($i),
-        ]);
-    }
-
-    // 19 distinct (user, battle) cards exist. A 16-item window must return a full 16,
-    // proving the grouped result does not collapse below the window while more remain.
-    $events = app(FeedService::class)
-        ->events($viewer, FeedService::FILTER_ALL, null, 16);
-
-    expect($events)->toHaveCount(16);
-});
-
 test('the before cursor excludes events newer than the given time', function () {
     $viewer = User::factory()->create();
     $author = User::factory()->create();
@@ -302,4 +249,55 @@ test('the before cursor excludes events newer than the given time', function () 
 
     expect($events)->toHaveCount(1)
         ->and($events->first()->battle->id)->toBe($oldBattle->id);
+});
+
+test('vote and argue in the same battle are now two separate cards', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    $battle = Battle::factory()->create();
+    Vote::factory()->create(['user_id' => $author->id, 'battle_id' => $battle->id]);
+    Comment::factory()->create(['user_id' => $author->id, 'battle_id' => $battle->id, 'body' => 'Because reasons']);
+
+    $events = feed($viewer);
+
+    expect($events)->toHaveCount(2)
+        ->and($events->pluck('type')->sort()->values()->all())
+        ->toBe([FeedEvent::TYPE_ARGUE, FeedEvent::TYPE_VOTE]);
+});
+
+test('vote event carries the chosen side label', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    $battle = Battle::factory()->create(['side_a_label' => 'cats', 'side_b_label' => 'dogs']);
+    Vote::factory()->create([
+        'user_id' => $author->id,
+        'battle_id' => $battle->id,
+        'side' => Battle::SIDE_B,
+    ]);
+
+    $event = feed($viewer, FeedService::FILTER_VOTES)->first();
+
+    expect($event->type)->toBe(FeedEvent::TYPE_VOTE)
+        ->and($event->sideLabel)->toBe('dogs');
+});
+
+test('like event appears in the all feed with the liked comment text', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+    $viewer->following()->attach($author->id);
+
+    $comment = Comment::factory()->create(['body' => 'There is no spoon']);
+    CommentLike::create(['user_id' => $author->id, 'comment_id' => $comment->id]);
+
+    $events = feed($viewer);
+
+    $like = $events->firstWhere('type', FeedEvent::TYPE_LIKE);
+    expect($like)->not->toBeNull()
+        ->and($like->actor->id)->toBe($author->id)
+        ->and($like->battle->id)->toBe($comment->battle_id)
+        ->and($like->argumentText)->toBe('There is no spoon');
 });

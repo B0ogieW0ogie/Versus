@@ -4,6 +4,7 @@ namespace App\Services\Feed;
 
 use App\Models\Battle;
 use App\Models\Comment;
+use App\Models\CommentLike;
 use App\Models\User;
 use App\Models\Vote;
 use Carbon\CarbonInterface;
@@ -23,15 +24,6 @@ class FeedService
     public const FILTER_RESULTS = 'results';
 
     /**
-     * Extra rows fetched per source for the grouped (ALL) view so that VOTE+ARGUE and
-     * same-(user, battle) collapse cannot shrink the result below the caller's
-     * "has more" probe. Heuristic: extreme many-votes-in-few-battles distributions at
-     * the exact page boundary may still under-detect — acceptable for the MVP
-     * growing-limit pagination.
-     */
-    private const GROUP_FETCH_BUFFER = 10;
-
-    /**
      * @return Collection<int, FeedEvent>
      */
     public function events(User $viewer, string $filter = self::FILTER_ALL, ?CarbonInterface $before = null, int $limit = 15): Collection
@@ -39,72 +31,28 @@ class FeedService
         $viewerId = (int) $viewer->getKey();
         $actorIds = $this->actorIds($viewer);
 
-        // Over-fetch per source for the grouped view so collapse can't starve the caller's probe.
-        $fetch = $filter === self::FILTER_ALL ? $limit + self::GROUP_FETCH_BUFFER : $limit;
-
         /** @var Collection<int, FeedEvent> $events */
         $events = collect();
 
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_CREATED], true)) {
-            $events = $events->concat($this->createEvents($actorIds, $viewerId, $before, $fetch));
+            $events = $events->concat($this->createEvents($actorIds, $viewerId, $before, $limit));
         }
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_VOTES], true)) {
-            $events = $events->concat($this->voteEvents($actorIds, $viewerId, $before, $fetch));
+            $events = $events->concat($this->voteEvents($actorIds, $viewerId, $before, $limit));
         }
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_ARGUMENTS], true)) {
-            $events = $events->concat($this->argueEvents($actorIds, $viewerId, $before, $fetch));
+            $events = $events->concat($this->argueEvents($actorIds, $viewerId, $before, $limit));
         }
         if (in_array($filter, [self::FILTER_ALL, self::FILTER_RESULTS], true)) {
-            $events = $events->concat($this->resultEvents($actorIds, $viewerId, $before, $fetch));
+            $events = $events->concat($this->resultEvents($actorIds, $viewerId, $before, $limit));
         }
-
-        $events = $events->sortByDesc(fn (FeedEvent $e) => $e->occurredAt->getTimestamp())->values();
-
         if ($filter === self::FILTER_ALL) {
-            $events = $this->group($events);
+            $events = $events->concat($this->likeEvents($actorIds, $viewerId, $before, $limit));
         }
 
-        return $events->take($limit)->values();
-    }
-
-    /**
-     * Collapse VOTE + ARGUE by the same user in the same battle into one card.
-     * CREATE and WIN/LOSE always stay standalone.
-     *
-     * @param  Collection<int, FeedEvent>  $events
-     * @return Collection<int, FeedEvent>
-     */
-    private function group(Collection $events): Collection
-    {
-        /** @var Collection<int, FeedEvent> $groupable */
-        /** @var Collection<int, FeedEvent> $standalone */
-        [$groupable, $standalone] = $events->partition(fn (FeedEvent $e) => $e->isGroupable());
-
-        $merged = $groupable
-            ->groupBy(fn (FeedEvent $e) => $e->groupKey())
-            ->map(function (Collection $group) {
-                /** @var FeedEvent $newest */
-                $newest = $group->sortByDesc(fn (FeedEvent $e) => $e->occurredAt->getTimestamp())->first();
-
-                $hasVote = $group->contains(fn (FeedEvent $e) => $e->type === FeedEvent::TYPE_VOTE);
-                $hasArgue = $group->contains(fn (FeedEvent $e) => $e->type === FeedEvent::TYPE_ARGUE);
-
-                $withArgument = $group->first(fn (FeedEvent $e) => $e->argumentText !== null);
-
-                $type = ($hasVote && $hasArgue) ? FeedEvent::TYPE_VOTE_ARGUE : $newest->type;
-
-                return new FeedEvent(
-                    $type,
-                    $newest->actor,
-                    $newest->battle,
-                    $newest->occurredAt,
-                    $withArgument?->argumentText,
-                );
-            })
-            ->values();
-
-        return $standalone->concat($merged)
+        return $events
             ->sortByDesc(fn (FeedEvent $e) => $e->occurredAt->getTimestamp())
+            ->take($limit)
             ->values();
     }
 
@@ -181,7 +129,14 @@ class FeedService
 
         return $votes
             ->filter(fn (Vote $v) => $v->user !== null && $v->battle !== null)
-            ->map(fn (Vote $v) => new FeedEvent(FeedEvent::TYPE_VOTE, $v->user, $v->battle, $v->created_at))
+            ->map(fn (Vote $v) => new FeedEvent(
+                FeedEvent::TYPE_VOTE,
+                $v->user,
+                $v->battle,
+                $v->created_at,
+                null,
+                $v->side === Battle::SIDE_A ? $v->battle->side_a_label : $v->battle->side_b_label,
+            ))
             ->values();
     }
 
@@ -204,6 +159,34 @@ class FeedService
         return $comments
             ->filter(fn (Comment $c) => $c->user !== null && $c->battle !== null)
             ->map(fn (Comment $c) => new FeedEvent(FeedEvent::TYPE_ARGUE, $c->user, $c->battle, $c->created_at, $c->body))
+            ->values();
+    }
+
+    /**
+     * @param  array<int>|null  $actorIds
+     * @return Collection<int, FeedEvent>
+     */
+    private function likeEvents(?array $actorIds, int $viewerId, ?CarbonInterface $before, int $limit): Collection
+    {
+        $query = CommentLike::query()->with(['user', 'comment.battle.category']);
+        $query = $this->applyActor($query, $actorIds, 'user_id', $viewerId);
+
+        if ($before !== null) {
+            $query->where('created_at', '<', $before);
+        }
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, CommentLike> $likes */
+        $likes = $query->orderByDesc('created_at')->limit($limit)->get();
+
+        return $likes
+            ->filter(fn (CommentLike $l) => $l->user !== null && $l->comment !== null && $l->comment->battle !== null)
+            ->map(fn (CommentLike $l) => new FeedEvent(
+                FeedEvent::TYPE_LIKE,
+                $l->user,
+                $l->comment->battle,
+                $l->created_at,
+                $l->comment->body,
+            ))
             ->values();
     }
 
