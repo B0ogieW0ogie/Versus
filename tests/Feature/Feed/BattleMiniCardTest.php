@@ -118,3 +118,47 @@ test('event card names the chosen side in a vote headline', function () {
 
     expect($html)->toContain('voted for Dogs in the battle');
 });
+
+test('battle mini card shows winner and loser badges for a settled battle', function () {
+    app()->setLocale('en');
+
+    $battle = Battle::factory()->settled(Battle::SIDE_A)->create([
+        'side_a_label' => 'cats',
+        'side_b_label' => 'dogs',
+    ]);
+
+    $html = Blade::render('<x-battle-mini-card :battle="$battle" />', ['battle' => $battle]);
+
+    expect($html)->toContain('WINNER')
+        ->toContain('LOSER');
+});
+
+test('battle mini card shows no outcome badges for a tie', function () {
+    app()->setLocale('en');
+
+    $battle = Battle::factory()->create([
+        'status' => Battle::STATUS_SETTLED,
+        'settled_at' => now(),
+        'winning_side' => null,
+    ]);
+
+    $html = Blade::render('<x-battle-mini-card :battle="$battle" />', ['battle' => $battle]);
+
+    expect($html)->not->toContain('WINNER')
+        ->not->toContain('LOSER');
+});
+
+test('battle mini card shows no outcome badges while a battle is open', function () {
+    app()->setLocale('en');
+
+    $battle = Battle::factory()->create([
+        'status' => Battle::STATUS_ACTIVE,
+        'opens_at' => now()->subHour(),
+        'closes_at' => now()->addHours(5),
+    ]);
+
+    $html = Blade::render('<x-battle-mini-card :battle="$battle" />', ['battle' => $battle]);
+
+    expect($html)->not->toContain('WINNER')
+        ->not->toContain('LOSER');
+});
