@@ -43,6 +43,8 @@ return [
     'sponsored_by' => 'Спонсор: :handle',
     'no_active_in_category' => 'В этой категории пока нет активных баттлов.',
     'winner' => 'Победитель',
+    'winner_badge' => 'ПОБЕДИТЕЛЬ',
+    'loser_badge' => 'ПРОИГРАВШИЙ',
     'refunded_tie' => 'Ничья — возврат',
 
     'load_more' => 'Показать ещё',

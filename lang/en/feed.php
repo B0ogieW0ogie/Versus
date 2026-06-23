@@ -9,12 +9,12 @@ return [
         'results' => 'Results',
     ],
     'event' => [
-        'created' => ':user created a battle',
-        'voted' => ':user votes in a battle',
-        'argued' => ':user argues in a battle',
-        'vote_and_argue' => ':user votes and argues',
-        'won' => ':user won',
-        'lost' => ':user lost',
+        'created' => 'created a battle',
+        'voted' => 'voted for :side in the battle',
+        'argued' => 'commented on the battle',
+        'liked' => 'liked an argument',
+        'won' => 'won the battle',
+        'lost' => 'lost the battle',
     ],
     'cta' => [
         'vote_with' => 'VOTE WITH',
@@ -22,7 +22,6 @@ return [
         'view_battle' => 'VIEW BATTLE',
         'battle_ended' => 'BATTLE ENDED',
     ],
-    'rank_placeholder' => 'Rookie',
     'load_more' => 'Load more',
     'empty' => [
         'title' => 'Your feed is quiet',
