@@ -43,6 +43,8 @@ return [
     'sponsored_by' => 'Sponsored by :handle',
     'no_active_in_category' => 'No active battles in this category yet.',
     'winner' => 'Winner',
+    'winner_badge' => 'WINNER',
+    'loser_badge' => 'LOSER',
     'refunded_tie' => 'Tie — refunded',
 
     'load_more' => 'Load more',

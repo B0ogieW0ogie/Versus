@@ -14,7 +14,7 @@ class FeedEvent
 
     public const TYPE_ARGUE = 'argue';
 
-    public const TYPE_VOTE_ARGUE = 'vote_argue';
+    public const TYPE_LIKE = 'like';
 
     public const TYPE_WIN = 'win';
 
@@ -26,17 +26,8 @@ class FeedEvent
         public readonly Battle $battle,
         public readonly CarbonInterface $occurredAt,
         public readonly ?string $argumentText = null,
+        public readonly ?string $sideLabel = null,
     ) {}
-
-    public function groupKey(): string
-    {
-        return $this->actor->getKey().':'.$this->battle->getKey();
-    }
-
-    public function isGroupable(): bool
-    {
-        return in_array($this->type, [self::TYPE_VOTE, self::TYPE_ARGUE], true);
-    }
 
     public function isOpen(): bool
     {
