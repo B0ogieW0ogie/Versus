@@ -10,10 +10,8 @@
     ];
 @endphp
 
-<div class="mx-auto max-w-lg px-4 py-6">
-    <h1 class="text-lg font-semibold text-white">{{ __('nav.feed') }}</h1>
-
-    <div class="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         @foreach ($chips as $key => $label)
             <button type="button" wire:click="setFilter('{{ $key }}')"
                 @class([
