@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
     'side_a_image', 'side_b_image',
     'status', 'opens_at', 'closes_at', 'winning_side',
     'total_pool', 'created_by_id', 'settled_at', 'category_id',
-    'is_sponsored', 'sponsor_handle', 'ai_screened_at',
+    'is_sponsored', 'sponsor_handle', 'ai_screened_at', 'void_reason',
 ])]
 class Battle extends Model
 {
@@ -42,6 +42,12 @@ class Battle extends Model
     public const STATUS_CLOSED = 'closed';
 
     public const STATUS_SETTLED = 'settled';
+
+    public const STATUS_LAST_SHOT = 'last_shot';
+
+    public const VOID_EMPTY = 'empty';
+
+    public const VOID_STOMP = 'stomp';
 
     protected function casts(): array
     {
@@ -128,6 +134,10 @@ class Battle extends Model
 
     public function isOpenForVoting(): bool
     {
+        if ($this->status === self::STATUS_LAST_SHOT) {
+            return true;
+        }
+
         return $this->status === self::STATUS_ACTIVE
             && $this->closes_at !== null
             && $this->closes_at->isFuture()
