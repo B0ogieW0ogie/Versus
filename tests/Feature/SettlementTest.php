@@ -110,7 +110,7 @@ class SettlementTest extends TestCase
         ]);
     }
 
-    public function test_tie_refunds_all_stakes(): void
+    public function test_fifty_fifty_enters_last_shot_without_settling(): void
     {
         $a = User::factory()->create(['balance' => 1000]);
         $b = User::factory()->create(['balance' => 1000]);
@@ -122,9 +122,77 @@ class SettlementTest extends TestCase
 
         $settled = $this->closeAndSettle($battle);
 
+        $this->assertSame(Battle::STATUS_LAST_SHOT, $settled->status);
+        $this->assertNull($settled->settled_at);
         $this->assertNull($settled->winning_side);
+        $this->assertTrue($settled->fresh()->isOpenForVoting());
+
+        // stakes are held, not refunded
+        $this->assertSame(900.0, (float) $a->fresh()->balance);
+        $this->assertSame(900.0, (float) $b->fresh()->balance);
+    }
+
+    public function test_stomp_defence_voids_and_refunds_in_full(): void
+    {
+        $a = User::factory()->create(['balance' => 1000]);
+        $b = User::factory()->create(['balance' => 1000]);
+
+        $battle = Battle::factory()->create();
+
+        ($this->vote())($a, $battle, Battle::SIDE_A, 950);
+        ($this->vote())($b, $battle, Battle::SIDE_B, 50);
+
+        $settled = $this->closeAndSettle($battle);
+
+        $this->assertSame(Battle::STATUS_SETTLED, $settled->status);
+        $this->assertSame(Battle::VOID_STOMP, $settled->void_reason);
+        $this->assertNull($settled->winning_side);
+
+        // full 100% refund
         $this->assertSame(1000.0, (float) $a->fresh()->balance);
         $this->assertSame(1000.0, (float) $b->fresh()->balance);
+
+        // no fees taken
+        $this->assertDatabaseMissing('transactions', [
+            'type' => Transaction::TYPE_PROJECT_FEE,
+            'battle_id' => $battle->id,
+        ]);
+        $this->assertDatabaseMissing('transactions', [
+            'type' => Transaction::TYPE_BURN,
+            'battle_id' => $battle->id,
+        ]);
+    }
+
+    public function test_stomp_triggers_exactly_at_threshold(): void
+    {
+        $a = User::factory()->create(['balance' => 1000]);
+        $b = User::factory()->create(['balance' => 1000]);
+
+        $battle = Battle::factory()->create();
+
+        ($this->vote())($a, $battle, Battle::SIDE_A, 900); // 900/1000 = 0.90
+        ($this->vote())($b, $battle, Battle::SIDE_B, 100);
+
+        $settled = $this->closeAndSettle($battle);
+
+        $this->assertSame(Battle::VOID_STOMP, $settled->void_reason);
+    }
+
+    public function test_just_below_threshold_settles_with_a_winner(): void
+    {
+        $a = User::factory()->create(['balance' => 1000]);
+        $b = User::factory()->create(['balance' => 1000]);
+
+        $battle = Battle::factory()->create();
+
+        ($this->vote())($a, $battle, Battle::SIDE_A, 800); // 800/1000 = 0.80
+        ($this->vote())($b, $battle, Battle::SIDE_B, 200);
+
+        $settled = $this->closeAndSettle($battle);
+
+        $this->assertSame(Battle::STATUS_SETTLED, $settled->status);
+        $this->assertSame('A', $settled->winning_side);
+        $this->assertNull($settled->void_reason);
     }
 
     public function test_battle_with_no_votes_settles_with_zero_pool(): void
@@ -136,17 +204,20 @@ class SettlementTest extends TestCase
         $this->assertSame(Battle::STATUS_SETTLED, $settled->status);
         $this->assertSame(0.0, (float) $settled->total_pool);
         $this->assertSame(0, Transaction::count());
+        $this->assertSame(Battle::VOID_EMPTY, $settled->void_reason);
     }
 
     public function test_settle_due_command_closes_and_settles_expired_battles(): void
     {
         $a = User::factory()->create(['balance' => 1000]);
+        $b = User::factory()->create(['balance' => 1000]);
         $battle = Battle::factory()->create(['closes_at' => now()->subMinute()]);
 
         // cast vote before closes_at expires using the factory default (status=active, closes_at future)
         $battle->closes_at = now()->addMinute();
         $battle->save();
-        ($this->vote())($a, $battle, Battle::SIDE_A, 100);
+        ($this->vote())($a, $battle, Battle::SIDE_A, 300);
+        ($this->vote())($b, $battle, Battle::SIDE_B, 200);
 
         // now expire
         $battle->closes_at = now()->subMinute();

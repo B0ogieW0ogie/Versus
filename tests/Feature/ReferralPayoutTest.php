@@ -99,20 +99,24 @@ class ReferralPayoutTest extends TestCase
             'balance' => 10000,
             'referred_by_id' => $referrer->id,
         ]);
+        $loser = User::factory()->create(['balance' => 2000]);
 
         $battle = Battle::factory()->create();
 
-        // Only referee votes — they become the sole winner. Full pool flows to referee.
+        // Referee is the (near-)sole winner; a token stake on the other side keeps
+        // the outcome below the stomp threshold so the battle settles with a winner.
         ($this->vote())($referee, $battle, Battle::SIDE_A, 10000);
+        ($this->vote())($loser, $battle, Battle::SIDE_B, 2000);
 
         $this->settleNow($battle);
 
-        // pool = 10000; reward_pool_credit = 400; 10% cut would be 880 but capped at 400
+        // pool = 12000; reward_pool_credit = 480; referee payout = 0.88 * 12000 = 10560;
+        // 10% cut would be 1056 but capped at 480
         $rewardRow = Transaction::where('user_id', $referrer->id)
             ->where('type', Transaction::TYPE_REFERRAL_REWARD)
             ->firstOrFail();
 
-        $this->assertSame(400.0, (float) $rewardRow->amount);
+        $this->assertSame(480.0, (float) $rewardRow->amount);
 
         // reward pool net balance must be >= 0
         $credit = (float) Transaction::whereNull('user_id')

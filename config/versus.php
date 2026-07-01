@@ -19,6 +19,10 @@ return [
         'winner_cut' => 0.10,
     ],
 
+    'mechanics' => [
+        'stomp_threshold' => 0.90, // side share at/above which the battle is void
+    ],
+
     'leaderboard' => [
         'creator_fee_cut' => 0.01,
         'argument_referral_cut' => 0.04,

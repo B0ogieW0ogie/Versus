@@ -34,6 +34,30 @@ class SettleBattleAction
                 $battle->status = Battle::STATUS_SETTLED;
                 $battle->settled_at = now();
                 $battle->total_pool = 0;
+                $battle->void_reason = Battle::VOID_EMPTY;
+                $battle->save();
+
+                return $battle;
+            }
+
+            $totalWeight = $weightA + $weightB;
+            $maxSide = max($weightA, $weightB);
+            $stompThreshold = (float) config('versus.mechanics.stomp_threshold');
+
+            if ($totalWeight > 0 && $maxSide / $totalWeight >= $stompThreshold) {
+                $this->refundAll($battle);
+
+                $battle->status = Battle::STATUS_SETTLED;
+                $battle->settled_at = now();
+                $battle->total_pool = $pool;
+                $battle->void_reason = Battle::VOID_STOMP;
+                $battle->save();
+
+                return $battle;
+            }
+
+            if ($weightA === $weightB && $weightA > 0.0) {
+                $battle->status = Battle::STATUS_LAST_SHOT;
                 $battle->save();
 
                 return $battle;
@@ -150,7 +174,7 @@ class SettleBattleAction
                 'amount' => $amount,
                 'balance_after' => $user->balance,
                 'battle_id' => $battle->id,
-                'meta' => ['vote_id' => $vote->id, 'reason' => 'tie_refund'],
+                'meta' => ['vote_id' => $vote->id, 'reason' => 'stomp_refund'],
             ]);
         }
     }
