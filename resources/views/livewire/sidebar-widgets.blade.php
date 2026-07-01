@@ -18,8 +18,9 @@
                             </span>
                             <span class="truncate text-sm text-white/90">{{ $t->title }}</span>
                         </span>
-                        <span class="shrink-0 text-xs text-white/50">
-                            {{ number_format((float) $t->total_pool, 0) }}
+                        <span class="shrink-0 text-xs text-white/50"
+                              x-data="livePool({ battleId: {{ $t->id }}, amount: {{ (float) $t->total_pool }} })">
+                            <span x-ref="value" x-text="display">{{ number_format((float) $t->total_pool, 0) }}</span>
                         </span>
                     </a>
                 </li>
