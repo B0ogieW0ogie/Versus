@@ -45,7 +45,7 @@ class SettleBattleAction
             $stompThreshold = (float) config('versus.mechanics.stomp_threshold');
 
             if ($totalWeight > 0 && $maxSide / $totalWeight >= $stompThreshold) {
-                $this->refundAll($battle);
+                $this->refundAll($battle, 'stomp_refund');
 
                 $battle->status = Battle::STATUS_SETTLED;
                 $battle->settled_at = now();
@@ -76,7 +76,7 @@ class SettleBattleAction
             $winningSide = $this->decideWinner($weightA, $weightB);
 
             if ($winningSide === null) {
-                $this->refundAll($battle);
+                $this->refundAll($battle, 'void_refund');
                 $battle->status = Battle::STATUS_SETTLED;
                 $battle->settled_at = now();
                 $battle->total_pool = $pool;
@@ -154,7 +154,7 @@ class SettleBattleAction
         return $weightA > $weightB ? Battle::SIDE_A : Battle::SIDE_B;
     }
 
-    private function refundAll(Battle $battle): void
+    private function refundAll(Battle $battle, string $reason): void
     {
         $votes = Vote::where('battle_id', $battle->id)->orderBy('id')->get();
 
@@ -174,7 +174,7 @@ class SettleBattleAction
                 'amount' => $amount,
                 'balance_after' => $user->balance,
                 'battle_id' => $battle->id,
-                'meta' => ['vote_id' => $vote->id, 'reason' => 'stomp_refund'],
+                'meta' => ['vote_id' => $vote->id, 'reason' => $reason],
             ]);
         }
     }

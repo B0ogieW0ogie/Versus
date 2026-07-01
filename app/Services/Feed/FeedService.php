@@ -93,7 +93,7 @@ class FeedService
     {
         $query = Battle::query()
             ->whereNotNull('created_by_id')
-            ->whereIn('status', [Battle::STATUS_ACTIVE, Battle::STATUS_CLOSED, Battle::STATUS_SETTLED])
+            ->whereIn('status', [Battle::STATUS_ACTIVE, Battle::STATUS_LAST_SHOT, Battle::STATUS_CLOSED, Battle::STATUS_SETTLED])
             ->with(['creator', 'category']);
 
         $query = $this->applyActor($query, $actorIds, 'created_by_id', $viewerId);
