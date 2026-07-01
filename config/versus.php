@@ -3,7 +3,7 @@
 return [
     'signup_bonus' => 10,
 
-    'max_vote_amount' => 10000,
+    'max_vote_amount' => 30000,
 
     /** Max total stake per user across all votes in one battle (any sides). */
     'max_battle_stake_per_user' => 30000,
