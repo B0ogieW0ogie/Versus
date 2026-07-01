@@ -39,12 +39,12 @@
         <ul class="mt-3 space-y-2">
             @forelse ($topPlayers as $p)
                 <li class="flex items-center justify-between gap-3 rounded-lg bg-navy-900/60 px-3 py-2">
-                    <span class="flex items-center gap-2 min-w-0">
+                    <a href="{{ route('profile.show', $p) }}" class="flex items-center gap-2 min-w-0 group">
                         <span class="h-8 w-8 shrink-0 rounded-full bg-navy-700 flex items-center justify-center text-xs font-bold text-white">
                             {{ mb_strtoupper(mb_substr($p->name, 0, 1)) }}
                         </span>
-                        <span class="truncate text-sm text-white/90">{{ $p->name }}</span>
-                    </span>
+                        <span class="truncate text-sm text-white/90 group-hover:underline">{{ $p->name }}</span>
+                    </a>
                     <span class="shrink-0 text-xs text-white/60">
                         {{ number_format((float) $p->total_winnings, 0) }}
                         <span class="text-white/40">{{ __('sidebar.tokens') }}</span>
