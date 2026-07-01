@@ -6,6 +6,7 @@
 
 @php
     $isDeleted = $comment->trashed();
+    $profileUrl = route('profile.show', $comment->user);
     $mentionPrefix = ! $isDeleted && $comment->replyToUser
         ? $comment->replyToUser->name.','
         : null;
@@ -59,7 +60,7 @@
     wire:key="comment-{{ $comment->id }}"
 >
     <div class="flex gap-3 py-4">
-        <div class="shrink-0 pt-0.5">
+        <a href="{{ $profileUrl }}" class="shrink-0 pt-0.5">
             @if ($comment->user->avatarUrl())
                 <img src="{{ $comment->user->avatarUrl() }}" alt=""
                      class="h-9 w-9 rounded-full object-cover ring-1 ring-white/10">
@@ -68,13 +69,13 @@
                     {{ mb_strtoupper(mb_substr($comment->user->name, 0, 1)) }}
                 </div>
             @endif
-        </div>
+        </a>
 
         <div class="flex min-w-0 flex-1 gap-3">
             <div class="min-w-0 flex-1">
                 <div>
                     <div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                        <span class="text-[13px] font-semibold text-white">{{ $comment->user->name }}</span>
+                        <a href="{{ $profileUrl }}" class="text-[13px] font-semibold text-white hover:underline">{{ $comment->user->name }}</a>
                         @if (! $isDeleted && $comment->replyToUser && $comment->reply_to_user_id !== $comment->user_id)
                             <span class="text-[13px] text-white/35" aria-hidden="true">·</span>
                             <span class="text-[13px] font-medium text-white/55">{{ $comment->replyToUser->name }}</span>
