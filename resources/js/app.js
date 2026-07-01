@@ -153,6 +153,7 @@ document.addEventListener('alpine:init', () => {
         max,
         maxCap,
         walletBalance,
+        remainingBattleStake = Infinity,
         i18n,
         poolPollUrl = '',
         battleId = 0,
@@ -162,6 +163,9 @@ document.addEventListener('alpine:init', () => {
         totalPool: Math.max(0, Number(totalPool) || 0),
         max: Math.max(0, Number(max) || 0),
         maxCap: Math.max(0, Number(maxCap) || 0),
+        remainingBattleStake: Number.isFinite(Number(remainingBattleStake))
+            ? Math.max(0, Number(remainingBattleStake))
+            : Infinity,
         walletBalance: Math.max(0, Number(walletBalance) || 0),
         poolPollUrl: typeof poolPollUrl === 'string' ? poolPollUrl : '',
         amountA: 0,
@@ -299,10 +303,8 @@ document.addEventListener('alpine:init', () => {
                 this.err = null;
             }, 2000);
         },
-        onBalance(newBalance) {
-            const b = Math.max(0, Number(newBalance) || 0);
-            this.walletBalance = b;
-            this.max = Math.min(b, this.maxCap);
+        recomputeMax() {
+            this.max = Math.max(0, Math.min(this.walletBalance, this.maxCap, this.remainingBattleStake));
             if (this.amountA > this.max) {
                 this.amountA = this.max;
             }
@@ -313,9 +315,17 @@ document.addEventListener('alpine:init', () => {
                 this.modalAmount = this.max;
             }
         },
+        onBalance(newBalance) {
+            this.walletBalance = Math.max(0, Number(newBalance) || 0);
+            this.recomputeMax();
+        },
         onStakeSuccess(detail) {
             if (Number(detail?.battleId) !== this.battleId) {
                 return;
+            }
+            if (detail.remainingBattleStake != null) {
+                this.remainingBattleStake = Math.max(0, Number(detail.remainingBattleStake) || 0);
+                this.recomputeMax();
             }
             if (detail.poolTotal != null) {
                 this.totalPool = Math.max(0, Number(detail.poolTotal) || 0);
@@ -374,6 +384,7 @@ document.addEventListener('alpine:init', () => {
         max,
         maxCap,
         walletBalance,
+        remainingBattleStake = Infinity,
         battleId,
         canStake,
         i18n,
@@ -383,6 +394,9 @@ document.addEventListener('alpine:init', () => {
         max: Math.max(0, Number(max) || 0),
         maxCap: Math.max(0, Number(maxCap) || 0),
         walletBalance: Math.max(0, Number(walletBalance) || 0),
+        remainingBattleStake: Number.isFinite(Number(remainingBattleStake))
+            ? Math.max(0, Number(remainingBattleStake))
+            : Infinity,
         canStake: Boolean(canStake),
         supportCommentId: null,
         supportSide: null,
@@ -439,12 +453,23 @@ document.addEventListener('alpine:init', () => {
                 this.err = null;
             }, 2000);
         },
-        onBalance(newBalance) {
-            const b = Math.max(0, Number(newBalance) || 0);
-            this.walletBalance = b;
-            this.max = Math.min(b, this.maxCap);
+        recomputeMax() {
+            this.max = Math.max(0, Math.min(this.walletBalance, this.maxCap, this.remainingBattleStake));
             if (this.modalAmount > this.max) {
                 this.modalAmount = this.max;
+            }
+        },
+        onBalance(newBalance) {
+            this.walletBalance = Math.max(0, Number(newBalance) || 0);
+            this.recomputeMax();
+        },
+        onStakeSuccess(detail) {
+            if (Number(detail?.battleId) !== this.battleId) {
+                return;
+            }
+            if (detail.remainingBattleStake != null) {
+                this.remainingBattleStake = Math.max(0, Number(detail.remainingBattleStake) || 0);
+                this.recomputeMax();
             }
         },
         openSupportModal(commentId, side) {

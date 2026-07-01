@@ -341,6 +341,7 @@ class CommentThread extends Component
             'rootComments' => $this->rootComments(),
             'maxAllowed' => $maxAllowed,
             'maxVoteAmount' => $maxVoteAmount,
+            'remainingBattleStake' => $remainingBattleStake,
             'userBalance' => $userBalance,
             'canStake' => $user !== null
                 && $this->battle->isOpenForVoting()
@@ -375,6 +376,7 @@ class CommentThread extends Component
             body: __('battle.stake_modal_body'),
             battleId: $this->battle->id,
             poolTotal: (float) $this->battle->total_pool,
+            remainingBattleStake: (int) BattleStakeLimit::remainingForUser(Auth::user(), $this->battle),
         );
         $this->dispatch('balance-updated', balance: (int) Auth::user()->balance);
         $this->dispatch('battle-voted');

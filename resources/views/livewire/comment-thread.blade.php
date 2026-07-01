@@ -5,6 +5,7 @@
                     max: {{ (int) $maxAllowed }},
                     maxCap: {{ (int) $maxVoteAmount }},
                     walletBalance: {{ (int) $userBalance }},
+                    remainingBattleStake: {{ (int) $remainingBattleStake }},
                     battleId: {{ (int) $battle->id }},
                     canStake: true,
                     i18n: @js([
@@ -18,6 +19,7 @@
                     ]),
                  })"
                  x-on:balance-updated.window="onBalance($event.detail.balance)"
+                 x-on:versus-stake-toast.window="onStakeSuccess($event.detail)"
              @endif
          @endauth>
     <div class="flex items-center justify-between gap-3">

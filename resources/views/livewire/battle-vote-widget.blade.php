@@ -18,6 +18,7 @@
                     max: {{ (int) $maxAllowed }},
                     maxCap: {{ (int) $maxVoteAmount }},
                     walletBalance: {{ (int) $userBalance }},
+                    remainingBattleStake: {{ (int) $remainingBattleStake }},
                     battleId: {{ (int) $battle->id }},
                     poolPollUrl: @js(route('battles.pool-total', $battle)),
                     i18n: @js([

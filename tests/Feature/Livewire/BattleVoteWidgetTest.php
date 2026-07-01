@@ -89,6 +89,24 @@ class BattleVoteWidgetTest extends TestCase
         ]);
     }
 
+    public function test_cast_vote_dispatches_remaining_battle_stake_after_vote(): void
+    {
+        config()->set('versus.max_battle_stake_per_user', 30000);
+        config()->set('versus.max_vote_amount', 30000);
+
+        $user = User::factory()->create(['balance' => 100000]);
+        $battle = Battle::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(BattleVoteWidget::class, ['battle' => $battle])
+            ->call('castVote', 'A', 1000)
+            ->assertDispatched(
+                'versus-stake-toast',
+                battleId: $battle->id,
+                remainingBattleStake: 29000,
+            );
+    }
+
     public function test_invalid_side_surfaces_vote_error(): void
     {
         $user = User::factory()->create(['balance' => 500]);
