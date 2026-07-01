@@ -77,6 +77,15 @@ const PoolTicker = {
         if (!base) {
             return;
         }
+        // The endpoint caps each request at 50 ids; chunk so no subscriber is
+        // silently dropped on pages that show many battle tiles at once.
+        const chunkSize = 50;
+        for (let i = 0; i < ids.length; i += chunkSize) {
+            this._fetchChunk(base, ids.slice(i, i + chunkSize));
+        }
+    },
+
+    _fetchChunk(base, ids) {
         const url = base + (base.includes('?') ? '&' : '?') + 'ids=' + ids.join(',');
         fetch(url, {
             headers: { Accept: 'application/json' },
@@ -130,13 +139,31 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
-    window.Alpine.data('livePool', ({ battleId, amount }) => ({
+    window.Alpine.data('livePool', ({ battleId, amount, format }) => ({
         battleId: Math.max(0, Number(battleId) || 0),
         amount: Math.max(0, Number(amount) || 0),
+        format: format === 'compact' ? 'compact' : 'plain',
         _unsub: null,
 
         get display() {
-            return Math.round(this.amount).toLocaleString('en-US');
+            return this.format === 'compact'
+                ? this.formatCompact(this.amount)
+                : Math.round(this.amount).toLocaleString('en-US');
+        },
+
+        // Mirrors App\Models\Battle::compactPool() so the live value matches
+        // the server-rendered fallback exactly (e.g. 12345 -> "12.3k").
+        formatCompact(value) {
+            const n = Math.max(0, Number(value) || 0);
+            if (n < 1000) {
+                return String(Math.trunc(n));
+            }
+            const k = n / 1000;
+            if (k % 1 === 0) {
+                return String(Math.trunc(k)) + 'k';
+            }
+
+            return k.toFixed(1) + 'k';
         },
 
         init() {

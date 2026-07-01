@@ -76,7 +76,7 @@
         'mt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-1 text-[11px] text-white/55',
         'md:text-sm' => $isLarge,
     ])>
-        <span>💰 {{ $battle->compactPool() }}</span>
+        <span x-data="livePool({ battleId: {{ $battle->id }}, amount: {{ (float) $battle->total_pool }}, format: 'compact' })">💰 <span x-ref="value" x-text="display">{{ $battle->compactPool() }}</span></span>
         <span aria-hidden="true"></span>
         <span class="text-right">⏱ {{ $timeLabel }}</span>
     </div>

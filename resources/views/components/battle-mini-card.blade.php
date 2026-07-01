@@ -32,7 +32,7 @@
 
         <div class="flex shrink-0 flex-col items-center">
             <span class="text-base font-extrabold uppercase tracking-wide text-indigo-400">{{ __('battle.vs') }}</span>
-            <span class="mt-1 text-[11px] text-white/55">💰 {{ $battle->compactPool() }}</span>
+            <span class="mt-1 text-[11px] text-white/55" x-data="livePool({ battleId: {{ $battle->id }}, amount: {{ (float) $battle->total_pool }}, format: 'compact' })">💰 <span x-ref="value" x-text="display">{{ $battle->compactPool() }}</span></span>
             @if ($timeLabel)
                 <span class="mt-0.5 text-[11px] text-white/55">⏱ {{ $timeLabel }}</span>
             @endif
