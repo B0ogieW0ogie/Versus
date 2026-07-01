@@ -46,7 +46,7 @@
 
     <p class="mt-3 px-4 text-[11px] text-white/45 shrink-0">{{ __('leaderboard.metrics.' . $tab) }}</p>
 
-    <div class="flex-1 overflow-y-auto mt-2 {{ $me ? 'pb-28' : 'pb-6' }}">
+    <div class="flex-1 overflow-y-auto scrollbar-none mt-2 {{ $me ? 'pb-28' : 'pb-6' }}">
         @if ($rows->isEmpty())
             <div class="mx-4 rounded-xl border border-dashed border-white/10 p-6 text-center text-sm text-white/50">
                 {{ __('leaderboard.empty') }}
