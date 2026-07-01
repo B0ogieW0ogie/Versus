@@ -51,8 +51,9 @@
             {{ __('battle.vote') }}
         </a>
         <div class="flex flex-col items-center justify-center gap-0.5 text-center text-xs text-white/80">
-            <span class="font-semibold tabular-nums">
-                💰 {{ number_format((float) $battle->total_pool, 0, '.', ',') }} {{ __('battle.tokens') }}
+            <span class="font-semibold tabular-nums"
+                  x-data="livePool({ battleId: {{ $battle->id }}, amount: {{ (float) $battle->total_pool }} })">
+                💰 <span x-ref="value" x-text="display">{{ number_format((float) $battle->total_pool, 0, '.', ',') }}</span> {{ __('battle.tokens') }}
             </span>
             @if ($closesIso)
                 <span class="font-mono text-[11px] text-white/65"

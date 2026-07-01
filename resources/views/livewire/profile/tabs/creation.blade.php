@@ -31,8 +31,9 @@
 
                             <div class="text-center">
                                 <div class="text-sm font-bold uppercase tracking-widest leading-none text-vote-purple-to">VS</div>
-                                <div class="mt-1 text-xs text-white/70">
-                                    {{ number_format((float) $battle->total_pool, 0) }} {{ __('profile.activity_vrs') }}
+                                <div class="mt-1 text-xs text-white/70"
+                                     x-data="livePool({ battleId: {{ $battle->id }}, amount: {{ (float) $battle->total_pool }} })">
+                                    <span x-ref="value" x-text="display">{{ number_format((float) $battle->total_pool, 0) }}</span> {{ __('profile.activity_vrs') }}
                                 </div>
                             </div>
 

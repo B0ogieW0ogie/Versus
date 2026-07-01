@@ -1,5 +1,108 @@
 import './bootstrap';
 
+function bumpPoolElement(el) {
+    if (!el) {
+        return;
+    }
+    el.classList.remove('versus-pool-bump');
+    void el.offsetWidth;
+    el.addEventListener('animationend', () => {
+        el.classList.remove('versus-pool-bump');
+    }, { once: true });
+    el.classList.add('versus-pool-bump');
+}
+
+const PoolTicker = {
+    _subs: new Map(), // battleId(number) -> Set<callback>
+    _timer: null,
+    _intervalMs: 5000,
+
+    _url() {
+        const meta = document.querySelector('meta[name="pool-totals-url"]');
+
+        return meta ? meta.getAttribute('content') : '';
+    },
+
+    subscribe(battleId, cb) {
+        const id = Math.max(0, Number(battleId) || 0);
+        if (!id || typeof cb !== 'function') {
+            return () => {};
+        }
+        if (!this._subs.has(id)) {
+            this._subs.set(id, new Set());
+        }
+        this._subs.get(id).add(cb);
+        this._start();
+
+        return () => this._unsubscribe(id, cb);
+    },
+
+    _unsubscribe(id, cb) {
+        const set = this._subs.get(id);
+        if (!set) {
+            return;
+        }
+        set.delete(cb);
+        if (set.size === 0) {
+            this._subs.delete(id);
+        }
+        if (this._subs.size === 0) {
+            this._stop();
+        }
+    },
+
+    _start() {
+        if (this._timer) {
+            return;
+        }
+        this._timer = setInterval(() => this._tick(), this._intervalMs);
+    },
+
+    _stop() {
+        if (this._timer) {
+            clearInterval(this._timer);
+            this._timer = null;
+        }
+    },
+
+    _tick() {
+        if (document.hidden) {
+            return;
+        }
+        const ids = Array.from(this._subs.keys());
+        if (ids.length === 0) {
+            return;
+        }
+        const base = this._url();
+        if (!base) {
+            return;
+        }
+        const url = base + (base.includes('?') ? '&' : '?') + 'ids=' + ids.join(',');
+        fetch(url, {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        })
+            .then((r) => {
+                if (!r.ok) {
+                    throw new Error('pool-totals failed');
+                }
+
+                return r.json();
+            })
+            .then((data) => {
+                Object.keys(data).forEach((key) => {
+                    const set = this._subs.get(Number(key));
+                    if (!set) {
+                        return;
+                    }
+                    const total = Math.max(0, Number(data[key]) || 0);
+                    set.forEach((cb) => cb(total));
+                });
+            })
+            .catch(() => {});
+    },
+};
+
 document.addEventListener('alpine:init', () => {
     window.Alpine.data('countdown', (iso) => ({
         label: '',
@@ -24,6 +127,39 @@ document.addEventListener('alpine:init', () => {
                 clearInterval(this.timer);
                 this.timer = null;
             }
+        },
+    }));
+
+    window.Alpine.data('livePool', ({ battleId, amount }) => ({
+        battleId: Math.max(0, Number(battleId) || 0),
+        amount: Math.max(0, Number(amount) || 0),
+        _unsub: null,
+
+        get display() {
+            return Math.round(this.amount).toLocaleString('en-US');
+        },
+
+        init() {
+            if (!this.battleId) {
+                return;
+            }
+            this._unsub = PoolTicker.subscribe(this.battleId, (total) => this.onUpdate(total));
+        },
+
+        destroy() {
+            if (this._unsub) {
+                this._unsub();
+                this._unsub = null;
+            }
+        },
+
+        onUpdate(total) {
+            const next = Math.max(0, Number(total) || 0);
+            if (Math.round(next) === Math.round(this.amount)) {
+                return;
+            }
+            this.amount = next;
+            this.$nextTick(() => bumpPoolElement(this.$refs.value));
         },
     }));
 
@@ -228,16 +364,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         bumpPoolAmount() {
-            const el = this.$refs.poolAmount;
-            if (!el) {
-                return;
-            }
-            el.classList.remove('versus-pool-bump');
-            void el.offsetWidth;
-            el.addEventListener('animationend', () => {
-                el.classList.remove('versus-pool-bump');
-            }, { once: true });
-            el.classList.add('versus-pool-bump');
+            bumpPoolElement(this.$refs.poolAmount);
         },
 
         parseAmount(key) {
