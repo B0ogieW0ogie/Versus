@@ -17,6 +17,7 @@
     $isLarge = $size === 'lg';
     $sideALabel = Str::title($battle->side_a_label);
     $sideBLabel = Str::title($battle->side_b_label);
+    $isLastShot = $battle->status === \App\Models\Battle::STATUS_LAST_SHOT;
 @endphp
 
 <a href="{{ route('battles.show', $battle) }}"
@@ -78,6 +79,12 @@
     ])>
         <span x-data="livePool({ battleId: {{ $battle->id }}, amount: {{ (float) $battle->total_pool }}, format: 'compact' })">💰 <span x-ref="value" x-text="display">{{ $battle->compactPool() }}</span></span>
         <span aria-hidden="true"></span>
-        <span class="text-right">⏱ {{ $timeLabel }}</span>
+        <span class="text-right">
+            @if ($isLastShot)
+                <span class="animate-pulse font-bold uppercase tracking-wide text-glow-cyan">🎯 {{ __('battle.last_shot') }}</span>
+            @else
+                ⏱ {{ $timeLabel }}
+            @endif
+        </span>
     </div>
 </a>

@@ -78,4 +78,9 @@ return [
     'create_submit_loading' => 'Publishing…',
     'ai_checking' => 'AI is checking your battle...',
     'back_to_battles' => '← Back to battles',
+
+    'last_shot' => 'LAST SHOT',
+    'last_shot_hint' => 'Next vote decides the winner',
+    'stomp_defence' => 'Stomp Defence',
+    'void_refunded' => 'Battle void — all stakes refunded',
 ];

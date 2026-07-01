@@ -78,4 +78,9 @@ return [
     'create_submit_loading' => 'Публикация…',
     'ai_checking' => 'AI is checking your battle...',
     'back_to_battles' => '← К баттлам',
+
+    'last_shot' => 'LAST SHOT',
+    'last_shot_hint' => 'Следующая ставка решает исход',
+    'stomp_defence' => 'Stomp Defence',
+    'void_refunded' => 'Баттл несостоялся — ставки возвращены',
 ];

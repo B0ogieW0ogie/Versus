@@ -8,9 +8,20 @@
     @else
         @if (! $battle->isOpenForVoting())
             <div class="border-t border-white/10 bg-navy-950/80 px-4 py-6 text-center text-sm text-white/70">
-                {{ __('battle.voting_closed') }}
+                @if ($battle->void_reason === \App\Models\Battle::VOID_STOMP)
+                    <span class="font-semibold text-white/90">🛡 {{ __('battle.stomp_defence') }}</span>
+                    <span class="block text-white/60">{{ __('battle.void_refunded') }}</span>
+                @else
+                    {{ __('battle.voting_closed') }}
+                @endif
             </div>
         @else
+            @if ($battle->status === \App\Models\Battle::STATUS_LAST_SHOT)
+                <div class="border-t border-glow-cyan/40 bg-navy-950/90 px-4 py-3 text-center">
+                    <span class="animate-pulse text-sm font-bold uppercase tracking-wide text-glow-cyan">🎯 {{ __('battle.last_shot') }}</span>
+                    <span class="block text-xs text-white/60">{{ __('battle.last_shot_hint') }}</span>
+                </div>
+            @endif
             <div class="border-t border-white/10 bg-navy-950/90"
                  wire:key="vote-dual-{{ $battle->id }}"
                  x-data="voteBattleDual({
