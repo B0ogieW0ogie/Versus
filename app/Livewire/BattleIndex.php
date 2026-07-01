@@ -17,9 +17,10 @@ class BattleIndex extends Component
         $sponsoredIds = $sponsored->pluck('id')->all();
 
         $hot = Battle::query()
-            ->active()
+            ->whereIn('status', [Battle::STATUS_ACTIVE, Battle::STATUS_LAST_SHOT])
             ->with('category')
             ->when($sponsoredIds, fn ($q) => $q->whereNotIn('id', $sponsoredIds))
+            ->orderByRaw('case when status = ? then 0 else 1 end', [Battle::STATUS_LAST_SHOT])
             ->orderByDesc('total_pool')
             ->limit(10)
             ->get();
