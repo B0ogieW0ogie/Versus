@@ -43,7 +43,7 @@
             @endif
         </a>
         <p class="min-w-0 flex-1 text-sm font-medium {{ $headlineColor }}">
-            <a href="{{ $profileUrl }}" class="font-semibold hover:underline">{{ $actor->name }}</a>
+            <a href="{{ $profileUrl }}" class="font-semibold hover:underline"><x-user-name :user="$actor" /></a>
             {{ $verb }}
         </p>
     </div>

@@ -39,7 +39,7 @@ class SidebarWidgets extends Component
             ->toBase();
 
         $topPlayers = User::query()
-            ->select('users.id', 'users.name')
+            ->select('users.id', 'users.name', 'users.is_admin')
             ->leftJoinSub($winningsSubquery, 'w', fn ($j) => $j->on('w.user_id', '=', 'users.id'))
             ->selectRaw('COALESCE(w.total_winnings, 0) AS total_winnings')
             ->orderByDesc('total_winnings')

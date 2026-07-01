@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="min-w-0 flex-1 pb-0.5">
-                        <h2 class="text-2xl font-bold text-vote-purple-to leading-tight">{{ $user->name }}</h2>
+                        <h2 class="text-2xl font-bold text-vote-purple-to leading-tight"><x-user-name :user="$user" /></h2>
                         <p class="mt-0.5 text-sm text-white/60">{{ $handle }}</p>
                     </div>
 
@@ -94,7 +94,7 @@
                             <span class="font-semibold text-white">2,450</span>
                             <span>{{ __('profile.rp_suffix') }}</span>
                         </div>
-                        <p class="mt-0.5 text-sm font-semibold text-vote-purple-to">{{ __('profile.title_architect') }}</p>
+                        <p class="mt-0.5 text-sm font-semibold {{ $user->is_admin ? 'text-orange-400' : 'text-white/50' }}">{{ $user->rankLabel() }}</p>
                     </div>
                     <div data-onboarding-target="bio" class="min-w-0 flex-1 pt-0.5">
                         @if ($user->bio)

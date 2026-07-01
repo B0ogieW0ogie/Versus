@@ -219,7 +219,7 @@ class ProfilePage extends Component
         return User::query()
             ->where('referred_by_id', $user->id)
             ->orderByDesc('created_at')
-            ->get(['id', 'name', 'email', 'created_at']);
+            ->get(['id', 'name', 'email', 'created_at', 'is_admin']);
     }
 
     private function loadReferralEarned(User $user): float

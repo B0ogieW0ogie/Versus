@@ -24,6 +24,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const RANK_NEWBIE = 'newbie';
+
+    public const RANK_ADMIN = 'admin';
+
     protected function casts(): array
     {
         return [
@@ -100,6 +104,20 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_admin === true;
+    }
+
+    /**
+     * The user's rank. Computed on the fly until a full ranking system exists:
+     * admins read as "admin" (orange nickname), everyone else as "newbie".
+     */
+    public function rank(): string
+    {
+        return $this->is_admin ? self::RANK_ADMIN : self::RANK_NEWBIE;
+    }
+
+    public function rankLabel(): string
+    {
+        return __('profile.rank_'.$this->rank());
     }
 
     public function avatarUrl(): ?string

@@ -75,10 +75,10 @@
             <div class="min-w-0 flex-1">
                 <div>
                     <div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                        <a href="{{ $profileUrl }}" class="text-[13px] font-semibold text-white hover:underline">{{ $comment->user->name }}</a>
+                        <a href="{{ $profileUrl }}" class="text-[13px] font-semibold text-white hover:underline"><x-user-name :user="$comment->user" /></a>
                         @if (! $isDeleted && $comment->replyToUser && $comment->reply_to_user_id !== $comment->user_id)
                             <span class="text-[13px] text-white/35" aria-hidden="true">·</span>
-                            <span class="text-[13px] font-medium text-white/55">{{ $comment->replyToUser->name }}</span>
+                            <x-user-name :user="$comment->replyToUser" class="text-[13px] font-medium text-white/55" />
                         @endif
                     </div>
                     @if (! $isDeleted && $comment->isRoot() && $sideLabel !== null)

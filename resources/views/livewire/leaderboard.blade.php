@@ -77,7 +77,7 @@
                                 @endif
                             </a>
                             <div class="min-w-0 flex-1">
-                                <a href="{{ $profileUrl }}" class="block truncate text-sm font-semibold text-white/90 hover:underline">{{ $row->name }}</a>
+                                <a href="{{ $profileUrl }}" class="block truncate text-sm font-semibold text-white/90 hover:underline"><x-user-name :user="$row" /></a>
                                 <div class="mt-0.5 text-[11px] text-white/45">
                                     @if ($tab === LeaderboardTable::TAB_CREATORS)
                                         {{ __('leaderboard.battles_count', ['count' => (int) ($row->battles_count ?? 0)]) }}

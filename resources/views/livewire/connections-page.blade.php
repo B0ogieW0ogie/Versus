@@ -23,7 +23,7 @@
                         @endif
                     </a>
                     <a href="{{ route('profile.show', $person) }}" class="min-w-0 flex-1">
-                        <div class="text-sm font-semibold text-white truncate">{{ $person->name }}</div>
+                        <div class="text-sm font-semibold text-white truncate"><x-user-name :user="$person" /></div>
                     </a>
                     @if ($person->id !== $viewerId)
                         <button type="button" wire:click="toggleFollow({{ $person->id }})"

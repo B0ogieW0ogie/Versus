@@ -29,7 +29,7 @@
             <ul class="mt-3 divide-y divide-white/5">
                 @foreach ($referrals as $referral)
                     <li class="py-2 flex justify-between text-xs">
-                        <span class="text-white/90">{{ $referral->name }}</span>
+                        <span class="text-white/90"><x-user-name :user="$referral" /></span>
                         <span class="text-white/50">
                             {{ __('profile.referrals_joined', ['when' => $referral->created_at->diffForHumans()]) }}
                         </span>

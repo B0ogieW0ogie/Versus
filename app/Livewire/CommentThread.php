@@ -291,8 +291,8 @@ class CommentThread extends Component
             ->withTrashed()
             ->where('battle_id', $this->battle->id)
             ->with([
-                'user:id,name,avatar_path',
-                'replyToUser:id,name',
+                'user:id,name,avatar_path,is_admin',
+                'replyToUser:id,name,is_admin',
             ])
             ->withCount('likes')
             ->select('comments.*')
