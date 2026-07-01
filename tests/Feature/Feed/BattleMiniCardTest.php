@@ -56,9 +56,10 @@ test('event card renders a win headline with a clickable name and no @', functio
 
     $html = Blade::render('<x-feed.event-card :event="$event" />', ['event' => $event]);
 
-    expect($html)->toContain('neo')
+    expect($html)->toContain('Neo')
         ->toContain('won the battle')
         ->not->toContain('@neo')
+        ->not->toContain('>neo<')
         ->toContain(route('profile.show', $actor))
         ->toContain('VIEW BATTLE');
 });

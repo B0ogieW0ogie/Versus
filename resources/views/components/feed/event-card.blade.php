@@ -8,10 +8,6 @@
     $actor = $event->actor;
     $battle = $event->battle;
 
-    $handle = $actor->username
-        ? $actor->username
-        : __('profile.username_fallback_prefix').$actor->id;
-
     $profileUrl = route('profile.show', $actor);
 
     $verb = match ($event->type) {
@@ -47,7 +43,7 @@
             @endif
         </a>
         <p class="min-w-0 flex-1 text-sm font-medium {{ $headlineColor }}">
-            <a href="{{ $profileUrl }}" class="font-semibold hover:underline">{{ $handle }}</a>
+            <a href="{{ $profileUrl }}" class="font-semibold hover:underline">{{ $actor->name }}</a>
             {{ $verb }}
         </p>
     </div>
@@ -76,7 +72,7 @@
             <a href="{{ route('battles.show', $battle) }}"
                class="block w-full rounded-xl bg-[#7C3AED] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#6D28D9]">
                 @if ($event->type === FeedEvent::TYPE_CREATE)
-                    {{ __('feed.cta.vote_with_user', ['user' => $handle]) }}
+                    {{ __('feed.cta.vote_with_user', ['user' => $actor->name]) }}
                 @else
                     {{ __('feed.cta.vote_with') }}
                 @endif

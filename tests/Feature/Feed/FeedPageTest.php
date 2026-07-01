@@ -54,6 +54,7 @@ test('settled battle result renders a win headline on the page', function () {
 
     Livewire::test(FeedPage::class)
         ->call('setFilter', FeedService::FILTER_RESULTS)
-        ->assertSee('morpheus')
-        ->assertDontSee('@morpheus');
+        ->assertSee('Morpheus')
+        ->assertDontSee('@morpheus')
+        ->assertDontSee('morpheus');
 });

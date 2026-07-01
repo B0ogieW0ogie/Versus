@@ -11,9 +11,6 @@
     <div class="px-4 pt-4 lg:max-w-2xl lg:mx-auto">
         <div class="rounded-xl border border-white/10 bg-white/5 divide-y divide-white/5 overflow-hidden">
             @forelse ($people as $person)
-                @php
-                    $handle = $person->username ? '@' . $person->username : '@' . __('profile.username_fallback_prefix') . $person->id;
-                @endphp
                 <div class="flex items-center gap-3 px-4 py-3">
                     <a href="{{ route('profile.show', $person) }}"
                        class="h-11 w-11 shrink-0 rounded-full bg-navy-700 overflow-hidden flex items-center justify-center">
@@ -27,7 +24,6 @@
                     </a>
                     <a href="{{ route('profile.show', $person) }}" class="min-w-0 flex-1">
                         <div class="text-sm font-semibold text-white truncate">{{ $person->name }}</div>
-                        <div class="text-xs text-white/50 truncate">{{ $handle }}</div>
                     </a>
                     @if ($person->id !== $viewerId)
                         <button type="button" wire:click="toggleFollow({{ $person->id }})"

@@ -57,9 +57,6 @@
                     @php
                         $rank = $index + 1;
                         $isMe = auth()->check() && auth()->id() === $row->id;
-                        $handle = ! empty($row->username)
-                            ? '@'.$row->username
-                            : '@'.__('profile.username_fallback_prefix').$row->id;
                         $profileUrl = route('profile.show', $row->id);
                     @endphp
                     <li class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-3
@@ -80,7 +77,7 @@
                                 @endif
                             </a>
                             <div class="min-w-0 flex-1">
-                                <a href="{{ $profileUrl }}" class="block truncate text-sm font-semibold text-white/90 hover:underline">{{ $handle }}</a>
+                                <a href="{{ $profileUrl }}" class="block truncate text-sm font-semibold text-white/90 hover:underline">{{ $row->name }}</a>
                                 <div class="mt-0.5 text-[11px] text-white/45">
                                     @if ($tab === LeaderboardTable::TAB_CREATORS)
                                         {{ __('leaderboard.battles_count', ['count' => (int) ($row->battles_count ?? 0)]) }}
@@ -132,7 +129,7 @@
                         </span>
                     </div>
                     <div class="mt-1 text-[11px] text-white/45 truncate">
-                        {{ LeaderboardTable::handle($authUser) }}
+                        {{ $authUser->name }}
                         @if ($tab === LeaderboardTable::TAB_CREATORS && isset($me['battles_count']))
                             · {{ __('leaderboard.battles_count', ['count' => $me['battles_count']]) }}
                         @elseif ($tab === LeaderboardTable::TAB_ORACLES && isset($me['wins'], $me['total_votes']))
