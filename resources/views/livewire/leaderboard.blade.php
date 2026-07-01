@@ -60,6 +60,7 @@
                         $handle = ! empty($row->username)
                             ? '@'.$row->username
                             : '@'.__('profile.username_fallback_prefix').$row->id;
+                        $profileUrl = route('profile.show', $row->id);
                     @endphp
                     <li class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-3
                                {{ $isMe ? 'ring-1 ring-glow-cyan/30 bg-glow-cyan/5' : '' }}">
@@ -67,17 +68,19 @@
                             <span class="w-12 shrink-0 text-xs font-bold text-center {{ $rank <= 3 ? 'text-gold-500' : 'text-white/50' }}">
                                 {{ LeaderboardTable::rankBadge($rank) }}
                             </span>
-                            @if ($row->avatar_path)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($row->avatar_path) }}"
-                                     alt=""
-                                     class="h-10 w-10 shrink-0 rounded-full object-cover bg-navy-700"/>
-                            @else
-                                <span class="h-10 w-10 shrink-0 rounded-full bg-navy-700 flex items-center justify-center text-xs font-semibold text-white">
-                                    {{ mb_strtoupper(mb_substr($row->name, 0, 1)) }}
-                                </span>
-                            @endif
+                            <a href="{{ $profileUrl }}" class="shrink-0">
+                                @if ($row->avatar_path)
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($row->avatar_path) }}"
+                                         alt=""
+                                         class="h-10 w-10 rounded-full object-cover bg-navy-700"/>
+                                @else
+                                    <span class="h-10 w-10 rounded-full bg-navy-700 flex items-center justify-center text-xs font-semibold text-white">
+                                        {{ mb_strtoupper(mb_substr($row->name, 0, 1)) }}
+                                    </span>
+                                @endif
+                            </a>
                             <div class="min-w-0 flex-1">
-                                <div class="truncate text-sm font-semibold text-white/90">{{ $handle }}</div>
+                                <a href="{{ $profileUrl }}" class="block truncate text-sm font-semibold text-white/90 hover:underline">{{ $handle }}</a>
                                 <div class="mt-0.5 text-[11px] text-white/45">
                                     @if ($tab === LeaderboardTable::TAB_CREATORS)
                                         {{ __('leaderboard.battles_count', ['count' => (int) ($row->battles_count ?? 0)]) }}
