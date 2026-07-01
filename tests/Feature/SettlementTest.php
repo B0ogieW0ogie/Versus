@@ -207,6 +207,34 @@ class SettlementTest extends TestCase
         $this->assertSame(Battle::VOID_EMPTY, $settled->void_reason);
     }
 
+    public function test_last_shot_next_vote_wins_and_settles_immediately(): void
+    {
+        $a = User::factory()->create(['balance' => 1000]);
+        $b = User::factory()->create(['balance' => 1000]);
+
+        $battle = Battle::factory()->create();
+
+        ($this->vote())($a, $battle, Battle::SIDE_A, 100);
+        ($this->vote())($b, $battle, Battle::SIDE_B, 100);
+
+        $lastShot = $this->closeAndSettle($battle);
+        $this->assertSame(Battle::STATUS_LAST_SHOT, $lastShot->status);
+
+        // the guaranteed-victory shot
+        $c = User::factory()->create(['balance' => 1000]);
+        ($this->vote())($c, $lastShot->fresh(), Battle::SIDE_A, 50);
+
+        $battle->refresh();
+        $this->assertSame(Battle::STATUS_SETTLED, $battle->status);
+        $this->assertSame('A', $battle->winning_side);
+
+        // pool 250, winners share 88% = 220, side A weight 150 (a=100, c=50)
+        // a: 900 + round(220*100/150) = 900 + 146.67
+        // c: 950 + residue (220 - 146.67) = 950 + 73.33
+        $this->assertSame(1046.67, (float) $a->fresh()->balance);
+        $this->assertSame(1023.33, (float) $c->fresh()->balance);
+    }
+
     public function test_settle_due_command_closes_and_settles_expired_battles(): void
     {
         $a = User::factory()->create(['balance' => 1000]);

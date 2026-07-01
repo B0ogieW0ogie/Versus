@@ -30,6 +30,8 @@ class CastVoteAction
                 throw ValidationException::withMessages(['battle' => __('battle.battle_not_open')]);
             }
 
+            $wasLastShot = $battle->status === Battle::STATUS_LAST_SHOT;
+
             /** @var User $user */
             $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
 
@@ -79,6 +81,10 @@ class CastVoteAction
                 'battle_id' => $battle->id,
                 'meta' => ['side' => $side, 'vote_id' => $vote->id],
             ]);
+
+            if ($wasLastShot) {
+                app(SettleBattleAction::class)($battle);
+            }
 
             return $vote;
         });
