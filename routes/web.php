@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BattlePoolTotalController;
+use App\Http\Controllers\BattlePoolTotalsController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\BattleCreate;
 use App\Livewire\BattleIndex;
@@ -17,6 +18,7 @@ Route::get('/', BattleIndex::class)->name('home');
 Route::get('/battles', BattleIndex::class)->name('battles.index');
 Route::middleware(['auth', 'verified'])->get('/battles/create', BattleCreate::class)->name('battles.create');
 Route::get('/battles/{battle:slug}/pool-total', BattlePoolTotalController::class)->name('battles.pool-total');
+Route::get('/battles/pool-totals', BattlePoolTotalsController::class)->name('battles.pool-totals');
 Route::get('/battles/{battle:slug}', BattleShow::class)->name('battles.show');
 Route::get('/categories/{category:slug}', CategoryShow::class)->name('categories.show');
 Route::get('/leaderboard', Leaderboard::class)->name('leaderboard');
