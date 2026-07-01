@@ -48,7 +48,7 @@ class ConnectionsPage extends Component
 
         /** @var LengthAwarePaginator<int, User> $people */
         $people = $relation
-            ->select(['users.id', 'users.name', 'users.username', 'users.avatar_path'])
+            ->select(['users.id', 'users.name', 'users.username', 'users.avatar_path', 'users.is_admin'])
             ->orderBy('name')
             ->paginate(30);
 

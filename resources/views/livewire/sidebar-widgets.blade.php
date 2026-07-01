@@ -44,7 +44,7 @@
                         <span class="h-8 w-8 shrink-0 rounded-full bg-navy-700 flex items-center justify-center text-xs font-bold text-white">
                             {{ mb_strtoupper(mb_substr($p->name, 0, 1)) }}
                         </span>
-                        <span class="truncate text-sm text-white/90 group-hover:underline">{{ $p->name }}</span>
+                        <span class="truncate text-sm text-white/90 group-hover:underline"><x-user-name :user="$p" /></span>
                     </a>
                     <span class="shrink-0 text-xs text-white/60">
                         {{ number_format((float) $p->total_winnings, 0) }}

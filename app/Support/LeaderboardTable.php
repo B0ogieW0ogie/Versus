@@ -216,7 +216,7 @@ class LeaderboardTable
 
         $users = User::query()
             ->whereIn('id', $ranked->pluck('user_id'))
-            ->get(['id', 'name', 'username', 'avatar_path'])
+            ->get(['id', 'name', 'username', 'avatar_path', 'is_admin'])
             ->keyBy('id');
 
         return $ranked->map(function ($row) use ($users) {
@@ -225,6 +225,7 @@ class LeaderboardTable
             $row->name = $user !== null ? $user->name : '';
             $row->username = $user?->username;
             $row->avatar_path = $user?->avatar_path;
+            $row->is_admin = (bool) ($user?->is_admin);
             $row->metric_value = (float) $row->metric_value;
 
             return $row;

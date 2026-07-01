@@ -54,7 +54,7 @@ test('shows user name, handle, bio and follower stats', function () {
         ->get('/profile')
         ->assertSee('Vlad Basargin')
         ->assertSee('@vladbasargin')
-        ->assertSee(__('profile.title_architect'))
+        ->assertSee(__('profile.rank_newbie'))
         ->assertSee('Люблю спорить о футболе', escape: false)
         ->assertSee('2,450')
         ->assertSeeInOrder(['3', __('profile.subscribers'), '2', __('profile.following')]);
