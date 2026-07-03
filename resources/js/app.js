@@ -16,6 +16,7 @@ const PoolTicker = {
     _subs: new Map(), // battleId(number) -> Set<callback>
     _timer: null,
     _intervalMs: 5000,
+    _onVisibility: null,
 
     _url() {
         const meta = document.querySelector('meta[name="pool-totals-url"]');
@@ -56,12 +57,24 @@ const PoolTicker = {
             return;
         }
         this._timer = setInterval(() => this._tick(), this._intervalMs);
+        // Ticks are skipped while the tab is hidden, so fetch immediately on
+        // return — otherwise the number stays stale for up to a full interval.
+        this._onVisibility = () => {
+            if (!document.hidden) {
+                this._tick();
+            }
+        };
+        document.addEventListener('visibilitychange', this._onVisibility);
     },
 
     _stop() {
         if (this._timer) {
             clearInterval(this._timer);
             this._timer = null;
+        }
+        if (this._onVisibility) {
+            document.removeEventListener('visibilitychange', this._onVisibility);
+            this._onVisibility = null;
         }
     },
 
@@ -182,11 +195,16 @@ document.addEventListener('alpine:init', () => {
 
         onUpdate(total) {
             const next = Math.max(0, Number(total) || 0);
-            if (Math.round(next) === Math.round(this.amount)) {
+            if (next === this.amount) {
                 return;
             }
+            // Bump only when the rendered string changes: compact format has
+            // 0.1k granularity, so a small stake must not flash "no change".
+            const before = this.display;
             this.amount = next;
-            this.$nextTick(() => bumpPoolElement(this.$refs.value));
+            if (this.display !== before) {
+                this.$nextTick(() => bumpPoolElement(this.$refs.value));
+            }
         },
     }));
 
@@ -338,6 +356,7 @@ document.addEventListener('alpine:init', () => {
         err: null,
         errTimer: null,
         _poolPollTimer: null,
+        _onVisibility: null,
 
         init() {
             this.$watch('totalPool', (value, oldValue) => {
@@ -352,8 +371,20 @@ document.addEventListener('alpine:init', () => {
 
             if (this.poolPollUrl) {
                 this._poolPollTimer = setInterval(() => {
+                    if (document.hidden) {
+                        return;
+                    }
                     this.pollTotalPool();
                 }, 5000);
+                // Same policy as PoolTicker: no background polling, catch up
+                // the moment the tab becomes visible so the update (and its
+                // flash) happens while the user is actually looking.
+                this._onVisibility = () => {
+                    if (!document.hidden) {
+                        this.pollTotalPool();
+                    }
+                };
+                document.addEventListener('visibilitychange', this._onVisibility);
             }
         },
 
@@ -361,6 +392,10 @@ document.addEventListener('alpine:init', () => {
             if (this._poolPollTimer) {
                 clearInterval(this._poolPollTimer);
                 this._poolPollTimer = null;
+            }
+            if (this._onVisibility) {
+                document.removeEventListener('visibilitychange', this._onVisibility);
+                this._onVisibility = null;
             }
         },
 
