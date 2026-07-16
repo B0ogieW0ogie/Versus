@@ -8,7 +8,7 @@
          },
          ding() {
              if (this.soundEnabled) {
-                 new Audio('{{ asset('sounds/notification.wav') }}').play().catch(() => {});
+                 new Audio('{{ asset('sounds/notification.mp3') }}').play().catch(() => {});
              }
          },
      }"
