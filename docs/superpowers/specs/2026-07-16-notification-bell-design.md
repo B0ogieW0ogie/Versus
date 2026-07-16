@@ -57,8 +57,11 @@ about work that may roll back).
   plain array of `{user_id, result, amount}` per voter (one entry per user even
   if they cast several votes: sum the amounts) plus `{referrer_id, referee_name,
   amount}` for each referral payout actually paid (> 0). After the transaction
-  returns, send `BattleSettled` / `ReferralPayout` from that array. Tie →
-  everyone gets `refunded` with their total stake back.
+  returns, send `BattleSettled` / `ReferralPayout` from that array — but only
+  when the battle actually ended `STATUS_SETTLED`. A tie sends the battle to
+  `STATUS_LAST_SHOT` (not settled) → **no notifications**. The `refunded`
+  result covers the stomp-void and void-refund paths, with the user's total
+  stake back.
 - **`PostCommentAction`** — if the new comment has a parent: notify the unique
   set of {parent comment author, `reply_to_user`} minus the actor with
   `CommentReplied`. Top-level comments notify nobody.
