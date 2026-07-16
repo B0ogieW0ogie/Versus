@@ -5,7 +5,8 @@ namespace Tests\Feature\Auth;
 use App\Http\Middleware\CaptureReferralCode;
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\QueuedVerifyEmail;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -37,7 +38,33 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('verification.notice', absolute: false));
-        Notification::assertSentTo($user, VerifyEmail::class);
+        Notification::assertSentTo($user, QueuedVerifyEmail::class);
+    }
+
+    public function test_verification_email_is_queued(): void
+    {
+        Notification::fake();
+
+        $this->post('/register', [
+            'email' => 'queued@example.com',
+            'password' => self::VALID_PASSWORD,
+            'password_confirmation' => self::VALID_PASSWORD,
+        ]);
+
+        $user = User::where('email', 'queued@example.com')->firstOrFail();
+
+        Notification::assertSentTo($user, QueuedVerifyEmail::class, function ($notification) {
+            return $notification instanceof ShouldQueue;
+        });
+    }
+
+    public function test_registration_is_rate_limited(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/register', [])->assertStatus(302);
+        }
+
+        $this->post('/register', [])->assertStatus(429);
     }
 
     public function test_new_user_does_not_receive_signup_bonus_before_email_verification(): void
