@@ -109,7 +109,7 @@
 
         {{-- Tab bar --}}
         <div class="mt-4 flex items-end gap-3 sm:gap-4 border-b border-white/5 overflow-x-auto">
-            @foreach ($isOwnProfile ? ['activity', 'creation', 'comments', 'referrals'] : ['activity', 'creation', 'comments'] as $key)
+            @foreach ($isOwnProfile ? ['activity', 'creation', 'comments', 'referrals'] : ['creation', 'comments'] as $key)
                 <button type="button"
                         wire:click="selectTab('{{ $key }}')"
                         class="shrink-0 whitespace-nowrap pb-2 text-xs font-semibold tracking-wide transition

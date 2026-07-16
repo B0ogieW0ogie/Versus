@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -133,6 +134,40 @@ test('creation tab shows empty state when user created no battles', function () 
         ->get('/profile?tab=creation')
         ->assertSee(__('profile.created_empty'));
 });
+
+test('another user\'s betting activity is private', function () {
+    $viewer = User::factory()->create();
+    $author = User::factory()->create();
+
+    // A battle the author bet on but did not create — only ever reachable via the activity tab.
+    $battle = Battle::factory()->create([
+        'title' => 'SecretPickA vs SecretPickB',
+        'side_a_label' => 'SecretPickA',
+        'side_b_label' => 'SecretPickB',
+    ]);
+    Vote::factory()->create([
+        'user_id' => $author->id,
+        'battle_id' => $battle->id,
+        'side' => Battle::SIDE_A,
+        'amount' => 30000,
+    ]);
+
+    $this->actingAs($viewer)
+        ->get(route('profile.show', $author).'?tab=activity')
+        ->assertOk()
+        ->assertDontSee('SecretPickA')
+        ->assertDontSee(__('profile.tab_activity'));
+});
+
+test('userId is locked against client tampering', function () {
+    $me = User::factory()->create();
+    $other = User::factory()->create();
+
+    Livewire::actingAs($me)
+        ->test(ProfilePage::class)
+        ->assertSet('userId', $me->id)
+        ->set('userId', $other->id);
+})->throws(CannotUpdateLockedPropertyException::class);
 
 test('creation tab on another profile shows that user\'s battles', function () {
     $viewer = User::factory()->create();

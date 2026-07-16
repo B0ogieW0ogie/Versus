@@ -11,8 +11,10 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -23,10 +25,18 @@ class ProfilePage extends Component
 
     private const TABS = ['activity', 'creation', 'comments', 'referrals'];
 
+    /** Tabs that expose the owner's private data and are never shown to other viewers. */
+    private const PRIVATE_TABS = ['activity', 'referrals'];
+
     #[Url]
     public string $tab = 'activity';
 
-    /** Id of the profile being viewed (defaults to the authenticated user). */
+    /**
+     * Id of the profile being viewed (defaults to the authenticated user).
+     * Locked so a client cannot swap it via a Livewire update to reach another
+     * user's private tabs — mount() is the only place it may be set.
+     */
+    #[Locked]
     public int $userId;
 
     public function mount(?User $user = null): void
@@ -34,13 +44,13 @@ class ProfilePage extends Component
         $this->userId = $user !== null ? $user->id : (int) Auth::id();
 
         if (! in_array($this->tab, self::TABS, true) || ! $this->tabIsAllowed($this->tab)) {
-            $this->tab = 'activity';
+            $this->tab = $this->defaultTab();
         }
     }
 
     public function selectTab(string $tab): void
     {
-        $this->tab = (in_array($tab, self::TABS, true) && $this->tabIsAllowed($tab)) ? $tab : 'activity';
+        $this->tab = (in_array($tab, self::TABS, true) && $this->tabIsAllowed($tab)) ? $tab : $this->defaultTab();
         $this->resetPage();
     }
 
@@ -49,10 +59,16 @@ class ProfilePage extends Component
         return $this->userId === (int) Auth::id();
     }
 
-    /** Referrals are private to the profile owner. */
+    /** Activity (bets) and referrals are private to the profile owner. */
     private function tabIsAllowed(string $tab): bool
     {
-        return $tab !== 'referrals' || $this->isOwnProfile();
+        return ! in_array($tab, self::PRIVATE_TABS, true) || $this->isOwnProfile();
+    }
+
+    /** First tab a viewer is allowed to see: the owner lands on activity, others on creation. */
+    private function defaultTab(): string
+    {
+        return $this->isOwnProfile() ? 'activity' : 'creation';
     }
 
     public function toggleFollow(ToggleFollowAction $action): void
@@ -125,7 +141,8 @@ class ProfilePage extends Component
             'isFollowing' => ! $isOwnProfile && $viewer->isFollowing($user),
             'followersCount' => $user->followers()->count(),
             'followingCount' => $user->following()->count(),
-            'votes' => $this->loadVotes($user),
+            // Activity is owner-only; never query another user's bets.
+            'votes' => $isOwnProfile ? $this->loadVotes($user) : new Paginator([], 0, 20),
             'created' => $this->loadCreatedBattles($user),
             'comments' => $this->loadComments($user),
             // Referral details are only ever rendered on the owner's own profile.
