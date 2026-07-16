@@ -49,7 +49,7 @@
                 @if ($replies->isNotEmpty())
                     <div class="ml-8 pb-2 sm:ml-12">
                         @if ($this->isThreadExpanded($comment->id))
-                            <div class="mt-1 space-y-0 border-l border-white/5 pl-3 sm:pl-4">
+                            <div data-thread-indent class="mt-1 space-y-0 border-l border-white/5 pl-3 sm:pl-4">
                                 @foreach ($replies as $reply)
                                     @include('components.comment-thread.item', ['comment' => $reply, 'battle' => $battle, 'canStake' => $canStake])
                                 @endforeach
