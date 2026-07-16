@@ -87,6 +87,8 @@ services:
 
   queue-worker:
     container_name: versus_queue
+    # Same runtime as php-fpm — reuse its image instead of building a third copy.
+    image: versus-php:latest
     build:
       context: ./.docker/php
     restart: unless-stopped
