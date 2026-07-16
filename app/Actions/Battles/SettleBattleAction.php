@@ -6,14 +6,26 @@ use App\Models\Battle;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vote;
+use App\Notifications\BattleSettled;
+use App\Notifications\ReferralPayout;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 class SettleBattleAction
 {
+    /** @var array<int, array{result: string, amount: float}> */
+    private array $voterOutcomes = [];
+
+    /** @var list<array{referrer_id: int, referee_id: int, amount: float}> */
+    private array $referralRewards = [];
+
     public function __invoke(Battle $battle): Battle
     {
-        return DB::transaction(function () use ($battle): Battle {
+        $this->voterOutcomes = [];
+        $this->referralRewards = [];
+
+        $settled = DB::transaction(function () use ($battle): Battle {
             /** @var Battle $battle */
             $battle = Battle::whereKey($battle->id)->lockForUpdate()->firstOrFail();
 
@@ -130,8 +142,22 @@ class SettleBattleAction
                     'meta' => ['vote_id' => $vote->id],
                 ]);
 
+                $this->recordOutcome($winner->id, BattleSettled::RESULT_WON, $payout);
+
                 if ($vote->referrer_id !== null && $vote->referrer_id !== $winner->id) {
                     $this->payReferral($vote->referrer_id, $winner->id, $payout, $battle->id);
+                }
+            }
+
+            $losingSide = $winningSide === Battle::SIDE_A ? Battle::SIDE_B : Battle::SIDE_A;
+            $loserIds = Vote::where('battle_id', $battle->id)
+                ->where('side', $losingSide)
+                ->distinct()
+                ->pluck('user_id');
+
+            foreach ($loserIds as $loserId) {
+                if (! isset($this->voterOutcomes[$loserId])) {
+                    $this->voterOutcomes[$loserId] = ['result' => BattleSettled::RESULT_LOST, 'amount' => 0.0];
                 }
             }
 
@@ -143,6 +169,10 @@ class SettleBattleAction
 
             return $battle;
         });
+
+        $this->sendNotifications($settled);
+
+        return $settled;
     }
 
     private function decideWinner(float $weightA, float $weightB): ?string
@@ -176,6 +206,8 @@ class SettleBattleAction
                 'battle_id' => $battle->id,
                 'meta' => ['vote_id' => $vote->id, 'reason' => $reason],
             ]);
+
+            $this->recordOutcome($user->id, BattleSettled::RESULT_REFUNDED, $amount);
         }
     }
 
@@ -211,6 +243,12 @@ class SettleBattleAction
             'battle_id' => $battleId,
             'meta' => ['from_user_id' => $winnerId],
         ]);
+
+        $this->referralRewards[] = [
+            'referrer_id' => $referrer->id,
+            'referee_id' => $winnerId,
+            'amount' => $reward,
+        ];
     }
 
     private function systemCredit(string $type, float $amount, int $battleId): void
@@ -254,5 +292,45 @@ class SettleBattleAction
     private function round(float $value): float
     {
         return round($value, 2);
+    }
+
+    private function recordOutcome(int $userId, string $result, float $amount): void
+    {
+        if (! isset($this->voterOutcomes[$userId])) {
+            $this->voterOutcomes[$userId] = ['result' => $result, 'amount' => 0.0];
+        }
+
+        $this->voterOutcomes[$userId]['amount'] = $this->round($this->voterOutcomes[$userId]['amount'] + $amount);
+    }
+
+    private function sendNotifications(Battle $battle): void
+    {
+        if ($battle->status !== Battle::STATUS_SETTLED) {
+            return;
+        }
+
+        try {
+            $userIds = array_unique(array_merge(
+                array_keys($this->voterOutcomes),
+                array_column($this->referralRewards, 'referrer_id'),
+                array_column($this->referralRewards, 'referee_id'),
+            ));
+            $users = User::whereIn('id', $userIds)->get()->keyBy('id');
+
+            foreach ($this->voterOutcomes as $userId => $outcome) {
+                $users->get($userId)?->notify(
+                    new BattleSettled($battle, $outcome['result'], $outcome['amount'])
+                );
+            }
+
+            foreach ($this->referralRewards as $reward) {
+                $referee = $users->get($reward['referee_id']);
+                $users->get($reward['referrer_id'])?->notify(
+                    new ReferralPayout($battle, $referee->name ?? '', $reward['amount'])
+                );
+            }
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 }
