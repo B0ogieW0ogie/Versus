@@ -4,6 +4,7 @@ RUN apk add --no-cache openssl
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY default.conf /etc/nginx/conf.d/default.conf
+COPY cloudflare-realip.conf /etc/nginx/conf.d/cloudflare-realip.conf
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
