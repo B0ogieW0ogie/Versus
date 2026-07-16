@@ -56,10 +56,10 @@
 
 <article
     id="comment-{{ $comment->id }}"
-    class="group"
+    class="group py-4"
     wire:key="comment-{{ $comment->id }}"
 >
-    <div class="flex gap-3 py-4">
+    <div class="flex gap-3">
         <a href="{{ $profileUrl }}" class="shrink-0 pt-0.5">
             @if ($comment->user->avatarUrl())
                 <img src="{{ $comment->user->avatarUrl() }}" alt=""
@@ -127,28 +127,6 @@
                     @endauth
                 @endif
 
-                @auth
-                    @if (! $isDeleted && $replyingToCommentId === $comment->id)
-                        <form wire:submit="comment" class="mt-3">
-                            <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-[#141416] px-3 py-2">
-                                <input wire:model="commentBody" type="text" maxlength="500" autofocus
-                                       placeholder="{{ __('comments.reply_placeholder', ['name' => $replyToUserName]) }}"
-                                       class="min-w-0 flex-1 border-0 bg-transparent text-sm text-white placeholder:text-white/35 focus:ring-0">
-                                <button type="button" wire:click="cancelReply"
-                                        class="shrink-0 text-xs text-white/45 hover:text-white/70">
-                                    {{ __('comments.cancel') }}
-                                </button>
-                                <button type="submit"
-                                        class="shrink-0 text-xs font-semibold text-[#71aaeb] hover:text-[#8bb8f0]">
-                                    {{ __('comments.post') }}
-                                </button>
-                            </div>
-                            @error('commentBody')
-                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
-                            @enderror
-                        </form>
-                    @endif
-                @endauth
             </div>
 
             @if ($showSupportButton || $showLikeButton || (! $isDeleted && $comment->likes_count > 0 && ! auth()->check()))
@@ -198,4 +176,27 @@
             @endif
         </div>
     </div>
+
+    @auth
+        @if (! $isDeleted && $replyingToCommentId === $comment->id)
+            <form wire:submit="comment" class="ml-12 mt-3">
+                <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-[#141416] px-3 py-2">
+                    <input wire:model="commentBody" type="text" maxlength="500" autofocus
+                           placeholder="{{ __('comments.reply_placeholder', ['name' => $replyToUserName]) }}"
+                           class="min-w-0 flex-1 border-0 bg-transparent text-sm text-white placeholder:text-white/35 focus:ring-0">
+                    <button type="button" wire:click="cancelReply"
+                            class="shrink-0 text-xs text-white/45 hover:text-white/70">
+                        {{ __('comments.cancel') }}
+                    </button>
+                    <button type="submit"
+                            class="shrink-0 text-xs font-semibold text-[#71aaeb] hover:text-[#8bb8f0]">
+                        {{ __('comments.post') }}
+                    </button>
+                </div>
+                @error('commentBody')
+                    <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
+                @enderror
+            </form>
+        @endif
+    @endauth
 </article>
