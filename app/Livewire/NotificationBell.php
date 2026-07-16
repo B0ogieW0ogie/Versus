@@ -26,9 +26,8 @@ class NotificationBell extends Component
         $this->open = ! $this->open;
 
         if ($this->open) {
-            $unread = $this->user()->unreadNotifications;
-            $this->freshIds = $unread->pluck('id')->all();
-            $unread->markAsRead();
+            $this->freshIds = $this->user()->unreadNotifications()->pluck('id')->all();
+            $this->user()->unreadNotifications()->update(['read_at' => now()]);
             $this->unreadCount = 0;
         } else {
             $this->freshIds = [];
@@ -59,7 +58,9 @@ class NotificationBell extends Component
                 'url' => $this->url($notification),
                 'time' => $notification->created_at?->diffForHumans() ?? '',
                 'fresh' => in_array($notification->id, $this->freshIds, true),
-            ]);
+            ])
+            ->filter(fn (array $item): bool => $item['message'] !== '')
+            ->values();
 
         return view('livewire.notification-bell', ['items' => $items]);
     }

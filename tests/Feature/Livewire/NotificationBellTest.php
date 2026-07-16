@@ -4,8 +4,12 @@ namespace Tests\Feature\Livewire;
 
 use App\Livewire\NotificationBell;
 use App\Models\Battle;
+use App\Models\Comment;
 use App\Models\User;
 use App\Notifications\BattleSettled;
+use App\Notifications\CommentLiked;
+use App\Notifications\CommentReplied;
+use App\Notifications\ReferralPayout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -72,5 +76,46 @@ class NotificationBellTest extends TestCase
         $this->actingAs($user)->get('/')->assertSeeLivewire(NotificationBell::class);
         auth()->logout();
         $this->get('/')->assertDontSeeLivewire(NotificationBell::class);
+    }
+
+    public function test_dropdown_renders_all_notification_types_with_expected_text(): void
+    {
+        $author = User::factory()->create();
+        $actor = User::factory()->create(['name' => 'Bob']);
+        $battle = Battle::factory()->create();
+        $comment = Comment::create([
+            'user_id' => $author->id,
+            'battle_id' => $battle->id,
+            'body' => 'hello',
+            'side' => Battle::SIDE_A,
+        ]);
+
+        $author->notify(new BattleSettled($battle, BattleSettled::RESULT_WON, 42.0));
+        $author->notify(new ReferralPayout($battle, 'Alice', 4.2));
+        $author->notify(new CommentReplied($battle, $comment, $actor));
+        $author->notify(new CommentLiked($battle, $comment, $actor));
+
+        Livewire::actingAs($author)
+            ->test(NotificationBell::class)
+            ->call('toggle')
+            ->assertSee('You won 42.00 tokens')
+            ->assertSee('Referral bonus: 4.20 tokens from Alice')
+            ->assertSee('Bob replied to your comment')
+            ->assertSee('Bob liked your comment')
+            ->assertSee('#comment-'.$comment->id, false);
+    }
+
+    public function test_badge_caps_display_at_99_plus(): void
+    {
+        $user = User::factory()->create();
+
+        for ($i = 0; $i < 105; $i++) {
+            $this->notify($user);
+        }
+
+        Livewire::actingAs($user)
+            ->test(NotificationBell::class)
+            ->assertSet('unreadCount', 105)
+            ->assertSee('99+');
     }
 }
