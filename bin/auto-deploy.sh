@@ -38,6 +38,13 @@ fi
     if echo "$CHANGED" | grep -qE "^(config|routes|app)/"; then
         echo "→ optimize:clear"
         docker compose exec -T php php artisan optimize:clear >/dev/null
+        echo "→ queue:restart"
+        docker compose exec -T php php artisan queue:restart >/dev/null
+    fi
+
+    if echo "$CHANGED" | grep -qx "docker-compose.yml"; then
+        echo "→ compose up -d"
+        docker compose up -d --remove-orphans
     fi
 
     echo "=== done ==="

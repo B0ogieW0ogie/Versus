@@ -85,6 +85,20 @@ services:
     networks:
       - versus
 
+  queue-worker:
+    container_name: versus_queue
+    build:
+      context: ./.docker/php
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3 --max-time=3600
+    volumes:
+      - ./:/var/www/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - versus
+
   postgres:
     container_name: versus_pg
     image: postgres:16-alpine
