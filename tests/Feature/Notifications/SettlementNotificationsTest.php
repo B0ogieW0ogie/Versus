@@ -104,7 +104,7 @@ class SettlementNotificationsTest extends TestCase
         });
     }
 
-    public function test_tie_goes_to_last_shot_and_sends_nothing(): void
+    public function test_tie_goes_to_last_shot_and_sends_no_settlement_notifications(): void
     {
         Notification::fake();
 
@@ -118,7 +118,11 @@ class SettlementNotificationsTest extends TestCase
         $this->closeAndSettle($battle);
 
         $this->assertSame(Battle::STATUS_LAST_SHOT, $battle->fresh()->status);
-        Notification::assertNothingSent();
+
+        // A tie pays nobody yet — the LAST SHOT call-to-arms is the only thing
+        // that goes out (see LastShotNotificationsTest).
+        Notification::assertNotSentTo([$a, $b], BattleSettled::class);
+        Notification::assertNotSentTo([$a, $b], ReferralPayout::class);
     }
 
     public function test_referrer_is_notified_about_referral_payout(): void

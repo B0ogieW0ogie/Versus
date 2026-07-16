@@ -7,6 +7,7 @@ use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\User;
 use App\Notifications\ArgumentSupported;
+use App\Notifications\BattleLastShot;
 use App\Notifications\BattleSettled;
 use App\Notifications\CommentLiked;
 use App\Notifications\CommentReplied;
@@ -96,10 +97,12 @@ class NotificationBellTest extends TestCase
         $author->notify(new CommentReplied($battle, $comment, $actor));
         $author->notify(new CommentLiked($battle, $comment, $actor));
         $author->notify(new ArgumentSupported($battle, $comment, $actor));
+        $author->notify(new BattleLastShot($battle));
 
         Livewire::actingAs($author)
             ->test(NotificationBell::class)
             ->call('toggle')
+            ->assertSee('LAST SHOT in "'.$battle->title.'"')
             ->assertSee('You won 42.00 tokens')
             ->assertSee('Referral bonus: 4.20 tokens from Alice')
             ->assertSee('Bob replied to your comment')

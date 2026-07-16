@@ -6,6 +6,7 @@ use App\Models\Battle;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Vote;
+use App\Notifications\BattleLastShot;
 use App\Notifications\BattleSettled;
 use App\Notifications\ReferralPayout;
 use Illuminate\Support\Facades\DB;
@@ -20,10 +21,14 @@ class SettleBattleAction
     /** @var list<array{referrer_id: int, referee_id: int, amount: float}> */
     private array $referralRewards = [];
 
+    /** @var list<int> */
+    private array $lastShotVoterIds = [];
+
     public function __invoke(Battle $battle): Battle
     {
         $this->voterOutcomes = [];
         $this->referralRewards = [];
+        $this->lastShotVoterIds = [];
 
         $settled = DB::transaction(function () use ($battle): Battle {
             /** @var Battle $battle */
@@ -69,6 +74,11 @@ class SettleBattleAction
             }
 
             if ($weightA === $weightB && $weightA > 0.0) {
+                $this->lastShotVoterIds = Vote::where('battle_id', $battle->id)
+                    ->distinct()
+                    ->pluck('user_id')
+                    ->all();
+
                 $battle->status = Battle::STATUS_LAST_SHOT;
                 $battle->save();
 
@@ -305,6 +315,12 @@ class SettleBattleAction
 
     private function sendNotifications(Battle $battle): void
     {
+        if ($battle->status === Battle::STATUS_LAST_SHOT) {
+            $this->sendLastShotNotifications($battle);
+
+            return;
+        }
+
         if ($battle->status !== Battle::STATUS_SETTLED) {
             return;
         }
@@ -328,6 +344,21 @@ class SettleBattleAction
                 $users->get($reward['referrer_id'])?->notify(
                     new ReferralPayout($battle, $referee->name ?? '', $reward['amount'])
                 );
+            }
+        } catch (Throwable $e) {
+            report($e);
+        }
+    }
+
+    private function sendLastShotNotifications(Battle $battle): void
+    {
+        if ($this->lastShotVoterIds === []) {
+            return;
+        }
+
+        try {
+            foreach (User::whereIn('id', $this->lastShotVoterIds)->get() as $staker) {
+                $staker->notify(new BattleLastShot($battle));
             }
         } catch (Throwable $e) {
             report($e);

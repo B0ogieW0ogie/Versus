@@ -10,6 +10,7 @@ return [
     'comment_replied' => ':name ответил(а) на ваш комментарий в баттле «:battle».',
     'comment_liked' => ':name оценил(а) ваш комментарий в баттле «:battle».',
     'argument_supported' => ':name согласился(ась) с вашим аргументом в баттле «:battle».',
+    'battle_last_shot' => 'LAST SHOT в баттле «:battle» — ставки равны, следующая ставка решает исход.',
     'sound_on' => 'Звук включён',
     'sound_off' => 'Звук выключен',
 ];

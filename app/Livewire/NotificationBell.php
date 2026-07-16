@@ -99,6 +99,7 @@ class NotificationBell extends Component
                 'name' => (string) $data['actor_name'],
                 'battle' => $battle,
             ]),
+            'BattleLastShot' => __('notifications.battle_last_shot', ['battle' => $battle]),
             default => '',
         };
     }
