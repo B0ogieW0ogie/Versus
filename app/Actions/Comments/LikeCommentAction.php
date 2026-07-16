@@ -7,8 +7,10 @@ use App\Models\Comment;
 use App\Models\CommentLike;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Notifications\CommentLiked;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class LikeCommentAction
 {
@@ -23,7 +25,7 @@ class LikeCommentAction
             throw ValidationException::withMessages(['comment' => __('comments.cannot_like_without_side')]);
         }
 
-        return DB::transaction(function () use ($user, $comment, $battle) {
+        $result = DB::transaction(function () use ($user, $comment, $battle) {
             $existing = CommentLike::query()
                 ->where('user_id', $user->id)
                 ->where('comment_id', $comment->id)
@@ -102,6 +104,16 @@ class LikeCommentAction
                 'likes_count' => $count,
             ];
         });
+
+        if (! $result['already_liked'] && $comment->user_id !== $user->id) {
+            try {
+                $comment->user?->notify(new CommentLiked($battle, $comment, $user));
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        return $result;
     }
 
     private function round(float $value): float
