@@ -68,10 +68,27 @@ $comment->user->notifications()
 ```
 
 Scoped to the author's `notifiable_id` (indexed by the stock morph index), so
-this is a small scan over one user's rows. Laravel's JSON `where` compiles on
-both Postgres (dev/prod) and SQLite (tests). Accepted consequence: if
-notification pruning is ever added, a repeat support after a prune notifies
-again — the desired behaviour anyway.
+this is a small scan over one user's rows. Accepted consequence: if notification
+pruning is ever added, a repeat support after a prune notifies again — the
+desired behaviour anyway.
+
+### The `data` column must be `json`, not `text`
+
+Laravel's stock notifications table declares `data` as **text** — the framework
+never queries into it. This query does, and Postgres has no `->>` operator for a
+text column, so it raises `SQLSTATE[42883]` and, because the send is
+best-effort, the notification silently never arrives. Migration
+`2026_07_16_120000_change_notifications_data_to_json` alters the column
+(`USING data::json`), guarded to `pgsql` — SQLite applies `json_extract` to text
+happily and needs no change.
+
+The create-table migration is **not** edited in place: it already shipped to
+origin/main and ran on production, so an in-place edit would never execute there.
+
+**This class of bug is invisible to the test suite.** Tests run on SQLite, where
+the JSON query works against a text column; the failure only exists on Postgres.
+The bug was caught by exercising the feature in a browser against the dev
+database, and that is the only gate that can catch the next one.
 
 ## Livewire — `app/Livewire/CommentThread.php`
 

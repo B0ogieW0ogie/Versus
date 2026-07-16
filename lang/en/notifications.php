@@ -9,6 +9,7 @@ return [
     'referral_payout' => 'Referral bonus: :amount tokens from :name\'s win in ":battle".',
     'comment_replied' => ':name replied to your comment in ":battle".',
     'comment_liked' => ':name liked your comment in ":battle".',
+    'argument_supported' => ':name agreed with your argument in ":battle".',
     'sound_on' => 'Sound on',
     'sound_off' => 'Sound off',
 ];

@@ -6,6 +6,7 @@ use App\Livewire\NotificationBell;
 use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\User;
+use App\Notifications\ArgumentSupported;
 use App\Notifications\BattleSettled;
 use App\Notifications\CommentLiked;
 use App\Notifications\CommentReplied;
@@ -94,6 +95,7 @@ class NotificationBellTest extends TestCase
         $author->notify(new ReferralPayout($battle, 'Alice', 4.2));
         $author->notify(new CommentReplied($battle, $comment, $actor));
         $author->notify(new CommentLiked($battle, $comment, $actor));
+        $author->notify(new ArgumentSupported($battle, $comment, $actor));
 
         Livewire::actingAs($author)
             ->test(NotificationBell::class)
@@ -102,6 +104,7 @@ class NotificationBellTest extends TestCase
             ->assertSee('Referral bonus: 4.20 tokens from Alice')
             ->assertSee('Bob replied to your comment')
             ->assertSee('Bob liked your comment')
+            ->assertSee('Bob agreed with your argument')
             ->assertSee('#comment-'.$comment->id, false);
     }
 

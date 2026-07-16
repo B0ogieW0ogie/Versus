@@ -95,6 +95,10 @@ class NotificationBell extends Component
                 'name' => (string) $data['actor_name'],
                 'battle' => $battle,
             ]),
+            'ArgumentSupported' => __('notifications.argument_supported', [
+                'name' => (string) $data['actor_name'],
+                'battle' => $battle,
+            ]),
             default => '',
         };
     }

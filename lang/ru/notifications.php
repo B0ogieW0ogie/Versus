@@ -9,6 +9,7 @@ return [
     'referral_payout' => 'Реферальный бонус :amount токенов — :name выиграл в баттле «:battle».',
     'comment_replied' => ':name ответил(а) на ваш комментарий в баттле «:battle».',
     'comment_liked' => ':name оценил(а) ваш комментарий в баттле «:battle».',
+    'argument_supported' => ':name согласился(ась) с вашим аргументом в баттле «:battle».',
     'sound_on' => 'Звук включён',
     'sound_off' => 'Звук выключен',
 ];

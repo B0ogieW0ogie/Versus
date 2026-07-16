@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Actions\Battles\CastVoteAction;
 use App\Actions\Comments\DeleteCommentAction;
 use App\Actions\Comments\LikeCommentAction;
 use App\Actions\Comments\PostCommentAction;
+use App\Actions\Comments\SupportCommentAction;
 use App\Models\Battle;
 use App\Models\Comment;
 use App\Models\CommentLike;
@@ -44,7 +44,7 @@ class CommentThread extends Component
         $this->battle->refresh();
     }
 
-    public function supportComment(int $commentId, int $amount, CastVoteAction $action): void
+    public function supportComment(int $commentId, int $amount, SupportCommentAction $action): void
     {
         if (! Auth::check()) {
             $this->redirectRoute('login');
@@ -58,7 +58,7 @@ class CommentThread extends Component
         }
 
         try {
-            $action(Auth::user(), $this->battle, $comment->side, (float) $amount);
+            $action(Auth::user(), $this->battle, $comment, (float) $amount);
             $this->afterStakeSuccess((int) $amount);
         } catch (ValidationException $e) {
             $this->surfaceVoteErrors($e);
