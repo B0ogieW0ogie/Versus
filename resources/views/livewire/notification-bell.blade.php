@@ -1,5 +1,5 @@
 <div class="relative"
-     wire:poll.visible.60s="refreshCount"
+     wire:poll.visible.15s="refreshCount"
      x-data="{
          soundEnabled: (localStorage.getItem('versus_notification_sound') ?? '1') === '1',
          toggleSound() {
@@ -32,7 +32,8 @@
     </button>
 
     @if ($open)
-        <div class="absolute right-0 mt-2 w-80 rounded-xl bg-navy-800 border border-white/10 shadow-xl z-50 overflow-hidden">
+        <div class="fixed top-[4.5rem] inset-x-3 sm:absolute sm:top-auto sm:inset-x-auto sm:right-0 sm:mt-2 sm:w-80
+                    rounded-xl bg-navy-800 border border-white/10 shadow-xl z-50 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-2.5 border-b border-white/10">
                 <span class="text-sm font-semibold text-white">{{ __('notifications.title') }}</span>
                 <button type="button"

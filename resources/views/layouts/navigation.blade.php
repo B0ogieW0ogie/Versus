@@ -44,11 +44,11 @@
                 </div>
 
                 @auth
-                    <div class="hidden sm:flex items-center gap-2">
+                    <div class="flex items-center gap-2">
                         <livewire:notification-bell />
                         <button type="button"
                                 title="{{ __('sidebar.coming_soon') }}"
-                                class="p-2 rounded-full text-white/60 hover:text-white hover:bg-white/5 transition"
+                                class="hidden sm:inline-flex p-2 rounded-full text-white/60 hover:text-white hover:bg-white/5 transition"
                                 aria-label="Messages">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                  stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
