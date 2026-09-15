@@ -146,7 +146,7 @@ class FeedService
      */
     private function argueEvents(?array $actorIds, int $viewerId, ?CarbonInterface $before, int $limit): Collection
     {
-        $query = Comment::query()->with(['user', 'battle.category']);
+        $query = Comment::query()->whereNotNull('battle_id')->with(['user', 'battle.category']);
         $query = $this->applyActor($query, $actorIds, 'user_id', $viewerId);
 
         if ($before !== null) {

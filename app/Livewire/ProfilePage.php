@@ -223,6 +223,7 @@ class ProfilePage extends Component
     {
         return Comment::query()
             ->where('user_id', $user->id)
+            ->whereNotNull('battle_id')
             ->with(['battle:id,slug,title'])
             ->latest()
             ->paginate(20);

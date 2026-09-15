@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 
-#[Fillable(['user_id', 'battle_id', 'parent_id', 'reply_to_user_id', 'body', 'side'])]
+#[Fillable(['user_id', 'battle_id', 'challenge_entry_id', 'parent_id', 'reply_to_user_id', 'body', 'side'])]
 class Comment extends Model
 {
     /** @use HasFactory<CommentFactory> */
@@ -32,6 +32,14 @@ class Comment extends Model
     public function battle(): BelongsTo
     {
         return $this->belongsTo(Battle::class);
+    }
+
+    /**
+     * @return BelongsTo<ChallengeEntry, $this>
+     */
+    public function entry(): BelongsTo
+    {
+        return $this->belongsTo(ChallengeEntry::class, 'challenge_entry_id');
     }
 
     /**

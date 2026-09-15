@@ -40,7 +40,7 @@ recording starts once challenges ship.
 
 Defaults: video ≤ 60 s, vertical 9:16, transcoded to 720p H.264/AAC MP4, poster
 from the first frame. Likes are separate from votes (unlimited, no reputation).
-Comments reuse `CommentThread`. `@username` becomes mandatory to create a
+Comments are a slim flat thread per video. `@username` becomes mandatory to create a
 challenge or call someone out.
 
 ### Decomposition
@@ -147,9 +147,12 @@ only to sink seen challenges in the feed. Guests: session array.
 ### `comments`
 
 `battle_id` becomes nullable; add nullable `challenge_entry_id` FK. Exactly one
-must be set (enforced in `PostCommentAction`, not a DB check constraint — SQLite
-tests). `CommentThread` accepts either a battle or an entry; likes, replies and
-their notifications are reused.
+is set (enforced in the posting actions). `CommentThread` stays battle-only — it
+is coupled to token-priced likes, sides and stake support. Video comments use a
+slim flat thread in the feed's comments sheet (list + post via
+`PostEntryCommentAction`; no likes, replies or notifications in sub-project 1).
+Battle-only comment queries (`ProfilePage`, `FeedService`) filter
+`whereNotNull('battle_id')`.
 
 ### Models
 
