@@ -18,14 +18,14 @@ use App\Livewire\ProfilePage;
 use App\Livewire\WalletPage;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', BattleIndex::class)->name('home');
-Route::get('/battles', BattleIndex::class)->name('battles.index');
-Route::middleware(['auth', 'verified'])->get('/battles/create', BattleCreate::class)->name('battles.create');
+Route::get('/', BattleIndex::class)->middleware('battles')->name('home');
+Route::get('/battles', BattleIndex::class)->middleware('battles')->name('battles.index');
+Route::middleware(['auth', 'verified', 'battles'])->get('/battles/create', BattleCreate::class)->name('battles.create');
 Route::get('/battles/{battle:slug}/pool-total', BattlePoolTotalController::class)->name('battles.pool-total');
 Route::get('/battles/pool-totals', BattlePoolTotalsController::class)->name('battles.pool-totals');
-Route::get('/battles/{battle:slug}', BattleShow::class)->name('battles.show');
-Route::get('/categories/{category:slug}', CategoryShow::class)->name('categories.show');
-Route::get('/leaderboard', Leaderboard::class)->name('leaderboard');
+Route::get('/battles/{battle:slug}', BattleShow::class)->middleware('battles')->name('battles.show');
+Route::get('/categories/{category:slug}', CategoryShow::class)->middleware('battles')->name('categories.show');
+Route::get('/leaderboard', Leaderboard::class)->middleware('battles')->name('leaderboard');
 
 Route::get('/challenges', ChallengeFeed::class)->name('challenges.index');
 Route::middleware(['auth', 'verified'])->get('/challenges/create', ChallengeForm::class)->name('challenges.create');
@@ -37,8 +37,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/feed', FeedPage::class)->name('feed');
-    Route::get('/wallet', WalletPage::class)->name('wallet');
+    Route::get('/feed', FeedPage::class)->middleware('battles')->name('feed');
+    Route::get('/wallet', WalletPage::class)->middleware('battles')->name('wallet');
     Route::get('/profile', ProfilePage::class)->name('profile.edit');
     Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.settings');
     Route::patch('/profile/settings', [ProfileController::class, 'update'])->name('profile.settings.update');

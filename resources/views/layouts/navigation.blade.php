@@ -11,22 +11,33 @@
                 </a>
 
                 <div class="hidden sm:flex items-center gap-6 text-sm">
-                    @auth
-                        <a href="{{ route('feed') }}"
-                           class="transition {{ request()->routeIs('feed') ? 'text-white' : 'text-white/60 hover:text-white' }}">
-                            {{ __('nav.feed') }}
+                    @if (config('versus.battles_enabled'))
+                        @auth
+                            <a href="{{ route('feed') }}"
+                               class="transition {{ request()->routeIs('feed') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                                {{ __('nav.feed') }}
+                            </a>
+                        @endauth
+                        <a href="{{ route('leaderboard') }}"
+                           class="transition {{ request()->routeIs('leaderboard') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                            {{ __('nav.leaderboard') }}
                         </a>
-                    @endauth
-                    <a href="{{ route('leaderboard') }}"
-                       class="transition {{ request()->routeIs('leaderboard') ? 'text-white' : 'text-white/60 hover:text-white' }}">
-                        {{ __('nav.leaderboard') }}
-                    </a>
-                    @auth
-                        <a href="{{ route('battles.create') }}"
-                           class="transition {{ request()->routeIs('battles.create') ? 'text-white' : 'text-white/60 hover:text-white' }}">
-                            {{ __('nav.create_battle') }}
-                        </a>
-                    @endauth
+                        @auth
+                            <a href="{{ route('battles.create') }}"
+                               class="transition {{ request()->routeIs('battles.create') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                                {{ __('nav.create_battle') }}
+                            </a>
+                        @endauth
+                    @else
+                        <a href="{{ route('challenges.index') }}" class="text-white/60 transition hover:text-white">{{ __('challenges.nav_challenges') }}</a>
+                        @auth
+                            <a href="{{ route('challenges.mine') }}"
+                               class="transition {{ request()->routeIs('challenges.mine') ? 'text-white' : 'text-white/60 hover:text-white' }}">
+                                {{ __('challenges.nav_my') }}
+                            </a>
+                            <a href="{{ route('challenges.create') }}" class="text-white/60 transition hover:text-white">{{ __('challenges.publish') }}</a>
+                        @endauth
+                    @endif
                 </div>
             </div>
 
@@ -80,10 +91,12 @@
                         </x-slot>
 
                         <x-slot name="content">
-                            <x-dropdown-link :href="route('wallet')"
-                                             class="!text-white/80 hover:!bg-white/10 hover:!text-white">
-                                {{ __('nav.wallet') }}
-                            </x-dropdown-link>
+                            @if (config('versus.battles_enabled'))
+                                <x-dropdown-link :href="route('wallet')"
+                                                 class="!text-white/80 hover:!bg-white/10 hover:!text-white">
+                                    {{ __('nav.wallet') }}
+                                </x-dropdown-link>
+                            @endif
                             <x-dropdown-link :href="route('profile.edit')"
                                              class="!text-white/80 hover:!bg-white/10 hover:!text-white">
                                 {{ __('nav.profile') }}

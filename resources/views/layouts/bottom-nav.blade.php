@@ -33,6 +33,16 @@
             'icon' => 'user',
         ],
     ];
+
+    if (! config('versus.battles_enabled')) {
+        $tabs = [
+            ['route' => 'home', 'match' => ['home'], 'label' => __('nav.home'), 'icon' => 'home'],
+            ['route' => 'challenges.index', 'match' => ['challenges.index', 'challenges.show'], 'label' => __('challenges.nav_challenges'), 'icon' => 'bolt'],
+            ['route' => 'challenges.create', 'match' => ['challenges.create'], 'label' => __('challenges.publish'), 'icon' => 'plus', 'fab' => true],
+            ['route' => 'challenges.mine', 'match' => ['challenges.mine'], 'label' => __('challenges.nav_my'), 'icon' => 'swords', 'auth' => true],
+            ['route' => 'profile.edit', 'match' => ['profile.*'], 'label' => __('nav.profile'), 'icon' => 'user'],
+        ];
+    }
 @endphp
 
 <nav class="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-navy-900/95 backdrop-blur border-t border-white/5 pt-5 pb-[env(safe-area-inset-bottom)]">

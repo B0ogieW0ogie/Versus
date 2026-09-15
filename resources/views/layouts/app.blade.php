@@ -17,7 +17,9 @@
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+            @unless (request()->routeIs('challenges.index', 'challenges.show'))
+                @include('layouts.navigation')
+            @endunless
 
             <!-- Page Heading -->
             @isset($header)
@@ -33,7 +35,9 @@
                 {{ $slot }}
             </main>
 
-            @include('layouts.bottom-nav')
+            @unless (request()->routeIs('challenges.create', 'challenges.respond'))
+                @include('layouts.bottom-nav')
+            @endunless
         </div>
 
         @auth
