@@ -1,7 +1,7 @@
 const HINT_KEY = 'versus.swipeHintSeen';
 const SOUND_KEY = 'versus.sound';
 
-const prepare = (challenge) => ({ ...challenge, index: challenge.focus_index ?? 0, viewed: false, correcting: false, paused: false });
+const prepare = (challenge) => ({ ...challenge, index: challenge.focus_index ?? 0, viewed: false, correcting: false, correctingTimer: null, paused: false });
 
 const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -10,8 +10,11 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
     i18n,
     active: 0,
     correctingVertical: false,
+    correctingVerticalTimer: null,
     soundOn: true,
     soundBlocked: false,
+    skipNextTap: false,
+    skipTapTimer: null,
     loading: false,
     exhausted: false,
     hint: false,
@@ -71,6 +74,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         if (this.correctingVertical) {
             if (index === this.active) {
                 this.correctingVertical = false;
+                clearTimeout(this.correctingVerticalTimer);
             }
             return;
         }
@@ -81,6 +85,10 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             this.active = corrected;
             el.scrollTo({ top: corrected * el.clientHeight, behavior: 'smooth' });
             this.syncPlayback();
+            // Safety net: an interrupted/cancelled smooth scroll may never settle at
+            // `corrected`, which would otherwise leave paging stuck forever.
+            clearTimeout(this.correctingVerticalTimer);
+            this.correctingVerticalTimer = setTimeout(() => { this.correctingVertical = false; }, 700);
             return;
         }
 
@@ -101,6 +109,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         if (challenge.correcting) {
             if (index === challenge.index) {
                 challenge.correcting = false;
+                clearTimeout(challenge.correctingTimer);
             }
             return;
         }
@@ -111,6 +120,10 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             challenge.index = corrected;
             el.scrollTo({ left: corrected * el.clientWidth, behavior: 'smooth' });
             this.syncPlayback();
+            // Safety net: an interrupted/cancelled smooth scroll may never settle at
+            // `corrected`, which would otherwise leave this carousel stuck forever.
+            clearTimeout(challenge.correctingTimer);
+            challenge.correctingTimer = setTimeout(() => { challenge.correcting = false; }, 700);
             if (corrected > 0) {
                 this.dismissHint();
             }
@@ -154,7 +167,11 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             if (key === currentKey) {
                 current.paused = false;
                 video.muted = !this.soundOn;
-                video.play().catch((error) => {
+                video.play().then(() => {
+                    if (!video.muted) {
+                        this.soundBlocked = false;
+                    }
+                }).catch((error) => {
                     if (!video.muted && error?.name === 'NotAllowedError') {
                         // Autoplay-with-sound was blocked — fall back to muted playback
                         // and surface the hint pill until a user gesture unlocks sound.
@@ -238,7 +255,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
     },
 
     // First user gesture on the feed: if sound is wanted but the browser blocked it,
-    // unmute + replay synchronously inside the gesture so the browser honors it.
+    // unmute (+ replay if needed) synchronously inside the gesture so the browser honors it.
     unlockSound() {
         if (!this.soundBlocked || !this.soundOn) {
             return;
@@ -247,16 +264,35 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         if (!video) {
             return;
         }
+
+        // This pointerdown is the one that unlocks sound — the click that follows on the
+        // same tap must not also toggle play/pause. Cleared by togglePlayback, or by this
+        // fallback timer for taps that land on a control other than the video area.
+        this.skipNextTap = true;
+        clearTimeout(this.skipTapTimer);
+        this.skipTapTimer = setTimeout(() => { this.skipNextTap = false; }, 400);
+
         video.muted = false;
-        const attempt = video.play();
-        if (attempt && typeof attempt.then === 'function') {
-            attempt.then(() => { this.soundBlocked = false; }).catch(() => {});
-        } else {
+        if (!video.paused) {
+            // Already playing (muted) — unmuting is enough, no need to call play() again.
             this.soundBlocked = false;
+            return;
         }
+        video.play().then(() => {
+            this.soundBlocked = false;
+        }).catch(() => {
+            // Still blocked — fall back to muted playback and keep the hint visible.
+            video.muted = true;
+            video.play().catch(() => {});
+        });
     },
 
     togglePlayback(ci) {
+        if (this.skipNextTap) {
+            this.skipNextTap = false;
+            clearTimeout(this.skipTapTimer);
+            return;
+        }
         const challenge = this.challenges[ci];
         const slide = this.currentSlide(ci);
         if (!challenge || !slide) {
@@ -267,8 +303,9 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             return;
         }
         if (video.paused) {
-            video.play().catch(() => {});
-            challenge.paused = false;
+            video.play().then(() => { challenge.paused = false; }).catch(() => {
+                // Playback failed to resume — leave the paused (▶) state as-is.
+            });
         } else {
             video.pause();
             challenge.paused = true;
@@ -381,6 +418,12 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         if (si < 0) {
             return;
         }
+        const challenge = this.challenges[ci];
+        if (!challenge || si === challenge.index) {
+            // Already there — nothing to scroll, so no scroll event will ever fire to
+            // clear a `correcting` flag we might otherwise set.
+            return;
+        }
         const carousel = this.$el.querySelector(`[data-carousel="${ci}"]`);
         if (!carousel) {
             return;
@@ -388,11 +431,12 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         // This can be more than one slide away from the current index (e.g. deep-linking
         // to "my response") — pre-set the target and mark it as an in-flight correction so
         // the one-slide-per-fling guard in onCarouselScroll doesn't snap it back.
-        const challenge = this.challenges[ci];
         challenge.correcting = true;
         challenge.index = si;
         carousel.scrollTo({ left: carousel.clientWidth * si, behavior: 'smooth' });
         this.syncPlayback();
+        clearTimeout(challenge.correctingTimer);
+        challenge.correctingTimer = setTimeout(() => { challenge.correcting = false; }, 700);
     },
 
     async openComments(ci) {

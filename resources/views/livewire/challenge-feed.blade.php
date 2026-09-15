@@ -21,7 +21,7 @@
             'soundOff' => __('challenges.sound_off'),
         ]),
      })"
-     @pointerdown.capture="unlockSound()" @touchstart.capture="unlockSound()"
+     @pointerdown.capture="unlockSound()"
      class="fixed inset-x-0 top-0 sm:top-16 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white">
 
     <div x-ref="vertical" class="h-full overflow-y-auto snap-y snap-mandatory overscroll-contain"
