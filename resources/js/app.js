@@ -1,4 +1,5 @@
 import './bootstrap';
+import challengeFeed from './challenges/feed';
 
 function bumpPoolElement(el) {
     if (!el) {
@@ -126,6 +127,8 @@ const PoolTicker = {
 };
 
 document.addEventListener('alpine:init', () => {
+    window.Alpine.data('challengeFeed', challengeFeed);
+
     window.Alpine.data('countdown', (iso) => ({
         label: '',
         timer: null,
