@@ -10,6 +10,10 @@ class CreditSignupBonusAction
 {
     public function __invoke(User $user): void
     {
+        if (! config('versus.battles_enabled')) {
+            return;
+        }
+
         $bonus = round((float) config('versus.signup_bonus'), 2);
         if ($bonus <= 0) {
             return;
