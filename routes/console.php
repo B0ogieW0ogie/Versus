@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('battles:settle-due')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('challenges:close-due')
+    ->everyMinute()
+    ->withoutOverlapping();
