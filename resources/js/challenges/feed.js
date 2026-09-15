@@ -1,6 +1,7 @@
 const HINT_KEY = 'versus.swipeHintSeen';
+const SOUND_KEY = 'versus.sound';
 
-const prepare = (challenge) => ({ ...challenge, index: challenge.focus_index ?? 0, viewed: false });
+const prepare = (challenge) => ({ ...challenge, index: challenge.focus_index ?? 0, viewed: false, correcting: false, paused: false });
 
 const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -8,7 +9,9 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
     challenges: initial.map(prepare),
     i18n,
     active: 0,
-    muted: true,
+    correctingVertical: false,
+    soundOn: true,
+    soundBlocked: false,
     loading: false,
     exhausted: false,
     hint: false,
@@ -28,6 +31,12 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             try { seen = localStorage.getItem(HINT_KEY) === '1'; } catch (e) { seen = false; }
         }
         this.hint = !seen && this.challenges.some((c) => c.slides.length > 1);
+
+        try {
+            this.soundOn = localStorage.getItem(SOUND_KEY) !== 'off';
+        } catch (e) {
+            this.soundOn = true;
+        }
 
         this.$nextTick(() => {
             const first = this.challenges[0];
@@ -52,9 +61,29 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         return challenge.slides[challenge.index];
     },
 
+    // A long/fast fling can land more than one slide away even with scroll-snap on
+    // (some browsers ignore scroll-snap-stop). If the settled index is more than one
+    // away from `active`, snap back to a single-slide step in the direction of travel.
     onVerticalScroll() {
         const el = this.$refs.vertical;
         const index = Math.round(el.scrollTop / Math.max(1, el.clientHeight));
+
+        if (this.correctingVertical) {
+            if (index === this.active) {
+                this.correctingVertical = false;
+            }
+            return;
+        }
+
+        if (Math.abs(index - this.active) > 1) {
+            const corrected = index > this.active ? this.active + 1 : this.active - 1;
+            this.correctingVertical = true;
+            this.active = corrected;
+            el.scrollTo({ top: corrected * el.clientHeight, behavior: 'smooth' });
+            this.syncPlayback();
+            return;
+        }
+
         if (index !== this.active) {
             this.active = index;
             this.syncPlayback();
@@ -64,9 +93,30 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         }
     },
 
+    // Same one-slide-per-fling guarantee for the horizontal (response) carousel.
     onCarouselScroll(ci, el) {
-        const index = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
         const challenge = this.challenges[ci];
+        const index = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
+
+        if (challenge.correcting) {
+            if (index === challenge.index) {
+                challenge.correcting = false;
+            }
+            return;
+        }
+
+        if (Math.abs(index - challenge.index) > 1) {
+            const corrected = index > challenge.index ? challenge.index + 1 : challenge.index - 1;
+            challenge.correcting = true;
+            challenge.index = corrected;
+            el.scrollTo({ left: corrected * el.clientWidth, behavior: 'smooth' });
+            this.syncPlayback();
+            if (corrected > 0) {
+                this.dismissHint();
+            }
+            return;
+        }
+
         if (index !== challenge.index) {
             challenge.index = index;
             this.syncPlayback();
@@ -102,8 +152,17 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             }
 
             if (key === currentKey) {
-                video.muted = this.muted;
-                video.play().catch(() => {});
+                current.paused = false;
+                video.muted = !this.soundOn;
+                video.play().catch((error) => {
+                    if (!video.muted && error?.name === 'NotAllowedError') {
+                        // Autoplay-with-sound was blocked — fall back to muted playback
+                        // and surface the hint pill until a user gesture unlocks sound.
+                        video.muted = true;
+                        this.soundBlocked = true;
+                        video.play().catch(() => {});
+                    }
+                });
             } else {
                 video.pause();
             }
@@ -141,9 +200,79 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         this.$wire.recordImpressions(ids);
     },
 
-    toggleMute() {
-        this.muted = !this.muted;
-        this.$el.querySelectorAll('video[src]').forEach((video) => { video.muted = this.muted; });
+    // The <video> element currently playing (active vertical slide, active carousel index).
+    currentVideo() {
+        const challenge = this.challenges[this.active];
+        if (!challenge) {
+            return null;
+        }
+        return this.$el.querySelector(`video[data-ci="${this.active}"][data-si="${challenge.index}"]`);
+    },
+
+    toggleSound() {
+        this.soundOn = !this.soundOn;
+        try { localStorage.setItem(SOUND_KEY, this.soundOn ? 'on' : 'off'); } catch (e) { /* storage blocked */ }
+
+        const video = this.currentVideo();
+        if (!video) {
+            return;
+        }
+
+        if (this.soundOn) {
+            video.muted = false;
+            const attempt = video.play();
+            if (attempt && typeof attempt.then === 'function') {
+                attempt.then(() => { this.soundBlocked = false; }).catch((error) => {
+                    if (error?.name === 'NotAllowedError') {
+                        video.muted = true;
+                        this.soundBlocked = true;
+                    }
+                });
+            } else {
+                this.soundBlocked = false;
+            }
+        } else {
+            video.muted = true;
+            this.soundBlocked = false;
+        }
+    },
+
+    // First user gesture on the feed: if sound is wanted but the browser blocked it,
+    // unmute + replay synchronously inside the gesture so the browser honors it.
+    unlockSound() {
+        if (!this.soundBlocked || !this.soundOn) {
+            return;
+        }
+        const video = this.currentVideo();
+        if (!video) {
+            return;
+        }
+        video.muted = false;
+        const attempt = video.play();
+        if (attempt && typeof attempt.then === 'function') {
+            attempt.then(() => { this.soundBlocked = false; }).catch(() => {});
+        } else {
+            this.soundBlocked = false;
+        }
+    },
+
+    togglePlayback(ci) {
+        const challenge = this.challenges[ci];
+        const slide = this.currentSlide(ci);
+        if (!challenge || !slide) {
+            return;
+        }
+        const video = this.$el.querySelector(`video[data-ci="${ci}"][data-si="${challenge.index}"]`);
+        if (!video) {
+            return;
+        }
+        if (video.paused) {
+            video.play().catch(() => {});
+            challenge.paused = false;
+        } else {
+            video.pause();
+            challenge.paused = true;
+        }
     },
 
     async loadMore() {
@@ -253,7 +382,17 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             return;
         }
         const carousel = this.$el.querySelector(`[data-carousel="${ci}"]`);
-        carousel?.scrollTo({ left: carousel.clientWidth * si, behavior: 'smooth' });
+        if (!carousel) {
+            return;
+        }
+        // This can be more than one slide away from the current index (e.g. deep-linking
+        // to "my response") — pre-set the target and mark it as an in-flight correction so
+        // the one-slide-per-fling guard in onCarouselScroll doesn't snap it back.
+        const challenge = this.challenges[ci];
+        challenge.correcting = true;
+        challenge.index = si;
+        carousel.scrollTo({ left: carousel.clientWidth * si, behavior: 'smooth' });
+        this.syncPlayback();
     },
 
     async openComments(ci) {

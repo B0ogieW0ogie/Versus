@@ -17,8 +17,11 @@
             'allResponses' => __('challenges.all_responses'),
             'inReplyTo' => __('challenges.in_reply_to'),
             'linkCopied' => __('challenges.link_copied'),
+            'soundOn' => __('challenges.sound_on'),
+            'soundOff' => __('challenges.sound_off'),
         ]),
      })"
+     @pointerdown.capture="unlockSound()" @touchstart.capture="unlockSound()"
      class="fixed inset-x-0 top-0 sm:top-16 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white">
 
     <div x-ref="vertical" class="h-full overflow-y-auto snap-y snap-mandatory overscroll-contain"
@@ -34,19 +37,21 @@
         </template>
 
         <template x-for="(challenge, ci) in challenges" :key="challenge.id">
-            <section class="relative h-full w-full snap-start overflow-hidden">
+            <section class="relative h-full w-full snap-start snap-always overflow-hidden">
                 {{-- Horizontal carousel: original, responses, "all responses" card --}}
                 <div class="flex h-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none]"
                      :data-carousel="ci"
                      @scroll.debounce.120ms="onCarouselScroll(ci, $event.target)">
                     <template x-for="(slide, si) in challenge.slides" :key="slide.entry_id">
-                        <div class="relative h-full w-full shrink-0 snap-start" @click="toggleMute()">
+                        <div class="relative h-full w-full shrink-0 snap-start snap-always" @click="togglePlayback(ci)">
                             <video class="h-full w-full bg-black object-contain" playsinline loop muted preload="none"
                                    :poster="slide.poster_url" :data-src="slide.video_url" :data-ci="ci" :data-si="si"></video>
                             <span x-show="slide.is_winner" class="absolute left-4 top-16 rounded-full bg-amber-400/90 px-3 py-1 text-xs font-bold text-black">🏆</span>
+                            <span x-show="challenge.paused && challenge.index === si" x-cloak
+                                  class="pointer-events-none absolute inset-0 flex items-center justify-center text-6xl text-white/90 drop-shadow-lg">▶</span>
                         </div>
                     </template>
-                    <div x-show="challenge.entries_count > 0" class="flex h-full w-full shrink-0 snap-start items-center justify-center">
+                    <div x-show="challenge.entries_count > 0" class="flex h-full w-full shrink-0 snap-start snap-always items-center justify-center">
                         <button type="button" class="rounded-full border border-white/30 px-6 py-3 text-sm"
                                 @click="openAll(ci)" x-text="i18n.allResponses.replace(':count', challenge.entries_count)"></button>
                     </div>
@@ -79,6 +84,10 @@
                             </div>
 
                             <div class="pointer-events-auto flex flex-col items-center gap-4 pb-2 text-xs">
+                                <button type="button" @click.stop="toggleSound()" class="flex flex-col items-center gap-1"
+                                        :aria-label="(!soundOn || soundBlocked) ? i18n.soundOn : i18n.soundOff">
+                                    <span class="text-2xl" x-text="(!soundOn || soundBlocked) ? '🔇' : '🔊'"></span>
+                                </button>
                                 <button type="button" @click.stop="like(ci)" class="flex flex-col items-center gap-1">
                                     <span class="text-3xl" :class="currentSlide(ci).liked ? 'text-rose-500' : 'text-white'">♥</span>
                                     <span x-text="currentSlide(ci).likes_count"></span>
@@ -127,6 +136,12 @@
             <livewire:notification-bell />
         </div>
     @endauth
+
+    {{-- Sound hint pill: shown while sound is off, or on but still blocked by the browser --}}
+    <div x-show="!soundOn || soundBlocked" x-cloak x-transition.opacity
+         class="pointer-events-none absolute inset-x-0 top-[max(1rem,env(safe-area-inset-top))] z-40 mx-auto w-fit rounded-full bg-black/60 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur">
+        🔇 {{ __('challenges.tap_to_unmute') }}
+    </div>
 
     {{-- First-visit swipe hint --}}
     <div x-show="hint" x-cloak x-transition.opacity @click="dismissHint()"
