@@ -20,14 +20,17 @@ class FfmpegVideoTranscoder implements VideoTranscoder
             throw VideoProcessingException::because('reason_generic');
         }
 
-        /** @var array{streams?: list<array{codec_type?: string}>, format?: array{duration?: string}}|null $json */
+        /** @var array{streams?: mixed, format?: mixed}|null $json */
         $json = json_decode($result->output(), true);
         if (! is_array($json)) {
             throw VideoProcessingException::because('reason_generic');
         }
 
-        $hasVideo = collect($json['streams'] ?? [])->contains(fn (array $s): bool => ($s['codec_type'] ?? null) === 'video');
-        $durationMs = (int) round(((float) ($json['format']['duration'] ?? 0)) * 1000);
+        $streams = is_array($json['streams'] ?? null) ? $json['streams'] : [];
+        $hasVideo = collect($streams)->contains(fn ($s): bool => is_array($s) && ($s['codec_type'] ?? null) === 'video');
+
+        $format = is_array($json['format'] ?? null) ? $json['format'] : [];
+        $durationMs = (int) round(((float) ($format['duration'] ?? 0)) * 1000);
 
         return new VideoProbe($hasVideo, $durationMs);
     }

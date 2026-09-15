@@ -30,6 +30,21 @@ class FfmpegVideoTranscoderTest extends TestCase
         $this->assertSame(12345, $probe->durationMs);
     }
 
+    public function test_probe_ignores_non_array_stream_entries(): void
+    {
+        Process::fake([
+            'ffprobe*' => Process::result(json_encode([
+                'streams' => ['junk'],
+                'format' => ['duration' => '1'],
+            ])),
+        ]);
+
+        $probe = app(FfmpegVideoTranscoder::class)->probe('/tmp/in');
+
+        $this->assertFalse($probe->hasVideo);
+        $this->assertSame(1000, $probe->durationMs);
+    }
+
     public function test_probe_failure_is_a_generic_processing_error(): void
     {
         Process::fake(['ffprobe*' => Process::result('', 'broken', 1)]);
