@@ -9,6 +9,7 @@ use App\Livewire\BattleIndex;
 use App\Livewire\BattleShow;
 use App\Livewire\CategoryShow;
 use App\Livewire\ChallengeFeed;
+use App\Livewire\ChallengeForm;
 use App\Livewire\ConnectionsPage;
 use App\Livewire\FeedPage;
 use App\Livewire\Leaderboard;
@@ -26,9 +27,8 @@ Route::get('/categories/{category:slug}', CategoryShow::class)->name('categories
 Route::get('/leaderboard', Leaderboard::class)->name('leaderboard');
 
 Route::get('/challenges', ChallengeFeed::class)->name('challenges.index');
-// Replaced by the real form in Task 15.
-Route::middleware(['auth', 'verified'])->get('/challenges/create', fn () => abort(404))->name('challenges.create');
-Route::middleware(['auth', 'verified'])->get('/c/{challenge:slug}/respond', fn () => abort(404))->name('challenges.respond');
+Route::middleware(['auth', 'verified'])->get('/challenges/create', ChallengeForm::class)->name('challenges.create');
+Route::middleware(['auth', 'verified'])->get('/c/{challenge:slug}/respond', ChallengeForm::class)->name('challenges.respond');
 Route::get('/c/{challenge:slug}', ChallengeFeed::class)->name('challenges.show');
 
 Route::get('/dashboard', function () {
