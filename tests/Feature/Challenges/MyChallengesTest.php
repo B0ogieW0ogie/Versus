@@ -80,6 +80,29 @@ class MyChallengesTest extends TestCase
             ->assertDontSee(__('challenges.upload_response'));
     }
 
+    public function test_closed_card_shows_username_winner_when_present(): void
+    {
+        $user = User::factory()->create(['username' => 'maya']);
+        $challenge = Challenge::factory()->closed()->withOriginal()->create();
+        $winner = ChallengeEntry::factory()->for($challenge)->for($user)->create();
+        $this->accept($user, $challenge); // SubmitResponseAction always records participation.
+        $challenge->update(['winner_entry_id' => $winner->id]);
+
+        $this->actingAs($user)->get(route('challenges.mine'))
+            ->assertSee(__('challenges.winner_short', ['name' => '@maya']));
+    }
+
+    public function test_accepted_expired_card_shows_not_open_plate(): void
+    {
+        $user = User::factory()->create();
+        $challenge = Challenge::factory()->withOriginal()->create(['ends_at' => now()->subMinute()]);
+        $this->accept($user, $challenge);
+
+        $this->actingAs($user)->get(route('challenges.mine'))
+            ->assertSee(__('challenges.not_open'))
+            ->assertDontSee(__('challenges.upload_response'));
+    }
+
     public function test_leave_removes_accepted_challenge(): void
     {
         $user = User::factory()->create();

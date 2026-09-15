@@ -14,7 +14,7 @@ class MyChallengesQuery
     public function cards(User $user, int $limit): array
     {
         $challenges = $this->base($user)
-            ->with(['user:id,name,username', 'original', 'winnerEntry.user:id,name'])
+            ->with(['user:id,name,username', 'original', 'winnerEntry.user:id,name,username'])
             ->orderByRaw("CASE status WHEN 'active' THEN 0 WHEN 'processing' THEN 1 WHEN 'failed' THEN 1 ELSE 2 END")
             ->orderByRaw("CASE WHEN status = 'active' THEN ends_at END")
             ->orderByDesc('closed_at')
@@ -47,7 +47,7 @@ class MyChallengesQuery
                 'state' => $state,
                 'has_entry' => ! $isOwn && $entry !== null,
                 'my_entry_id' => $entry?->id,
-                'winner_name' => $challenge->winnerEntry?->user?->name,
+                'winner_name' => $this->winnerName($challenge),
                 'winner_entry_id' => $challenge->winner_entry_id,
             ];
         })->values()->all();
@@ -56,6 +56,16 @@ class MyChallengesQuery
     public function activeCount(User $user): int
     {
         return $this->base($user)->where('status', Challenge::STATUS_ACTIVE)->count();
+    }
+
+    private function winnerName(Challenge $challenge): ?string
+    {
+        $user = $challenge->winnerEntry?->user;
+        if ($user === null) {
+            return null;
+        }
+
+        return $user->username !== null ? '@'.$user->username : $user->name;
     }
 
     /** @return Builder<Challenge> */

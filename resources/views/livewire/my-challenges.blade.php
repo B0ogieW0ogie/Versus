@@ -68,6 +68,9 @@
                         @case('response_processing')
                             <span class="flex h-12 flex-1 items-center justify-center rounded-xl bg-white/10 text-sm text-white/60">{{ __('challenges.response_processing') }}</span>
                             @break
+                        @case('accepted_expired')
+                            <span class="flex h-12 flex-1 items-center justify-center rounded-xl bg-white/10 text-sm text-white/60">{{ __('challenges.not_open') }}</span>
+                            @break
                         @case('response_ready')
                             <a href="{{ route('challenges.show', ['challenge' => $challenge->slug, 'entry' => $card['my_entry_id']]) }}" class="flex h-12 flex-1 items-center justify-center rounded-xl border border-white/15 text-sm font-semibold uppercase">{{ __('challenges.my_response') }}</a>
                             @break
