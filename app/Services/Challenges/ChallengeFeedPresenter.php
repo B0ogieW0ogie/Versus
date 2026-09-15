@@ -36,7 +36,10 @@ class ChallengeFeedPresenter
             ->pluck('aggregate', 'challenge_entry_id');
 
         $myEntryId = $viewer !== null
-            ? ChallengeEntry::where('challenge_id', $challenge->id)->where('user_id', $viewer->id)->value('id')
+            ? ChallengeEntry::where('challenge_id', $challenge->id)
+                ->where('user_id', $viewer->id)
+                ->where('status', ChallengeEntry::STATUS_READY)
+                ->value('id')
             : null;
         $myVoteEntryId = $viewer !== null
             ? ChallengeVote::where('challenge_id', $challenge->id)->where('user_id', $viewer->id)->value('entry_id')
@@ -80,10 +83,20 @@ class ChallengeFeedPresenter
             'my_vote_entry_id' => $myVoteEntryId !== null ? (int) $myVoteEntryId : null,
             'entries_count' => $challenge->entries_count,
             'winner_entry_id' => $challenge->winner_entry_id,
-            'winner_name' => $challenge->winnerEntry?->user?->name,
+            'winner_name' => $this->winnerName($challenge),
             'respond_url' => route('challenges.respond', $challenge->slug),
             'focus_index' => $focusIndex === false ? 0 : $focusIndex,
             'slides' => $slides,
         ];
+    }
+
+    private function winnerName(Challenge $challenge): ?string
+    {
+        $user = $challenge->winnerEntry?->user;
+        if ($user === null) {
+            return null;
+        }
+
+        return $user->username !== null ? '@'.$user->username : $user->name;
     }
 }

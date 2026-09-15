@@ -54,14 +54,39 @@ class ChallengeFeedPresenterTest extends TestCase
     public function test_closed_challenge_exposes_winner_and_focus_index(): void
     {
         $challenge = Challenge::factory()->closed()->withOriginal()->create();
-        $winner = ChallengeEntry::factory()->for($challenge)->create(['votes_count' => 3]);
+        $winnerUser = User::factory()->create(['username' => 'proskater']);
+        $winner = ChallengeEntry::factory()->for($challenge)->for($winnerUser)->create(['votes_count' => 3]);
         $challenge->update(['winner_entry_id' => $winner->id]);
 
         $data = app(ChallengeFeedPresenter::class)->present($challenge->fresh(), null, $winner->id);
 
         $this->assertFalse($data['is_open']);
-        $this->assertSame($winner->user->name, $data['winner_name']);
+        $this->assertSame('@proskater', $data['winner_name']);
         $this->assertSame(1, $data['focus_index']);
         $this->assertTrue($data['slides'][1]['is_winner']);
+    }
+
+    public function test_winner_name_falls_back_to_display_name_without_username(): void
+    {
+        $challenge = Challenge::factory()->closed()->withOriginal()->create();
+        $winnerUser = User::factory()->create(['username' => null]);
+        $winner = ChallengeEntry::factory()->for($challenge)->for($winnerUser)->create(['votes_count' => 3]);
+        $challenge->update(['winner_entry_id' => $winner->id]);
+
+        $data = app(ChallengeFeedPresenter::class)->present($challenge->fresh(), null);
+
+        $this->assertSame($winnerUser->name, $data['winner_name']);
+    }
+
+    public function test_my_entry_id_ignores_non_ready_entry(): void
+    {
+        $challenge = Challenge::factory()->withOriginal()->create();
+        $viewer = User::factory()->create();
+        ChallengeEntry::factory()->for($challenge)->for($viewer)->processing()->create();
+
+        $data = app(ChallengeFeedPresenter::class)->present($challenge, $viewer);
+
+        $this->assertNull($data['my_entry_id']);
+        $this->assertFalse($data['is_own']);
     }
 }

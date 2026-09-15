@@ -41,10 +41,15 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         window.addEventListener('pagehide', () => this.flushImpressions());
     },
 
+    // Returns null when the "all responses" end card is the active horizontal slide
+    // (index === slides.length) — that card carries no entry to act on.
     currentSlide(ci) {
         const challenge = this.challenges[ci];
+        if (!challenge || challenge.index >= challenge.slides.length) {
+            return null;
+        }
 
-        return challenge.slides[Math.min(challenge.index, challenge.slides.length - 1)];
+        return challenge.slides[challenge.index];
     },
 
     onVerticalScroll() {
@@ -180,6 +185,9 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
 
     async like(ci) {
         const slide = this.currentSlide(ci);
+        if (!slide) {
+            return;
+        }
         const result = await this.$wire.toggleLike(slide.entry_id);
         if (this.handle(result)) {
             slide.liked = result.liked;
@@ -193,7 +201,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         }
         const challenge = this.challenges[ci];
         const slide = this.currentSlide(ci);
-        if (slide.is_mine || !challenge.is_open || challenge.my_vote_entry_id === slide.entry_id) {
+        if (!slide || slide.is_mine || !challenge.is_open || challenge.my_vote_entry_id === slide.entry_id) {
             return;
         }
         if (challenge.my_vote_entry_id && !window.confirm(this.i18n.moveVote)) {
@@ -216,7 +224,13 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         }
         const challenge = this.challenges[ci];
         if (challenge.my_entry_id) {
-            this.goToSlide(ci, challenge.slides.findIndex((s) => s.entry_id === challenge.my_entry_id));
+            const si = challenge.slides.findIndex((s) => s.entry_id === challenge.my_entry_id);
+            if (si === -1) {
+                // My response isn't in this carousel batch (e.g. rotated out) — deep-link to it.
+                window.location.href = `/c/${challenge.slug}?entry=${challenge.my_entry_id}`;
+                return;
+            }
+            this.goToSlide(ci, si);
             return;
         }
         const result = await this.$wire.accept(challenge.id);
@@ -234,7 +248,11 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
     },
 
     async openComments(ci) {
-        this.sheetEntry = this.currentSlide(ci);
+        const slide = this.currentSlide(ci);
+        if (!slide) {
+            return;
+        }
+        this.sheetEntry = slide;
         this.comments = [];
         this.sheet = 'comments';
         this.comments = await this.$wire.comments(this.sheetEntry.entry_id);
@@ -261,6 +279,9 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
 
     async share(ci) {
         const slide = this.currentSlide(ci);
+        if (!slide) {
+            return;
+        }
         if (navigator.share) {
             try {
                 await navigator.share({ title: this.challenges[ci].title, url: slide.share_url });

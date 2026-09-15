@@ -54,45 +54,49 @@
 
                 {{-- Overlay --}}
                 <div class="pointer-events-none absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/40 via-transparent to-black/70">
-                    <div class="flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-                        <span class="rounded-full border-2 bg-black/30 px-4 py-1.5 text-sm font-semibold"
-                              :class="currentSlide(ci).is_original ? 'border-orange-500' : 'border-violet-500 shadow-[0_0_14px_rgba(139,92,246,.6)]'"
-                              x-text="currentSlide(ci).is_original ? i18n.pillChallenge : i18n.pillResponse.replace(':n', challenge.index).replace(':total', challenge.slides.length - 1)"></span>
-                    </div>
-
-                    <div class="flex items-end gap-3 px-4 pb-4">
-                        <div class="min-w-0 flex-1 space-y-2">
-                            <a :href="currentSlide(ci).author.profile_url" class="pointer-events-auto flex items-center gap-2">
-                                <img x-show="currentSlide(ci).author.avatar_url" :src="currentSlide(ci).author.avatar_url" class="h-9 w-9 rounded-full object-cover" alt="">
-                                <span x-show="!currentSlide(ci).author.avatar_url" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold" x-text="currentSlide(ci).author.name.charAt(0)"></span>
-                                <span class="truncate font-semibold" x-text="currentSlide(ci).author.name"></span>
-                                <span x-show="!currentSlide(ci).is_original" class="truncate text-xs text-white/60" x-text="i18n.inReplyTo.replace(':name', challenge.author_name)"></span>
-                            </a>
-                            <p x-show="challenge.is_open" class="text-xs text-white/70">⏱ <span x-data="countdown(challenge.ends_at)" x-init="start()" x-text="label"></span></p>
-                            <button type="button" class="pointer-events-auto block w-full text-left" @click="sheetChallenge = challenge; sheet = 'rules'">
-                                <span class="block text-lg font-bold leading-snug" x-text="challenge.title"></span>
-                                <span class="line-clamp-2 text-sm text-white/80" x-text="challenge.rules"></span>
-                            </button>
+                    <template x-if="currentSlide(ci)">
+                        <div class="flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+                            <span class="rounded-full border-2 bg-black/30 px-4 py-1.5 text-sm font-semibold"
+                                  :class="currentSlide(ci).is_original ? 'border-orange-500' : 'border-violet-500 shadow-[0_0_14px_rgba(139,92,246,.6)]'"
+                                  x-text="currentSlide(ci).is_original ? i18n.pillChallenge : i18n.pillResponse.replace(':n', challenge.index).replace(':total', challenge.slides.length - 1)"></span>
                         </div>
+                    </template>
 
-                        <div class="pointer-events-auto flex flex-col items-center gap-4 pb-2 text-xs">
-                            <button type="button" @click.stop="like(ci)" class="flex flex-col items-center gap-1">
-                                <span class="text-3xl" :class="currentSlide(ci).liked ? 'text-rose-500' : 'text-white'">♥</span>
-                                <span x-text="currentSlide(ci).likes_count"></span>
-                            </button>
-                            <button type="button" @click.stop="openComments(ci)" class="flex flex-col items-center gap-1">
-                                <span class="text-2xl">💬</span>
-                                <span x-text="currentSlide(ci).comments_count"></span>
-                            </button>
-                            <button type="button" @click.stop="share(ci)" class="flex flex-col items-center gap-1">
-                                <span class="text-2xl">↪</span>
-                            </button>
-                            <button type="button" @click.stop="copy(currentSlide(ci).share_url)" class="text-2xl leading-none">•••</button>
+                    <template x-if="currentSlide(ci)">
+                        <div class="flex items-end gap-3 px-4 pb-4">
+                            <div class="min-w-0 flex-1 space-y-2">
+                                <a :href="currentSlide(ci).author.profile_url" class="pointer-events-auto flex items-center gap-2">
+                                    <img x-show="currentSlide(ci).author.avatar_url" :src="currentSlide(ci).author.avatar_url" class="h-9 w-9 rounded-full object-cover" alt="">
+                                    <span x-show="!currentSlide(ci).author.avatar_url" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold" x-text="currentSlide(ci).author.name.charAt(0)"></span>
+                                    <span class="truncate font-semibold" x-text="currentSlide(ci).author.name"></span>
+                                    <span x-show="!currentSlide(ci).is_original" class="truncate text-xs text-white/60" x-text="i18n.inReplyTo.replace(':name', challenge.author_name)"></span>
+                                </a>
+                                <p x-show="challenge.is_open" class="text-xs text-white/70">⏱ <span x-data="countdown(challenge.ends_at)" x-init="start()" x-text="label"></span></p>
+                                <button type="button" class="pointer-events-auto block w-full text-left" @click="sheetChallenge = challenge; sheet = 'rules'">
+                                    <span class="block text-lg font-bold leading-snug" x-text="challenge.title"></span>
+                                    <span class="line-clamp-2 text-sm text-white/80" x-text="challenge.rules"></span>
+                                </button>
+                            </div>
+
+                            <div class="pointer-events-auto flex flex-col items-center gap-4 pb-2 text-xs">
+                                <button type="button" @click.stop="like(ci)" class="flex flex-col items-center gap-1">
+                                    <span class="text-3xl" :class="currentSlide(ci).liked ? 'text-rose-500' : 'text-white'">♥</span>
+                                    <span x-text="currentSlide(ci).likes_count"></span>
+                                </button>
+                                <button type="button" @click.stop="openComments(ci)" class="flex flex-col items-center gap-1">
+                                    <span class="text-2xl">💬</span>
+                                    <span x-text="currentSlide(ci).comments_count"></span>
+                                </button>
+                                <button type="button" @click.stop="share(ci)" class="flex flex-col items-center gap-1">
+                                    <span class="text-2xl">↪</span>
+                                </button>
+                                <button type="button" @click.stop="copy(currentSlide(ci).share_url)" class="text-2xl leading-none">•••</button>
+                            </div>
                         </div>
-                    </div>
+                    </template>
 
                     <div class="px-4 pb-4">
-                        <template x-if="challenge.is_open">
+                        <template x-if="challenge.is_open && currentSlide(ci)">
                             <div class="pointer-events-auto flex h-14 w-full text-sm font-semibold uppercase tracking-wide">
                                 <button type="button"
                                         class="-mr-2 flex-1 rounded-l-full bg-gradient-to-r from-orange-500 to-orange-400 [clip-path:polygon(0_0,100%_0,calc(100%_-_18px)_100%,0_100%)] disabled:opacity-60"

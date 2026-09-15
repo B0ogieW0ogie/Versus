@@ -41,6 +41,15 @@ class ChallengeFeedPageTest extends TestCase
         $this->get(route('challenges.show', $closed->slug))->assertOk()->assertSee('Old riff');
     }
 
+    public function test_show_processing_or_failed_challenge_returns_404(): void
+    {
+        $processing = Challenge::factory()->processing()->create();
+        $failed = Challenge::factory()->failed()->create();
+
+        $this->get(route('challenges.show', $processing->slug))->assertNotFound();
+        $this->get(route('challenges.show', $failed->slug))->assertNotFound();
+    }
+
     public function test_guest_actions_do_not_write(): void
     {
         $challenge = Challenge::factory()->withOriginal()->create();

@@ -46,6 +46,10 @@ class ChallengeFeed extends Component
     public function mount(?Challenge $challenge = null): void
     {
         if ($challenge !== null && $challenge->exists) {
+            if (! in_array($challenge->status, [Challenge::STATUS_ACTIVE, Challenge::STATUS_CLOSED], true)) {
+                abort(404);
+            }
+
             $this->focusChallengeId = $challenge->id;
             $entry = request()->integer('entry');
             $this->focusEntryId = $entry > 0 ? $entry : null;
