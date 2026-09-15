@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BattlePoolTotalController;
 use App\Http\Controllers\BattlePoolTotalsController;
+use App\Http\Controllers\ChallengeUploadController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\BattleCreate;
 use App\Livewire\BattleIndex;
@@ -42,6 +43,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/referrals', fn () => redirect()->route('profile.edit', ['tab' => 'referrals'], 301))->name('referrals');
     Route::get('/my-bets', fn () => redirect()->route('profile.edit', ['tab' => 'activity'], 301))->name('my-bets');
+
+    Route::post('/challenge-uploads', [ChallengeUploadController::class, 'start'])->name('challenge-uploads.start');
+    Route::post('/challenge-uploads/{upload}/chunks', [ChallengeUploadController::class, 'chunk'])->name('challenge-uploads.chunk');
+    Route::get('/challenge-uploads/{upload}', [ChallengeUploadController::class, 'status'])->name('challenge-uploads.status');
+    Route::post('/challenge-uploads/{upload}/complete', [ChallengeUploadController::class, 'complete'])->name('challenge-uploads.complete');
 });
 
 require __DIR__.'/auth.php';
