@@ -15,3 +15,10 @@ Schedule::command('battles:settle-due')
 Schedule::command('challenges:close-due')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('challenges:score-feed')
+    ->everyMinute()
+    ->withoutOverlapping();
+
+Schedule::command('challenges:cleanup-uploads')
+    ->daily();
