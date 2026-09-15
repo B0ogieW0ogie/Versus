@@ -155,6 +155,10 @@ document.addEventListener('alpine:init', () => {
                 this.timer = null;
             }
         },
+        // Alpine calls destroy() when the element is removed (x-for/x-if churn), so the interval cannot leak.
+        destroy() {
+            this.stop();
+        },
     }));
 
     window.Alpine.data('livePool', ({ battleId, amount, format }) => ({

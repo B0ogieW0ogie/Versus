@@ -76,13 +76,15 @@
                                 <span class="h-7 w-7 rounded-full bg-navy-700 flex items-center justify-center text-xs font-semibold">
                                     {{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
                                 </span>
-                                <span class="text-xs font-semibold"
-                                      x-data="{ balance: {{ (int) Auth::user()->balance }} }"
-                                      x-on:balance-updated.window="balance = $event.detail.balance">
-                                    <span class="text-white"
-                                          x-text="new Intl.NumberFormat().format(balance)">{{ number_format((float) Auth::user()->balance, 0) }}</span>
-                                    <span class="text-white/50 font-normal ml-1 hidden sm:inline">{{ __('sidebar.tokens') }}</span>
-                                </span>
+                                @if (config('versus.battles_enabled'))
+                                    <span class="text-xs font-semibold"
+                                          x-data="{ balance: {{ (int) Auth::user()->balance }} }"
+                                          x-on:balance-updated.window="balance = $event.detail.balance">
+                                        <span class="text-white"
+                                              x-text="new Intl.NumberFormat().format(balance)">{{ number_format((float) Auth::user()->balance, 0) }}</span>
+                                        <span class="text-white/50 font-normal ml-1 hidden sm:inline">{{ __('sidebar.tokens') }}</span>
+                                    </span>
+                                @endif
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                                      class="h-4 w-4 text-white/50 hidden sm:inline">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />

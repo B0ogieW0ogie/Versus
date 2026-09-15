@@ -54,6 +54,28 @@ class ChallengesNavigationTest extends TestCase
         $this->actingAs($user)->get(route('challenges.mine'))->assertOk()->assertSee($bottomNav, false);
     }
 
+    public function test_top_nav_is_hidden_only_on_mobile_on_the_feed(): void
+    {
+        $this->get(route('challenges.index'))
+            ->assertOk()
+            ->assertSee('data-nav="top" class="hidden sm:block"', false);
+
+        $this->actingAs(User::factory()->create())->get(route('challenges.mine'))
+            ->assertOk()
+            ->assertSee('data-nav="top" class=""', false);
+    }
+
+    public function test_balance_chip_is_hidden_when_battles_are_off(): void
+    {
+        $chip = 'x-on:balance-updated.window="balance = $event.detail.balance"';
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get(route('challenges.mine'))->assertOk()->assertDontSee($chip, false);
+
+        config(['versus.battles_enabled' => true]);
+        $this->actingAs($user)->get(route('profile.edit'))->assertOk()->assertSee($chip, false);
+    }
+
     public function test_battles_still_work_when_flag_is_on(): void
     {
         config(['versus.battles_enabled' => true]);

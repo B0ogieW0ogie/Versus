@@ -66,4 +66,14 @@ class FfmpegVideoTranscoderTest extends TestCase
         Process::assertRan(fn ($process) => str_contains(implode(' ', (array) $process->command), '+faststart')
             && str_contains(implode(' ', (array) $process->command), 'scale=720:1280'));
     }
+
+    public function test_transcode_caps_output_duration_regardless_of_container_header(): void
+    {
+        config(['versus.challenges.max_video_seconds' => 60]);
+        Process::fake(['ffmpeg*' => Process::result()]);
+
+        app(FfmpegVideoTranscoder::class)->transcode('/tmp/in', '/tmp/out.mp4');
+
+        Process::assertRan(fn ($process) => preg_match("/ -t 60\\.5 '\\/tmp\\/out\\.mp4'$/", implode(' ', (array) $process->command)) === 1);
+    }
 }

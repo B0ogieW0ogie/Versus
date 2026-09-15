@@ -106,6 +106,22 @@ services:
     networks:
       - versus
 
+  queue-worker-videos:
+    container_name: versus_queue_videos
+    # Dedicated worker for ProcessEntryVideo (queue "videos") so transcodes never block mail on the default queue.
+    image: versus-php:latest
+    build:
+      context: ./.docker/php
+    restart: unless-stopped
+    command: php artisan queue:work --queue=videos --tries=3 --timeout=300 --max-time=3600
+    volumes:
+      - ./:/var/www/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - versus
+
   postgres:
     container_name: versus_pg
     image: postgres:16-alpine

@@ -54,10 +54,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/my-challenges', MyChallenges::class)->name('challenges.mine');
 
-    Route::post('/challenge-uploads', [ChallengeUploadController::class, 'start'])->name('challenge-uploads.start');
-    Route::post('/challenge-uploads/{upload}/chunks', [ChallengeUploadController::class, 'chunk'])->name('challenge-uploads.chunk');
-    Route::get('/challenge-uploads/{upload}', [ChallengeUploadController::class, 'status'])->name('challenge-uploads.status');
-    Route::post('/challenge-uploads/{upload}/complete', [ChallengeUploadController::class, 'complete'])->name('challenge-uploads.complete');
+    Route::post('/challenge-uploads', [ChallengeUploadController::class, 'start'])
+        ->middleware('throttle:challenge-upload-start')->name('challenge-uploads.start');
+    Route::middleware('throttle:challenge-upload-chunks')->group(function () {
+        Route::post('/challenge-uploads/{upload}/chunks', [ChallengeUploadController::class, 'chunk'])->name('challenge-uploads.chunk');
+        Route::get('/challenge-uploads/{upload}', [ChallengeUploadController::class, 'status'])->name('challenge-uploads.status');
+        Route::post('/challenge-uploads/{upload}/complete', [ChallengeUploadController::class, 'complete'])->name('challenge-uploads.complete');
+    });
 });
 
 require __DIR__.'/auth.php';

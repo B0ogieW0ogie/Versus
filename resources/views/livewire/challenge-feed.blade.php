@@ -19,7 +19,7 @@
             'linkCopied' => __('challenges.link_copied'),
         ]),
      })"
-     class="fixed inset-x-0 top-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white">
+     class="fixed inset-x-0 top-0 sm:top-16 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white">
 
     <div x-ref="vertical" class="h-full overflow-y-auto snap-y snap-mandatory overscroll-contain"
          @scroll.debounce.120ms="onVerticalScroll()">
@@ -120,9 +120,10 @@
         </template>
     </div>
 
-    {{-- One bell for the whole page: a Livewire component must not live inside <template x-for>. --}}
+    {{-- One bell for the whole page: a Livewire component must not live inside <template x-for>.
+         Mobile only: on sm+ the top navigation (with its own bell) is visible above the feed. --}}
     @auth
-        <div class="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-40">
+        <div class="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-40 sm:hidden">
             <livewire:notification-bell />
         </div>
     @endauth

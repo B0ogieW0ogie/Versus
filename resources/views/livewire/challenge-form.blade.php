@@ -4,9 +4,10 @@
         urls: @js([
             'start' => route('challenge-uploads.start'),
             'chunk' => route('challenge-uploads.chunk', '__ID__'),
+            'status' => route('challenge-uploads.status', '__ID__'),
             'complete' => route('challenge-uploads.complete', '__ID__'),
         ]),
-        backUrl: @js(url()->previous() !== url()->current() ? url()->previous() : route('challenges.index')),
+        backUrl: @js($backUrl),
         i18n: @js([
             'tooLong' => __('challenges.video_too_long', ['seconds' => $maxSeconds]),
             'tooBig' => __('challenges.video_too_big', ['mb' => config('versus.challenges.max_upload_mb')]),
@@ -100,7 +101,7 @@
 
     <button type="button"
             class="mt-8 flex h-14 w-full items-center justify-center rounded-2xl bg-indigo-600 font-semibold uppercase tracking-wide disabled:opacity-50"
-            :disabled="state === 'uploading'"
+            :disabled="state === 'uploading' || submitting"
             @click="submitting = true; $wire.publish().finally(() => { submitting = false })">
         {{ $isResponse ? __('challenges.publish_response') : __('challenges.publish') }}
     </button>

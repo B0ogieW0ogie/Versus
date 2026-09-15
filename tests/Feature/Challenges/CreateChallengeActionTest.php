@@ -66,6 +66,13 @@ class CreateChallengeActionTest extends TestCase
         Queue::assertPushed(ProcessEntryVideo::class, fn (ProcessEntryVideo $job) => $job->entryId === $entry->id);
     }
 
+    public function test_video_job_goes_to_the_dedicated_videos_queue(): void
+    {
+        $this->create(User::factory()->create(['username' => 'dan']));
+
+        Queue::assertPushedOn('videos', ProcessEntryVideo::class);
+    }
+
     public function test_invalid_fields_do_not_consume_the_upload(): void
     {
         $user = User::factory()->create(['username' => 'dan']);

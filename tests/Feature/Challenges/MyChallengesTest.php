@@ -103,6 +103,32 @@ class MyChallengesTest extends TestCase
             ->assertDontSee(__('challenges.upload_response'));
     }
 
+    public function test_own_processing_card_shows_plate_and_no_show_links(): void
+    {
+        $user = User::factory()->create();
+        $challenge = Challenge::factory()->for($user)->processing()->withOriginal()->create();
+
+        $cards = app(MyChallengesQuery::class)->cards($user, 20);
+        $this->assertSame('own_processing', $cards[0]['state']);
+
+        $this->actingAs($user)->get(route('challenges.mine'))
+            ->assertOk()
+            ->assertSee('data-plate="own_processing"', false)
+            ->assertSee(__('challenges.status_processing'))
+            ->assertDontSee('href="'.route('challenges.show', $challenge->slug).'"', false);
+    }
+
+    public function test_own_failed_card_keeps_retry_link_without_show_links(): void
+    {
+        $user = User::factory()->create();
+        $challenge = Challenge::factory()->for($user)->failed()->withOriginal()->create();
+
+        $this->actingAs($user)->get(route('challenges.mine'))
+            ->assertOk()
+            ->assertSee(route('challenges.create', ['retry' => $challenge->slug]), false)
+            ->assertDontSee('href="'.route('challenges.show', $challenge->slug).'"', false);
+    }
+
     public function test_leave_removes_accepted_challenge(): void
     {
         $user = User::factory()->create();

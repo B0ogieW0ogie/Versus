@@ -28,7 +28,7 @@ class CleanupChallengeUploadsCommand extends Command
         ChallengeEntry::query()
             ->where('status', ChallengeEntry::STATUS_PROCESSING)
             ->where('created_at', '<', now()->subDay())
-            ->each(fn (ChallengeEntry $entry) => $markFailed($entry, 'reason_generic'));
+            ->eachById(fn (ChallengeEntry $entry) => $markFailed($entry, 'reason_generic'));
 
         return self::SUCCESS;
     }

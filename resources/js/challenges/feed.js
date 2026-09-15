@@ -151,12 +151,21 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             return;
         }
         this.loading = true;
-        const batch = await this.$wire.loadMore();
-        if (!batch.length) {
-            this.exhausted = true;
+        try {
+            const batch = await this.$wire.loadMore();
+            if (!batch.length) {
+                this.exhausted = true;
+                return;
+            }
+            this.challenges.push(...batch.map(prepare));
+            // Attach sources to the freshly rendered slides (the next one may need preloading).
+            this.$nextTick(() => this.syncPlayback());
+        } catch (error) {
+            // A failed request is transient: leave `exhausted` alone so the next scroll retries.
+            console.error(error);
+        } finally {
+            this.loading = false;
         }
-        this.challenges.push(...batch.map(prepare));
-        this.loading = false;
     },
 
     handle(result) {

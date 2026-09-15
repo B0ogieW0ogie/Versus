@@ -25,11 +25,14 @@
                     \App\Models\Challenge::STATUS_FAILED => ['challenges.status_failed', 'bg-rose-500/15 text-rose-300'],
                     default => ['challenges.status_closed', 'bg-violet-500/20 text-violet-300'],
                 };
-                $showUrl = route('challenges.show', $challenge->slug);
+                $hasPage = ! in_array($challenge->status, [\App\Models\Challenge::STATUS_PROCESSING, \App\Models\Challenge::STATUS_FAILED], true);
+                $showUrl = $hasPage ? route('challenges.show', $challenge->slug) : null;
+                $linkTag = $hasPage ? 'a' : 'div';
             @endphp
             <article wire:key="card-{{ $challenge->id }}" class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                 <div class="flex gap-4">
-                    <a href="{{ $showUrl }}" class="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl bg-white/5">
+                    {{-- Processing/failed challenges have no public page yet, so poster and title are plain elements. --}}
+                    <{{ $linkTag }} @if ($showUrl) href="{{ $showUrl }}" @endif class="relative h-36 w-28 shrink-0 overflow-hidden rounded-xl bg-white/5">
                         @if ($challenge->original?->posterUrl())
                             <img src="{{ $challenge->original->posterUrl() }}" alt="" class="h-full w-full object-cover">
                         @endif
@@ -38,12 +41,12 @@
                                 <span class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/70 text-xl">✓</span>
                             </span>
                         @endif
-                    </a>
-                    <a href="{{ $showUrl }}" class="min-w-0 flex-1">
+                    </{{ $linkTag }}>
+                    <{{ $linkTag }} @if ($showUrl) href="{{ $showUrl }}" @endif class="min-w-0 flex-1">
                         <h2 class="text-lg font-semibold leading-tight">{{ $challenge->title }}</h2>
                         <p class="mt-1 text-white/60">{{ __('challenges.by', ['name' => '@'.($challenge->user->username ?? $challenge->user->name)]) }}</p>
                         <p class="mt-2 line-clamp-3 text-sm text-white/70">{{ $challenge->rules }}</p>
-                    </a>
+                    </{{ $linkTag }}>
                 </div>
 
                 <div class="mt-3 flex items-center justify-between">
@@ -76,6 +79,9 @@
                             @break
                         @case('own')
                             <a href="{{ $showUrl }}" class="flex h-12 flex-1 items-center justify-center rounded-xl border border-white/15 text-sm font-semibold uppercase">{{ __('challenges.responses_count', ['count' => $challenge->entries_count]) }}</a>
+                            @break
+                        @case('own_processing')
+                            <span data-plate="own_processing" class="flex h-12 flex-1 items-center justify-center rounded-xl bg-white/10 text-sm text-white/60">{{ __('challenges.status_processing') }}</span>
                             @break
                         @case('own_failed')
                             <a href="{{ route('challenges.create', ['retry' => $challenge->slug]) }}" class="flex h-12 flex-1 items-center justify-center rounded-xl bg-rose-600 text-sm font-semibold uppercase">{{ __('challenges.upload_again') }}</a>

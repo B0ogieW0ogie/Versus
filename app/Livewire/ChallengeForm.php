@@ -22,6 +22,10 @@ class ChallengeForm extends Component
     #[Locked]
     public ?int $retryChallengeId = null;
 
+    /** Computed once in mount(): recomputing per render changed x-data and re-initialised Alpine mid-upload. */
+    #[Locked]
+    public string $backUrl = '';
+
     public string $uploadId = '';
 
     public string $title = '';
@@ -34,6 +38,10 @@ class ChallengeForm extends Component
 
     public function mount(?Challenge $challenge = null): void
     {
+        $fallback = route('challenges.index');
+        $previous = url()->previous($fallback);
+        $this->backUrl = $previous !== url()->current() ? $previous : $fallback;
+
         if ($challenge !== null && $challenge->exists) {
             if (! in_array($challenge->status, [Challenge::STATUS_ACTIVE, Challenge::STATUS_CLOSED], true)) {
                 abort(404);

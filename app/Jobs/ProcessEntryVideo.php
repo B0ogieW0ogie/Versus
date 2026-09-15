@@ -21,7 +21,11 @@ class ProcessEntryVideo implements ShouldQueue
 
     public int $timeout = 300;
 
-    public function __construct(public readonly int $entryId) {}
+    public function __construct(public readonly int $entryId)
+    {
+        // Transcodes are slow; keep them off the default queue so verification/reset mail is not delayed.
+        $this->onQueue('videos');
+    }
 
     public function handle(VideoTranscoder $transcoder, MarkEntryReadyAction $markReady, MarkEntryFailedAction $markFailed): void
     {

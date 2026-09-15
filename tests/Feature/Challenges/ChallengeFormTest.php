@@ -40,6 +40,17 @@ class ChallengeFormTest extends TestCase
         $this->get(route('challenges.create'))->assertRedirect(route('login'));
     }
 
+    public function test_back_url_is_computed_once_and_defaults_to_the_feed(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        Livewire::actingAs($user)
+            ->test(ChallengeForm::class)
+            ->assertSet('backUrl', route('challenges.index'))
+            ->set('title', 'Changed')
+            ->assertSet('backUrl', route('challenges.index'));
+    }
+
     public function test_publishing_a_new_challenge(): void
     {
         $user = User::factory()->create(['username' => 'dan']);

@@ -17,9 +17,10 @@
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @unless (request()->routeIs('challenges.index', 'challenges.show'))
+            {{-- The full-screen feed hides the top nav on mobile (bottom nav covers it) but keeps it on desktop. --}}
+            <div data-nav="top" class="{{ request()->routeIs('challenges.index', 'challenges.show') ? 'hidden sm:block' : '' }}">
                 @include('layouts.navigation')
-            @endunless
+            </div>
 
             <!-- Page Heading -->
             @isset($header)

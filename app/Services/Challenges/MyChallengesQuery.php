@@ -36,6 +36,7 @@ class MyChallengesQuery
             $state = match (true) {
                 $challenge->status === Challenge::STATUS_CLOSED => 'closed',
                 $isOwn && $challenge->status === Challenge::STATUS_FAILED => 'own_failed',
+                $isOwn && $challenge->status === Challenge::STATUS_PROCESSING => 'own_processing',
                 $isOwn => 'own',
                 $entry === null => $challenge->isOpen() ? 'accepted_open' : 'accepted_expired',
                 $entry->status === ChallengeEntry::STATUS_PROCESSING => 'response_processing',

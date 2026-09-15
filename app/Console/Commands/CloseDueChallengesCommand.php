@@ -21,7 +21,7 @@ class CloseDueChallengesCommand extends Command
         Challenge::query()
             ->where('status', Challenge::STATUS_ACTIVE)
             ->where('ends_at', '<=', now())
-            ->each(function (Challenge $challenge) use ($close): void {
+            ->eachById(function (Challenge $challenge) use ($close): void {
                 try {
                     $close($challenge);
                     $this->info("Closed challenge #{$challenge->id}.");
@@ -45,7 +45,7 @@ class CloseDueChallengesCommand extends Command
             ->whereNull('reminder_sent_at')
             ->where('ends_at', '>', now())
             ->where('ends_at', '<=', $horizon)
-            ->each(function (Challenge $challenge): void {
+            ->eachById(function (Challenge $challenge): void {
                 // Conditional update claims the reminder so overlapping runs cannot double-send.
                 $claimed = Challenge::whereKey($challenge->id)->whereNull('reminder_sent_at')->update(['reminder_sent_at' => now()]);
                 if ($claimed === 0) {

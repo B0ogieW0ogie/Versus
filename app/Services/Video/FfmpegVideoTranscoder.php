@@ -43,6 +43,8 @@ class FfmpegVideoTranscoder implements VideoTranscoder
             '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p',
             '-c:a', 'aac', '-b:a', '128k',
             '-movflags', '+faststart',
+            // Cap the output length: the container header duration checked by probe() can lie.
+            '-t', (string) ((int) config('versus.challenges.max_video_seconds') + 0.5),
             escapeshellarg($output),
         ]);
     }

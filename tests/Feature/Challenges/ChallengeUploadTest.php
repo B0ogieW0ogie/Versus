@@ -43,6 +43,19 @@ class ChallengeUploadTest extends TestCase
         $this->assertSame('AAABB', Storage::disk('local')->get($path));
     }
 
+    public function test_starting_uploads_is_rate_limited_per_user(): void
+    {
+        $user = User::factory()->create();
+
+        for ($i = 0; $i < 10; $i++) {
+            $this->actingAs($user)->postJson(route('challenge-uploads.start'))->assertOk();
+        }
+
+        $this->actingAs($user)->postJson(route('challenge-uploads.start'))->assertStatus(429);
+        // The limiter is keyed per user, not global.
+        $this->actingAs(User::factory()->create())->postJson(route('challenge-uploads.start'))->assertOk();
+    }
+
     public function test_out_of_order_chunk_is_rejected(): void
     {
         $user = User::factory()->create();
