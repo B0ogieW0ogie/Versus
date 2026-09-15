@@ -13,6 +13,7 @@ use App\Livewire\ChallengeForm;
 use App\Livewire\ConnectionsPage;
 use App\Livewire\FeedPage;
 use App\Livewire\Leaderboard;
+use App\Livewire\MyChallenges;
 use App\Livewire\ProfilePage;
 use App\Livewire\WalletPage;
 use Illuminate\Support\Facades\Route;
@@ -51,8 +52,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/referrals', fn () => redirect()->route('profile.edit', ['tab' => 'referrals'], 301))->name('referrals');
     Route::get('/my-bets', fn () => redirect()->route('profile.edit', ['tab' => 'activity'], 301))->name('my-bets');
 
-    // Replaced by the real page in Task 16.
-    Route::get('/my-challenges', fn () => abort(404))->name('challenges.mine');
+    Route::get('/my-challenges', MyChallenges::class)->name('challenges.mine');
 
     Route::post('/challenge-uploads', [ChallengeUploadController::class, 'start'])->name('challenge-uploads.start');
     Route::post('/challenge-uploads/{upload}/chunks', [ChallengeUploadController::class, 'chunk'])->name('challenge-uploads.chunk');
