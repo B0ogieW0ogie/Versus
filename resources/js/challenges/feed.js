@@ -233,65 +233,57 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         return root.querySelector(`video[data-ci="${this.active}"][data-si="${challenge.index}"]`);
     },
 
+    // Sound counts as "on" only when wanted AND not blocked by the browser's autoplay policy,
+    // so the 🔇 button (shown while blocked) turns sound on instead of saving "off".
     toggleSound() {
-        this.soundOn = !this.soundOn;
+        const effectivelyOn = this.soundOn && !this.soundBlocked;
+        this.soundOn = !effectivelyOn;
         try { localStorage.setItem(SOUND_KEY, this.soundOn ? 'on' : 'off'); } catch (e) { /* storage blocked */ }
 
         const video = this.currentVideo();
         if (!video) {
             return;
         }
-
         if (this.soundOn) {
-            video.muted = false;
-            const attempt = video.play();
-            if (attempt && typeof attempt.then === 'function') {
-                attempt.then(() => { this.soundBlocked = false; }).catch((error) => {
-                    if (error?.name === 'NotAllowedError') {
-                        video.muted = true;
-                        this.soundBlocked = true;
-                    }
-                });
-            } else {
-                this.soundBlocked = false;
-            }
+            this.enableSound(video);
         } else {
             video.muted = true;
             this.soundBlocked = false;
         }
     },
 
-    // First user gesture on the feed: if sound is wanted but the browser blocked it,
-    // unmute (+ replay if needed) synchronously inside the gesture so the browser honors it.
-    unlockSound() {
+    // Must run inside a user activation (a click/tap). Browsers ignore unmuting on
+    // touch pointerdown and may pause an unmuted video, so always (re)call play().
+    enableSound(video) {
+        video.muted = false;
+        video.play().then(() => {
+            this.soundBlocked = false;
+        }).catch(() => {
+            video.muted = true;
+            this.soundBlocked = true;
+            video.play().catch(() => {});
+        });
+    },
+
+    // First tap anywhere on the feed (click capture): if sound is wanted but blocked,
+    // unlock it inside this gesture. A tap on the video area must not also toggle pause.
+    unlockSound(event) {
         if (!this.soundBlocked || !this.soundOn) {
             return;
+        }
+        if (event?.target?.closest?.('[data-sound-toggle]')) {
+            return; // the sound button handles this tap itself
         }
         const video = this.currentVideo();
         if (!video) {
             return;
         }
-
-        // This pointerdown is the one that unlocks sound — the click that follows on the
-        // same tap must not also toggle play/pause. Cleared by togglePlayback, or by this
-        // fallback timer for taps that land on a control other than the video area.
-        this.skipNextTap = true;
-        clearTimeout(this.skipTapTimer);
-        this.skipTapTimer = setTimeout(() => { this.skipNextTap = false; }, 400);
-
-        video.muted = false;
-        if (!video.paused) {
-            // Already playing (muted) — unmuting is enough, no need to call play() again.
-            this.soundBlocked = false;
-            return;
+        if (event?.target?.closest?.('[data-slide]')) {
+            this.skipNextTap = true;
+            clearTimeout(this.skipTapTimer);
+            this.skipTapTimer = setTimeout(() => { this.skipNextTap = false; }, 400);
         }
-        video.play().then(() => {
-            this.soundBlocked = false;
-        }).catch(() => {
-            // Still blocked — fall back to muted playback and keep the hint visible.
-            video.muted = true;
-            video.play().catch(() => {});
-        });
+        this.enableSound(video);
     },
 
     togglePlayback(ci) {

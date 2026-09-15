@@ -21,7 +21,7 @@
             'soundOff' => __('challenges.sound_off'),
         ]),
      })"
-     @pointerdown.capture="unlockSound()"
+     @click.capture="unlockSound($event)"
      class="fixed inset-x-0 top-0 sm:top-16 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white">
 
     <div x-ref="vertical" class="h-full overflow-y-auto snap-y snap-mandatory overscroll-contain"
@@ -43,7 +43,7 @@
                      :data-carousel="ci"
                      @scroll.debounce.120ms="onCarouselScroll(ci, $event.target)">
                     <template x-for="(slide, si) in challenge.slides" :key="slide.entry_id">
-                        <div class="relative h-full w-full shrink-0 snap-start snap-always" @click="togglePlayback(ci)">
+                        <div class="relative h-full w-full shrink-0 snap-start snap-always" data-slide @click="togglePlayback(ci)">
                             <video class="h-full w-full bg-black object-contain" playsinline loop muted preload="none"
                                    :poster="slide.poster_url" :data-src="slide.video_url" :data-ci="ci" :data-si="si"></video>
                             <span x-show="slide.is_winner" class="absolute left-4 top-16 rounded-full bg-amber-400/90 px-3 py-1 text-xs font-bold text-black">🏆</span>
@@ -84,7 +84,7 @@
                             </div>
 
                             <div class="pointer-events-auto flex flex-col items-center gap-4 pb-2 text-xs">
-                                <button type="button" @click.stop="toggleSound()" class="flex flex-col items-center gap-1"
+                                <button type="button" data-sound-toggle @click.stop="toggleSound()" class="flex flex-col items-center gap-1"
                                         :aria-label="(!soundOn || soundBlocked) ? i18n.soundOn : i18n.soundOff">
                                     <span class="text-2xl" x-text="(!soundOn || soundBlocked) ? '🔇' : '🔊'"></span>
                                 </button>
