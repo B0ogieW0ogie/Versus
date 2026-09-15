@@ -5,7 +5,12 @@ const prepare = (challenge) => ({ ...challenge, index: challenge.focus_index ?? 
 
 const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
+export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
+    // The feed root, captured once in init(). `this.$el` inside a method is the element whose
+    // handler invoked it (e.g. the mute button), not the root — querying from it misses videos.
+    let root = null;
+
+    return {
     challenges: initial.map(prepare),
     i18n,
     active: 0,
@@ -29,6 +34,8 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
     dwellTimer: null,
 
     init() {
+        root = this.$el;
+
         let seen = hintSeen;
         if (guest) {
             try { seen = localStorage.getItem(HINT_KEY) === '1'; } catch (e) { seen = false; }
@@ -43,7 +50,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
 
         this.$nextTick(() => {
             const first = this.challenges[0];
-            const carousel = this.$el.querySelector('[data-carousel="0"]');
+            const carousel = root.querySelector('[data-carousel="0"]');
             if (first && first.index > 0 && carousel) {
                 carousel.scrollLeft = carousel.clientWidth * first.index;
             }
@@ -151,7 +158,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         const currentKey = `${a}:${current.index}`;
         const keep = new Set([currentKey, `${a}:${current.index + 1}`, next ? `${a + 1}:${next.index}` : '']);
 
-        this.$el.querySelectorAll('video[data-ci]').forEach((video) => {
+        root.querySelectorAll('video[data-ci]').forEach((video) => {
             const key = `${video.dataset.ci}:${video.dataset.si}`;
             if (keep.has(key)) {
                 if (video.getAttribute('src') !== video.dataset.src) {
@@ -223,7 +230,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         if (!challenge) {
             return null;
         }
-        return this.$el.querySelector(`video[data-ci="${this.active}"][data-si="${challenge.index}"]`);
+        return root.querySelector(`video[data-ci="${this.active}"][data-si="${challenge.index}"]`);
     },
 
     toggleSound() {
@@ -298,7 +305,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
         if (!challenge || !slide) {
             return;
         }
-        const video = this.$el.querySelector(`video[data-ci="${ci}"][data-si="${challenge.index}"]`);
+        const video = root.querySelector(`video[data-ci="${ci}"][data-si="${challenge.index}"]`);
         if (!video) {
             return;
         }
@@ -424,7 +431,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             // clear a `correcting` flag we might otherwise set.
             return;
         }
-        const carousel = this.$el.querySelector(`[data-carousel="${ci}"]`);
+        const carousel = root.querySelector(`[data-carousel="${ci}"]`);
         if (!carousel) {
             return;
         }
@@ -509,4 +516,5 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => ({
             this.$wire.dismissSwipeHint();
         }
     },
-});
+};
+};
