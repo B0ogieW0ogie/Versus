@@ -109,6 +109,26 @@ class ChallengeFormTest extends TestCase
             ->assertHasErrors(['challenge']);
     }
 
+    public function test_respond_to_processing_challenge_is_not_found(): void
+    {
+        $challenge = Challenge::factory()->processing()->create();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('challenges.respond', $challenge->slug))
+            ->assertNotFound();
+    }
+
+    public function test_respond_to_failed_challenge_is_not_found(): void
+    {
+        $challenge = Challenge::factory()->failed()->create();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('challenges.respond', $challenge->slug))
+            ->assertNotFound();
+    }
+
     public function test_retry_prefills_from_failed_challenge_and_replaces_it(): void
     {
         $user = User::factory()->create(['username' => 'dan']);

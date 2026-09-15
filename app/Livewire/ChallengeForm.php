@@ -35,6 +35,10 @@ class ChallengeForm extends Component
     public function mount(?Challenge $challenge = null): void
     {
         if ($challenge !== null && $challenge->exists) {
+            if (! in_array($challenge->status, [Challenge::STATUS_ACTIVE, Challenge::STATUS_CLOSED], true)) {
+                abort(404);
+            }
+
             $this->challengeId = $challenge->id;
             $this->title = $challenge->title;
             $this->rules = $challenge->rules;
