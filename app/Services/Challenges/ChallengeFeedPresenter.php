@@ -64,6 +64,7 @@ class ChallengeFeedPresenter
             'comments_count' => (int) ($commentCounts[$entry->id] ?? 0),
             'is_mine' => $viewer !== null && $entry->user_id === $viewer->id,
             'is_winner' => $challenge->winner_entry_id === $entry->id,
+            'submitted_human' => $entry->submitted_at->diffForHumans(),
             'share_url' => route('challenges.show', ['challenge' => $challenge->slug, 'entry' => $entry->id]),
         ], $entries);
 

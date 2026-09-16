@@ -31,6 +31,21 @@ class ChallengeFeedPresenterTest extends TestCase
         $this->assertSame(route('challenges.show', ['challenge' => $challenge->slug, 'entry' => $response->id]), $data['slides'][1]['share_url']);
     }
 
+    public function test_slides_carry_human_submission_time(): void
+    {
+        $challenge = Challenge::factory()->withOriginal()->create();
+        ChallengeEntry::factory()->for($challenge)->create(['submitted_at' => now()->subHours(2)]);
+
+        $data = app(ChallengeFeedPresenter::class)->present($challenge, null);
+
+        $this->assertCount(2, $data['slides']);
+        foreach ($data['slides'] as $slide) {
+            $this->assertIsString($slide['submitted_human']);
+            $this->assertNotSame('', $slide['submitted_human']);
+        }
+        $this->assertSame(now()->subHours(2)->diffForHumans(), $data['slides'][1]['submitted_human']);
+    }
+
     public function test_viewer_state_vote_like_accept_and_own_entry(): void
     {
         $challenge = Challenge::factory()->withOriginal()->create();

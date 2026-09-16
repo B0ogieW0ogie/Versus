@@ -3,12 +3,22 @@ const SOUND_KEY = 'versus.sound';
 
 const prepare = (challenge) => ({ ...challenge, index: challenge.focus_index ?? 0, viewed: false, correcting: false, correctingTimer: null, paused: false });
 
+const TAG_RE = /#[\p{L}\p{N}_]+/gu;
+const PLAYER_EVENTS = ['timeupdate', 'loadedmetadata', 'durationchange', 'play', 'pause', 'emptied'];
+
+const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
+
 const escapeHtml = (text) => text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
     // The feed root, captured once in init(). `this.$el` inside a method is the element whose
     // handler invoked it (e.g. the mute button), not the root — querying from it misses videos.
     let root = null;
+    // Desktop player bar: the <video> whose events we listen to, and the bound handlers.
+    let playerVideo = null;
+    let onPlayerEvent = null;
+    let onKeydown = null;
+    let onFullscreenChange = null;
 
     return {
     challenges: initial.map(prepare),
@@ -32,9 +42,14 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
     impressionQueue: new Set(),
     impressionTimer: null,
     dwellTimer: null,
+    player: { current: 0, duration: 0, paused: true },
+    detailsExpanded: false,
 
     init() {
         root = this.$el;
+        onPlayerEvent = () => this.updatePlayer();
+        onKeydown = (event) => this.onKeydown(event);
+        onFullscreenChange = () => this.realign();
 
         let seen = hintSeen;
         if (guest) {
@@ -55,9 +70,24 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
                 carousel.scrollLeft = carousel.clientWidth * first.index;
             }
             this.syncPlayback();
+            this.loadDesktopComments();
+        });
+
+        // Desktop details column follows the current slide.
+        this.$watch("active + ':' + (challenges[active] ? challenges[active].index : '')", () => {
+            this.detailsExpanded = false;
+            this.loadDesktopComments();
         });
 
         window.addEventListener('pagehide', () => this.flushImpressions());
+        window.addEventListener('keydown', onKeydown);
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+    },
+
+    destroy() {
+        window.removeEventListener('keydown', onKeydown);
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+        this.bindPlayer(null);
     },
 
     // Returns null when the "all responses" end card is the active horizontal slide
@@ -157,6 +187,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         const next = this.challenges[a + 1];
         const currentKey = `${a}:${current.index}`;
         const keep = new Set([currentKey, `${a}:${current.index + 1}`, next ? `${a + 1}:${next.index}` : '']);
+        this.bindPlayer(this.currentVideo());
 
         root.querySelectorAll('video[data-ci]').forEach((video) => {
             const key = `${video.dataset.ci}:${video.dataset.si}`;
@@ -278,7 +309,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         if (!video) {
             return;
         }
-        if (event?.target?.closest?.('[data-slide]')) {
+        if (event?.target?.closest?.('[data-slide], [data-player-toggle]')) {
             this.skipNextTap = true;
             clearTimeout(this.skipTapTimer);
             this.skipTapTimer = setTimeout(() => { this.skipNextTap = false; }, 400);
@@ -308,6 +339,121 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         } else {
             video.pause();
             challenge.paused = true;
+        }
+    },
+
+    // Desktop player bar: follow exactly one <video> (the current one).
+    bindPlayer(video) {
+        if (playerVideo !== video) {
+            if (playerVideo) {
+                PLAYER_EVENTS.forEach((name) => playerVideo.removeEventListener(name, onPlayerEvent));
+            }
+            playerVideo = video;
+            if (video) {
+                PLAYER_EVENTS.forEach((name) => video.addEventListener(name, onPlayerEvent));
+            }
+        }
+        this.updatePlayer();
+    },
+
+    updatePlayer() {
+        const video = playerVideo;
+        this.player.current = video ? video.currentTime || 0 : 0;
+        this.player.duration = video && Number.isFinite(video.duration) ? video.duration : 0;
+        this.player.paused = video ? video.paused : true;
+    },
+
+    formatTime(seconds) {
+        const total = Math.max(0, Math.floor(seconds || 0));
+        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+    },
+
+    seek(event) {
+        const video = playerVideo;
+        if (!video || !this.player.duration) {
+            return;
+        }
+        const rect = event.currentTarget.getBoundingClientRect();
+        const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / Math.max(1, rect.width)));
+        video.currentTime = ratio * this.player.duration;
+        this.updatePlayer();
+    },
+
+    toggleFullscreen() {
+        try {
+            if (document.fullscreenElement) {
+                Promise.resolve(document.exitFullscreen?.()).catch(() => {});
+                return;
+            }
+            const card = root.querySelector('[data-card]');
+            if (card?.requestFullscreen) {
+                Promise.resolve(card.requestFullscreen()).catch(() => {});
+            }
+        } catch (e) {
+            // Fullscreen unsupported — ignore.
+        }
+    },
+
+    // The card changes size when entering/leaving fullscreen: keep the active item aligned.
+    realign() {
+        this.$nextTick(() => {
+            const el = this.$refs.vertical;
+            el.scrollTop = this.active * el.clientHeight;
+            const challenge = this.challenges[this.active];
+            const carousel = root.querySelector(`[data-carousel="${this.active}"]`);
+            if (challenge && carousel) {
+                carousel.scrollLeft = challenge.index * carousel.clientWidth;
+            }
+        });
+    },
+
+    // Desktop keyboard: ↑/↓ = previous/next challenge, ←/→ = previous/next slide.
+    onKeydown(event) {
+        if (!isDesktop() || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+            return;
+        }
+        if (event.target?.closest?.('input, textarea, select, [contenteditable]')) {
+            return;
+        }
+        const challenge = this.challenges[this.active];
+        switch (event.key) {
+            case 'ArrowDown':
+                this.goToChallenge(this.active + 1);
+                break;
+            case 'ArrowUp':
+                this.goToChallenge(this.active - 1);
+                break;
+            case 'ArrowRight':
+                if (challenge) {
+                    const last = challenge.entries_count > 0 ? challenge.slides.length : challenge.slides.length - 1;
+                    this.goToSlide(this.active, Math.min(last, challenge.index + 1));
+                }
+                break;
+            case 'ArrowLeft':
+                if (challenge) {
+                    this.goToSlide(this.active, challenge.index - 1);
+                }
+                break;
+            default:
+                return;
+        }
+        event.preventDefault();
+    },
+
+    goToChallenge(ci) {
+        if (ci < 0 || ci >= this.challenges.length || ci === this.active) {
+            return;
+        }
+        const el = this.$refs.vertical;
+        // Same in-flight correction guard as goToSlide, so onVerticalScroll doesn't fight it.
+        this.correctingVertical = true;
+        this.active = ci;
+        el.scrollTo({ top: ci * el.clientHeight, behavior: 'smooth' });
+        this.syncPlayback();
+        clearTimeout(this.correctingVerticalTimer);
+        this.correctingVerticalTimer = setTimeout(() => { this.correctingVertical = false; }, 700);
+        if (this.challenges.length - ci <= 2) {
+            this.loadMore();
         }
     },
 
@@ -443,10 +589,39 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         if (!slide) {
             return;
         }
+        if (isDesktop()) {
+            // On desktop the comments live in the details column — focus its input instead.
+            root.querySelector('[data-desktop-comment-input]')?.focus();
+            return;
+        }
         this.sheetEntry = slide;
         this.comments = [];
         this.sheet = 'comments';
         this.comments = await this.$wire.comments(this.sheetEntry.entry_id);
+    },
+
+    // Desktop details column: comments for the current slide (shares state with the mobile sheet,
+    // which is never open at lg).
+    async loadDesktopComments() {
+        if (!isDesktop()) {
+            return;
+        }
+        const slide = this.currentSlide(this.active);
+        this.sheetEntry = slide;
+        this.comments = [];
+        if (!slide) {
+            return;
+        }
+        const entryId = slide.entry_id;
+        try {
+            const rows = await this.$wire.comments(entryId);
+            // Ignore a stale response if the slide changed while loading.
+            if (this.sheetEntry?.entry_id === entryId) {
+                this.comments = rows;
+            }
+        } catch (error) {
+            console.error(error);
+        }
     },
 
     async postComment() {
@@ -491,6 +666,18 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         } catch (e) {
             // Clipboard unavailable (insecure context).
         }
+    },
+
+    tagsOf(text) {
+        return [...new Set((text || '').match(TAG_RE) || [])];
+    },
+
+    stripTags(text) {
+        return (text || '').replace(TAG_RE, '').replace(/[ \t]{2,}/g, ' ').replace(/[ \t]+$/gm, '').trim();
+    },
+
+    isLongText(text) {
+        return text.length > 90 || text.includes('\n');
     },
 
     highlightTags(text) {

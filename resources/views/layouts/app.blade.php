@@ -17,8 +17,9 @@
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            {{-- The full-screen feed hides the top nav on mobile (bottom nav covers it) but keeps it on desktop. --}}
-            <div data-nav="top" class="{{ request()->routeIs('challenges.index', 'challenges.show') ? 'hidden sm:block' : '' }}">
+            {{-- The full-screen feed hides the top nav on mobile (bottom nav covers it) and on lg (the feed has its own side nav);
+                 it stays visible on sm/md. --}}
+            <div data-nav="top" class="{{ request()->routeIs('challenges.index', 'challenges.show') ? 'hidden sm:block lg:hidden' : '' }}">
                 @include('layouts.navigation')
             </div>
 

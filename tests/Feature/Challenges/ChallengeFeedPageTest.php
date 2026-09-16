@@ -35,6 +35,40 @@ class ChallengeFeedPageTest extends TestCase
             ->assertSet('initialSlides.0.focus_index', 1);
     }
 
+    public function test_feed_renders_desktop_columns_and_side_nav(): void
+    {
+        config(['versus.battles_enabled' => false]);
+        Challenge::factory()->withOriginal()->create();
+
+        $html = $this->get(route('challenges.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-side-nav', $html);
+        $this->assertStringContainsString('data-desktop-details', $html);
+        $this->assertStringContainsString('data-desktop-comments', $html);
+        $this->assertStringContainsString(__('challenges.may_like_title'), $html);
+        foreach ([__('nav.home'), __('challenges.nav_challenges'), __('challenges.nav_my'), __('nav.profile')] as $label) {
+            $this->assertStringContainsString($label, $html);
+        }
+        $this->assertStringContainsString('href="'.route('challenges.index').'"', $html);
+        $this->assertStringNotContainsString('href="'.route('leaderboard').'"', $html);
+        $this->assertStringNotContainsString('href="'.route('battles.create').'"', $html);
+        $this->assertDoesNotMatchRegularExpression('#href="[^"]*/battles#', $html);
+        // Guest: the side nav offers login/register and the comments column a login link.
+        $this->assertStringContainsString(__('challenges.comment_login'), $html);
+    }
+
+    public function test_feed_side_nav_holds_the_bell_for_users(): void
+    {
+        config(['versus.battles_enabled' => false]);
+
+        $html = $this->actingAs(User::factory()->create())->get(route('challenges.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString(__('challenges.notifications'), $html);
+        $this->assertStringContainsString('href="'.route('challenges.mine').'"', $html);
+        $this->assertStringContainsString('data-desktop-comment-input', $html);
+        $this->assertStringNotContainsString(__('challenges.comment_login'), $html);
+    }
+
     public function test_deep_link_opens_closed_challenge_even_though_feed_hides_it(): void
     {
         $closed = Challenge::factory()->closed()->withOriginal()->create(['title' => 'Old riff']);

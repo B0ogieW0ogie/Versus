@@ -112,4 +112,16 @@ return [
     // Navigation
     'nav_challenges' => 'Челленджи',
     'nav_my' => 'Мои челленджи',
+
+    // Desktop feed
+    'may_like_title' => 'Вам может это понравиться',
+    'may_like_subtitle' => 'Популярные авторы по хештегам',
+    'may_like_soon' => 'Скоро здесь появятся авторы',
+    'notifications' => 'Уведомления',
+    'show_more' => 'Ещё',
+    'show_less' => 'Свернуть',
+    'comment_login' => 'Войдите, чтобы комментировать',
+    'fullscreen' => 'Во весь экран',
+    'play' => 'Воспроизвести',
+    'pause' => 'Пауза',
 ];

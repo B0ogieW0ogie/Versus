@@ -54,11 +54,11 @@ class ChallengesNavigationTest extends TestCase
         $this->actingAs($user)->get(route('challenges.mine'))->assertOk()->assertSee($bottomNav, false);
     }
 
-    public function test_top_nav_is_hidden_only_on_mobile_on_the_feed(): void
+    public function test_top_nav_is_hidden_on_mobile_and_lg_on_the_feed(): void
     {
         $this->get(route('challenges.index'))
             ->assertOk()
-            ->assertSee('data-nav="top" class="hidden sm:block"', false);
+            ->assertSee('data-nav="top" class="hidden sm:block lg:hidden"', false);
 
         $this->actingAs(User::factory()->create())->get(route('challenges.mine'))
             ->assertOk()
