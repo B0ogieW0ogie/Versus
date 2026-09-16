@@ -25,7 +25,7 @@ class ChallengeFeedPageTest extends TestCase
 
         $this->get(route('challenges.index'))->assertOk()->assertSee('Kickflip clean')
             ->assertSee('snap-always', false)
-            ->assertSee('Tap to unmute');
+            ->assertDontSee('Tap to unmute');
         $this->get(route('challenges.show', ['challenge' => $challenge->slug, 'entry' => $entry->id]))->assertOk();
 
         // @js() escapes quotes, so assert on component state rather than raw HTML.

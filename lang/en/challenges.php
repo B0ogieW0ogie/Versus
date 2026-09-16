@@ -18,7 +18,6 @@ return [
     'swipe_hint_body' => 'to see more responses',
     'in_reply_to' => 'in reply to :name',
     'link_copied' => 'Link copied',
-    'tap_to_unmute' => 'Tap to unmute',
     'sound_on' => 'Turn sound on',
     'sound_off' => 'Mute',
     'comments' => 'Comments',

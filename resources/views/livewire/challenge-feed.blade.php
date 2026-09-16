@@ -42,7 +42,7 @@
     <div class="h-full lg:flex lg:min-h-0 lg:flex-col lg:items-center lg:justify-center lg:gap-4">
     <div data-card class="relative h-full lg:h-[calc(100vh-7rem)] lg:aspect-[9/16] lg:overflow-hidden lg:rounded-2xl lg:bg-black">
 
-    <div x-ref="vertical" class="h-full overflow-y-auto snap-y snap-mandatory overscroll-contain"
+    <div x-ref="vertical" class="h-full overflow-y-auto snap-y snap-mandatory overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
          @scroll.debounce.120ms="onVerticalScroll()">
 
         <template x-if="challenges.length === 0">
@@ -57,7 +57,7 @@
         <template x-for="(challenge, ci) in challenges" :key="challenge.id">
             <section class="relative h-full w-full snap-start snap-always overflow-hidden">
                 {{-- Horizontal carousel: original, responses, "all responses" card --}}
-                <div class="flex h-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none]"
+                <div class="flex h-full overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                      :data-carousel="ci"
                      @scroll.debounce.120ms="onCarouselScroll(ci, $event.target)">
                     <template x-for="(slide, si) in challenge.slides" :key="slide.entry_id">
@@ -280,12 +280,6 @@
             <livewire:notification-bell />
         </div>
     @endauth
-
-    {{-- Sound hint pill: shown while sound is off, or on but still blocked by the browser --}}
-    <div x-show="!soundOn || soundBlocked" x-cloak x-transition.opacity
-         class="pointer-events-none absolute inset-x-0 top-[max(1rem,env(safe-area-inset-top))] z-40 mx-auto w-fit rounded-full bg-black/60 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur">
-        🔇 {{ __('challenges.tap_to_unmute') }}
-    </div>
 
     {{-- First-visit swipe hint --}}
     <div x-show="hint" x-cloak x-transition.opacity @click="dismissHint()"
