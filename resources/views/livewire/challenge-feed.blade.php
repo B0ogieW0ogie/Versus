@@ -107,7 +107,7 @@
                                 <div class="relative flex flex-col items-center"
                                      @pointerenter="volumeOpen = isDesktop()" @pointerleave="if (!draggingVolume) volumeOpen = false">
                                     {{-- Invisible hover column: icon height + slider height, always present on desktop --}}
-                                    <div class="absolute bottom-0 left-1/2 hidden h-36 w-12 -translate-x-1/2 lg:block"></div>
+                                    <div class="absolute bottom-0 left-1/2 hidden h-44 w-12 -translate-x-1/2 lg:block"></div>
 
                                     <div x-show="volumeOpen" x-cloak x-transition.opacity
                                          class="absolute bottom-full left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-3 backdrop-blur">
