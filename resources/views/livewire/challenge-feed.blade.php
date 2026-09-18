@@ -7,6 +7,7 @@
             'pillChallenge' => __('challenges.pill_challenge'),
             'pillResponse' => __('challenges.pill_response'),
             'accept' => __('challenges.accept'),
+            'acceptShort' => __('challenges.accept_short'),
             'vote' => __('challenges.vote'),
             'yourVote' => __('challenges.your_vote'),
             'yourChallenge' => __('challenges.your_challenge'),
@@ -26,7 +27,7 @@
         ]),
      })"
      @click.capture="unlockSound($event)"
-     class="fixed inset-x-0 top-0 sm:top-16 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white
+     class="fixed inset-x-0 top-0 sm:top-16 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white
             lg:top-0 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_16rem] lg:grid-rows-1 lg:gap-8 lg:bg-navy-900 lg:px-8">
 
     {{-- Desktop column 1: recommendations (placeholder for now) --}}
@@ -78,23 +79,22 @@
                 {{-- Overlay --}}
                 <div class="pointer-events-none absolute inset-0 flex flex-col justify-between bg-gradient-to-b from-black/40 via-transparent to-black/70">
                     <template x-if="currentSlide(ci)">
-                        <div class="flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-                            <span class="rounded-full border-2 bg-black/30 px-4 py-1.5 text-sm font-semibold"
+                        <div class="flex items-center justify-between px-2 pt-[max(0.5rem,env(safe-area-inset-top))] lg:p-4">
+                            <span class="rounded-full border-2 bg-black/30 px-3 py-1 text-xs font-semibold lg:px-4 lg:py-1.5 lg:text-sm"
                                   :class="currentSlide(ci).is_original ? 'border-orange-500' : 'border-violet-500 shadow-[0_0_14px_rgba(139,92,246,.6)]'"
                                   x-text="currentSlide(ci).is_original ? i18n.pillChallenge : i18n.pillResponse.replace(':n', challenge.index).replace(':total', challenge.slides.length - 1)"></span>
                         </div>
                     </template>
 
                     <template x-if="currentSlide(ci)">
-                        <div class="flex items-end gap-3 px-4 pb-4 lg:justify-end lg:pb-16">
-                            <div class="min-w-0 flex-1 space-y-2 lg:hidden">
+                        <div class="mt-auto flex items-end gap-3 px-4 pb-1 lg:justify-end lg:pb-16">
+                            <div class="min-w-0 flex-1 space-y-1.5 lg:hidden">
                                 <a :href="currentSlide(ci).author.profile_url" class="pointer-events-auto flex items-center gap-2">
                                     <img x-show="currentSlide(ci).author.avatar_url" :src="currentSlide(ci).author.avatar_url" class="h-9 w-9 rounded-full object-cover" alt="">
                                     <span x-show="!currentSlide(ci).author.avatar_url" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold" x-text="currentSlide(ci).author.name.charAt(0)"></span>
                                     <span class="truncate font-semibold" x-text="currentSlide(ci).author.name"></span>
                                     <span x-show="!currentSlide(ci).is_original" class="truncate text-xs text-white/60" x-text="i18n.inReplyTo.replace(':name', challenge.author_name)"></span>
                                 </a>
-                                <p x-show="challenge.is_open" class="text-xs text-white/70">⏱ <span x-data="countdown(challenge.ends_at)" x-init="start()" x-text="label"></span></p>
                                 <button type="button" class="pointer-events-auto block w-full text-left" @click="sheetChallenge = challenge; sheet = 'rules'">
                                     <span class="block text-lg font-bold leading-snug" x-text="challenge.title"></span>
                                     <span class="line-clamp-2 text-sm text-white/80" x-text="challenge.rules"></span>
@@ -142,23 +142,27 @@
                         </div>
                     </template>
 
-                    <div class="px-4 pb-4 lg:hidden">
+                    <div class="px-4 pb-3 lg:hidden">
                         <template x-if="challenge.is_open && currentSlide(ci)">
-                            <div class="pointer-events-auto flex h-14 w-full text-sm font-semibold uppercase tracking-wide">
+                            <div class="pointer-events-auto flex w-full gap-2 text-sm font-semibold uppercase tracking-wide">
                                 <button type="button"
-                                        class="-mr-2 flex-1 rounded-l-full bg-gradient-to-r from-orange-500 to-orange-400 [clip-path:polygon(0_0,100%_0,calc(100%_-_18px)_100%,0_100%)] disabled:opacity-60"
+                                        class="flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 px-3 disabled:opacity-60"
                                         :disabled="challenge.is_own"
-                                        @click="accept(ci)"
-                                        x-text="challenge.is_own ? i18n.yourChallenge : (challenge.my_entry_id ? i18n.myResponse : i18n.accept)"></button>
+                                        @click="accept(ci)">
+                                    <x-icon.swords class="h-4 w-4 shrink-0" />
+                                    <span class="truncate" x-text="i18n.acceptShort"></span>
+                                </button>
                                 <button type="button"
-                                        class="-ml-2 flex-1 rounded-r-full bg-gradient-to-r from-indigo-600 to-violet-600 [clip-path:polygon(18px_0,100%_0,100%_100%,0_100%)] disabled:opacity-60"
+                                        class="flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3 disabled:opacity-60"
                                         :disabled="currentSlide(ci).is_mine"
-                                        @click="vote(ci)"
-                                        x-text="challenge.my_vote_entry_id === currentSlide(ci).entry_id ? i18n.yourVote : i18n.vote"></button>
+                                        @click="vote(ci)">
+                                    <x-icon.bolt class="h-4 w-4 shrink-0" />
+                                    <span class="truncate" x-text="i18n.vote"></span>
+                                </button>
                             </div>
                         </template>
                         <template x-if="!challenge.is_open">
-                            <div class="flex h-14 items-center justify-center rounded-full bg-white/10 text-sm font-semibold"
+                            <div class="flex h-10 items-center justify-center rounded-xl bg-white/10 text-sm font-semibold"
                                  x-text="challenge.winner_name ? i18n.winner.replace(':name', challenge.winner_name) : i18n.noVotes"></div>
                         </template>
                     </div>
@@ -286,7 +290,7 @@
          Mobile only: on sm/md the top navigation (with its own bell) is visible above the feed,
          and on lg the side nav carries the only bell. --}}
     @auth
-        <div class="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-40 sm:hidden lg:hidden">
+        <div class="absolute right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-40 sm:hidden lg:hidden">
             <livewire:notification-bell />
         </div>
     @endauth

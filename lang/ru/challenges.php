@@ -5,6 +5,7 @@ return [
     'pill_challenge' => 'Челлендж',
     'pill_response' => 'Ответ :n/:total',
     'accept' => 'Принять челлендж',
+    'accept_short' => 'Принять',
     'vote' => 'Голосовать',
     'your_vote' => 'Ваш голос ✓',
     'your_challenge' => 'Ваш челлендж',

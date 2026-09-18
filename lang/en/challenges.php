@@ -5,6 +5,7 @@ return [
     'pill_challenge' => 'Challenge',
     'pill_response' => 'Response :n/:total',
     'accept' => 'Accept challenge',
+    'accept_short' => 'Accept',
     'vote' => 'Vote',
     'your_vote' => 'Your vote ✓',
     'your_challenge' => 'Your challenge',
