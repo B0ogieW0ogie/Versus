@@ -102,11 +102,15 @@
                             </div>
 
                             <div class="pointer-events-auto flex flex-col items-center gap-4 pb-2 text-xs">
-                                {{-- Sound: click toggles mute; on desktop a volume slider appears on hover (0 = muted) --}}
+                                {{-- Sound: click toggles mute. On desktop the hover zone spans the icon AND the
+                                     whole strip above it where the slider appears, so there is no gap to fall through. --}}
                                 <div class="relative flex flex-col items-center"
                                      @pointerenter="volumeOpen = isDesktop()" @pointerleave="if (!draggingVolume) volumeOpen = false">
+                                    {{-- Invisible hover column: icon height + slider height, always present on desktop --}}
+                                    <div class="absolute bottom-0 left-1/2 hidden h-36 w-12 -translate-x-1/2 lg:block"></div>
+
                                     <div x-show="volumeOpen" x-cloak x-transition.opacity
-                                         class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-3 backdrop-blur">
+                                         class="absolute bottom-full left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-3 backdrop-blur">
                                         <div class="relative h-24 w-5 cursor-pointer touch-none"
                                              @pointerdown.stop.prevent="startVolumeDrag($event)" @click.stop>
                                             <div class="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-white/30"></div>
@@ -116,7 +120,7 @@
                                                  :style="`bottom: ${volume * 100}%`"></div>
                                         </div>
                                     </div>
-                                    <button type="button" data-sound-toggle @click.stop="toggleSound()" class="flex flex-col items-center gap-1"
+                                    <button type="button" data-sound-toggle @click.stop="toggleSound()" class="relative flex flex-col items-center gap-1"
                                             :aria-label="soundMuted() ? i18n.soundOn : i18n.soundOff">
                                         <span class="text-2xl" x-text="soundMuted() ? '🔇' : '🔊'"></span>
                                     </button>
