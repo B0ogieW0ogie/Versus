@@ -111,7 +111,7 @@
 
                                     {{-- Always rendered: toggling display + backdrop-filter made the fade stutter --}}
                                     <div class="absolute bottom-full left-1/2 hidden -translate-x-1/2 rounded-full bg-black/70 px-2 py-3 opacity-0 transition-opacity duration-150 ease-out lg:block"
-                                         :class="volumeOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'">
+                                         :style="volumeOpen ? 'opacity:1' : 'opacity:0;pointer-events:none'">
                                         <div class="relative h-24 w-5 cursor-pointer touch-none"
                                              @pointerdown.stop.prevent="startVolumeDrag($event)" @click.stop>
                                             <div class="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-white/30"></div>
