@@ -1,5 +1,6 @@
 const HINT_KEY = 'versus.swipeHintSeen';
 const SOUND_KEY = 'versus.sound';
+const VOLUME_KEY = 'versus.volume';
 
 const prepare = (challenge) => ({ ...challenge, index: challenge.focus_index ?? 0, viewed: false, correcting: false, correctingTimer: null, paused: false });
 
@@ -27,6 +28,9 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
     correctingVerticalTimer: null,
     soundOn: true,
     soundBlocked: false,
+    volume: 1,
+    volumeOpen: false,
+    draggingVolume: false,
     skipNextTap: false,
     skipTapTimer: null,
     loading: false,
@@ -57,6 +61,10 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
 
         try {
             this.soundOn = localStorage.getItem(SOUND_KEY) !== 'off';
+            const savedVolume = parseFloat(localStorage.getItem(VOLUME_KEY));
+            if (Number.isFinite(savedVolume)) {
+                this.volume = Math.min(1, Math.max(0, savedVolume));
+            }
         } catch (e) {
             this.soundOn = true;
         }
@@ -200,7 +208,8 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
 
             if (key === currentKey) {
                 current.paused = false;
-                video.muted = !this.soundOn;
+                video.volume = this.volume;
+                video.muted = this.isMuted();
                 video.play().then(() => {
                     if (!video.muted) {
                         this.soundBlocked = false;
@@ -260,17 +269,84 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         return root.querySelector(`video[data-ci="${this.active}"][data-si="${challenge.index}"]`);
     },
 
-    // Sound counts as "on" only when wanted AND not blocked by the browser's autoplay policy,
-    // so the 🔇 button (shown while blocked) turns sound on instead of saving "off".
-    toggleSound() {
-        const effectivelyOn = this.soundOn && !this.soundBlocked;
-        this.soundOn = !effectivelyOn;
-        try { localStorage.setItem(SOUND_KEY, this.soundOn ? 'on' : 'off'); } catch (e) { /* storage blocked */ }
+    // Exposed for the view (hover slider is desktop-only).
+    isDesktop() {
+        return isDesktop();
+    },
+
+    // Muted when the user turned sound off, dragged the volume to zero, or the browser blocked it.
+    isMuted() {
+        return !this.soundOn || this.volume === 0;
+    },
+
+    soundMuted() {
+        return this.isMuted() || this.soundBlocked;
+    },
+
+    // Volume slider (desktop, on hover). Zero means muted; dragging up unmutes.
+    setVolumeFromPointer(event) {
+        const track = event.currentTarget.getBoundingClientRect();
+        const ratio = 1 - (event.clientY - track.top) / Math.max(1, track.height);
+        this.applyVolume(Math.min(1, Math.max(0, Math.round(ratio * 100) / 100)));
+    },
+
+    startVolumeDrag(event) {
+        this.draggingVolume = true;
+        const track = event.currentTarget;
+        this.setVolumeFromPointer(event);
+        const move = (moveEvent) => {
+            const rect = track.getBoundingClientRect();
+            const ratio = 1 - (moveEvent.clientY - rect.top) / Math.max(1, rect.height);
+            this.applyVolume(Math.min(1, Math.max(0, Math.round(ratio * 100) / 100)));
+        };
+        const stop = () => {
+            this.draggingVolume = false;
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', stop);
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', stop);
+    },
+
+    applyVolume(value) {
+        this.volume = value;
+        try { localStorage.setItem(VOLUME_KEY, String(value)); } catch (e) { /* storage blocked */ }
+
+        if (value > 0 && !this.soundOn) {
+            this.soundOn = true;
+            try { localStorage.setItem(SOUND_KEY, 'on'); } catch (e) { /* storage blocked */ }
+        }
 
         const video = this.currentVideo();
         if (!video) {
             return;
         }
+        video.volume = value;
+        if (value > 0 && this.soundOn) {
+            this.enableSound(video);
+        } else {
+            video.muted = true;
+        }
+    },
+
+    // Sound counts as "on" only when wanted AND not blocked by the browser's autoplay policy,
+    // so the 🔇 button (shown while blocked) turns sound on instead of saving "off".
+    toggleSound() {
+        const effectivelyOn = !this.soundMuted();
+        this.soundOn = !effectivelyOn;
+        try { localStorage.setItem(SOUND_KEY, this.soundOn ? 'on' : 'off'); } catch (e) { /* storage blocked */ }
+
+        if (this.soundOn && this.volume === 0) {
+            // Unmuting a slider dragged to zero: bring it back to a usable level.
+            this.volume = 1;
+            try { localStorage.setItem(VOLUME_KEY, '1'); } catch (e) { /* storage blocked */ }
+        }
+
+        const video = this.currentVideo();
+        if (!video) {
+            return;
+        }
+        video.volume = this.volume;
         if (this.soundOn) {
             this.enableSound(video);
         } else {
@@ -282,6 +358,12 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
     // Must run inside a user activation (a click/tap). Browsers ignore unmuting on
     // touch pointerdown and may pause an unmuted video, so always (re)call play().
     enableSound(video) {
+        video.volume = this.volume;
+        if (this.isMuted()) {
+            video.muted = true;
+
+            return;
+        }
         video.muted = false;
         video.play().then(() => {
             this.soundBlocked = false;
@@ -295,7 +377,7 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
     // First tap anywhere on the feed (click capture): if sound is wanted but blocked,
     // unlock it inside this gesture. A tap on the video area must not also toggle pause.
     unlockSound(event) {
-        if (!this.soundBlocked || !this.soundOn) {
+        if (!this.soundBlocked || this.isMuted()) {
             return;
         }
         if (event?.target?.closest?.('[data-sound-toggle]')) {

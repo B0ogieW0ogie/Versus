@@ -102,10 +102,25 @@
                             </div>
 
                             <div class="pointer-events-auto flex flex-col items-center gap-4 pb-2 text-xs">
-                                <button type="button" data-sound-toggle @click.stop="toggleSound()" class="flex flex-col items-center gap-1"
-                                        :aria-label="(!soundOn || soundBlocked) ? i18n.soundOn : i18n.soundOff">
-                                    <span class="text-2xl" x-text="(!soundOn || soundBlocked) ? '🔇' : '🔊'"></span>
-                                </button>
+                                {{-- Sound: click toggles mute; on desktop a volume slider appears on hover (0 = muted) --}}
+                                <div class="relative flex flex-col items-center"
+                                     @pointerenter="volumeOpen = isDesktop()" @pointerleave="if (!draggingVolume) volumeOpen = false">
+                                    <div x-show="volumeOpen" x-cloak x-transition.opacity
+                                         class="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 rounded-full bg-black/70 px-2 py-3 backdrop-blur">
+                                        <div class="relative h-24 w-5 cursor-pointer touch-none"
+                                             @pointerdown.stop.prevent="startVolumeDrag($event)" @click.stop>
+                                            <div class="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-white/30"></div>
+                                            <div class="absolute bottom-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-white"
+                                                 :style="`height: ${volume * 100}%`"></div>
+                                            <div class="absolute left-1/2 h-4 w-4 -translate-x-1/2 translate-y-1/2 rounded-full bg-white shadow"
+                                                 :style="`bottom: ${volume * 100}%`"></div>
+                                        </div>
+                                    </div>
+                                    <button type="button" data-sound-toggle @click.stop="toggleSound()" class="flex flex-col items-center gap-1"
+                                            :aria-label="soundMuted() ? i18n.soundOn : i18n.soundOff">
+                                        <span class="text-2xl" x-text="soundMuted() ? '🔇' : '🔊'"></span>
+                                    </button>
+                                </div>
                                 <button type="button" @click.stop="like(ci)" class="flex flex-col items-center gap-1">
                                     <span class="text-3xl" :class="currentSlide(ci).liked ? 'text-rose-500' : 'text-white'">♥</span>
                                     <span x-text="currentSlide(ci).likes_count"></span>
