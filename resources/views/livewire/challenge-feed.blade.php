@@ -154,6 +154,7 @@
             <div class="h-full bg-white" :style="`width: ${player.duration ? Math.min(100, player.current / player.duration * 100) : 0}%`"></div>
         </div>
     </div>
+    </div>
 
     {{-- Desktop action buttons under the card (w-0 + min-w-full: never widens the card column) --}}
     <div class="hidden w-0 min-w-full lg:block">
