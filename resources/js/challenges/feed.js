@@ -18,7 +18,6 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
     let playerVideo = null;
     let onPlayerEvent = null;
     let onKeydown = null;
-    let onFullscreenChange = null;
 
     return {
     challenges: initial.map(prepare),
@@ -49,7 +48,6 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         root = this.$el;
         onPlayerEvent = () => this.updatePlayer();
         onKeydown = (event) => this.onKeydown(event);
-        onFullscreenChange = () => this.realign();
 
         let seen = hintSeen;
         if (guest) {
@@ -81,12 +79,10 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
 
         window.addEventListener('pagehide', () => this.flushImpressions());
         window.addEventListener('keydown', onKeydown);
-        document.addEventListener('fullscreenchange', onFullscreenChange);
     },
 
     destroy() {
         window.removeEventListener('keydown', onKeydown);
-        document.removeEventListener('fullscreenchange', onFullscreenChange);
         this.bindPlayer(null);
     },
 
@@ -363,11 +359,6 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         this.player.paused = video ? video.paused : true;
     },
 
-    formatTime(seconds) {
-        const total = Math.max(0, Math.floor(seconds || 0));
-        return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
-    },
-
     seek(event) {
         const video = playerVideo;
         if (!video || !this.player.duration) {
@@ -377,34 +368,6 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / Math.max(1, rect.width)));
         video.currentTime = ratio * this.player.duration;
         this.updatePlayer();
-    },
-
-    toggleFullscreen() {
-        try {
-            if (document.fullscreenElement) {
-                Promise.resolve(document.exitFullscreen?.()).catch(() => {});
-                return;
-            }
-            const card = root.querySelector('[data-card]');
-            if (card?.requestFullscreen) {
-                Promise.resolve(card.requestFullscreen()).catch(() => {});
-            }
-        } catch (e) {
-            // Fullscreen unsupported — ignore.
-        }
-    },
-
-    // The card changes size when entering/leaving fullscreen: keep the active item aligned.
-    realign() {
-        this.$nextTick(() => {
-            const el = this.$refs.vertical;
-            el.scrollTop = this.active * el.clientHeight;
-            const challenge = this.challenges[this.active];
-            const carousel = root.querySelector(`[data-carousel="${this.active}"]`);
-            if (challenge && carousel) {
-                carousel.scrollLeft = challenge.index * carousel.clientWidth;
-            }
-        });
     },
 
     // Desktop keyboard: ↑/↓ = previous/next challenge, ←/→ = previous/next slide.

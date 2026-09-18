@@ -120,7 +120,4 @@ return [
     'show_more' => 'More',
     'show_less' => 'Less',
     'comment_login' => 'Log in to comment',
-    'fullscreen' => 'Fullscreen',
-    'play' => 'Play',
-    'pause' => 'Pause',
 ];

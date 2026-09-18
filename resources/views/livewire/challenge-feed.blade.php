@@ -147,23 +147,12 @@
         </template>
     </div>
 
-    {{-- Desktop player bar --}}
+    {{-- Desktop progress bar: a thin strip at the bottom edge of the card, click to seek --}}
     <div x-show="currentSlide(active)" x-cloak
-         class="absolute inset-x-0 bottom-0 z-10 hidden items-center gap-3 bg-gradient-to-t from-black/80 to-transparent px-4 pb-3 pt-6 text-xs lg:flex">
-        <button type="button" data-player-toggle @click="togglePlayback(active)"
-                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15 hover:bg-white/25"
-                :aria-label="player.paused ? i18n.play : i18n.pause">
-            <span x-text="player.paused ? '▶' : '❚❚'"></span>
-        </button>
-        <span class="shrink-0 tabular-nums text-white/80" x-text="formatTime(player.current) + ' / ' + formatTime(player.duration)"></span>
-        <div class="group relative h-4 flex-1 cursor-pointer" @click="seek($event)">
-            <div class="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 overflow-hidden rounded-full bg-white/25">
-                <div class="h-full rounded-full bg-white" :style="`width: ${player.duration ? Math.min(100, player.current / player.duration * 100) : 0}%`"></div>
-            </div>
+         class="absolute inset-x-0 bottom-0 z-10 hidden cursor-pointer py-2 lg:block" @click="seek($event)">
+        <div class="h-[3px] w-full overflow-hidden bg-white/25">
+            <div class="h-full bg-white" :style="`width: ${player.duration ? Math.min(100, player.current / player.duration * 100) : 0}%`"></div>
         </div>
-        <button type="button" @click="toggleFullscreen()" class="shrink-0 text-base leading-none text-white/80 hover:text-white"
-                aria-label="{{ __('challenges.fullscreen') }}" title="{{ __('challenges.fullscreen') }}">⛶</button>
-    </div>
     </div>
 
     {{-- Desktop action buttons under the card (w-0 + min-w-full: never widens the card column) --}}
