@@ -76,4 +76,13 @@ class FfmpegVideoTranscoderTest extends TestCase
 
         Process::assertRan(fn ($process) => preg_match("/ -t 60\\.5 '\\/tmp\\/out\\.mp4'$/", implode(' ', (array) $process->command)) === 1);
     }
+
+    public function test_transcode_seeks_and_limits_to_the_trim(): void
+    {
+        Process::fake(['ffmpeg*' => Process::result()]);
+
+        app(FfmpegVideoTranscoder::class)->transcode('/tmp/in', '/tmp/out.mp4', 2500, 14000);
+
+        Process::assertRan(fn ($process) => preg_match("/^ffmpeg -y -ss 2\\.500 -i '\\/tmp\\/in'.* -t 11\\.5 '\\/tmp\\/out\\.mp4'$/", implode(' ', (array) $process->command)) === 1);
+    }
 }

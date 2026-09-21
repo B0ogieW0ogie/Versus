@@ -153,4 +153,14 @@ class MyChallengesTest extends TestCase
             ->assertSee('href="'.route('challenges.create').'"', false)
             ->assertSee('data-side-nav', false);
     }
+
+    public function test_own_duel_card_offers_the_invite_link(): void
+    {
+        $user = User::factory()->create();
+        $duel = Challenge::factory()->for($user)->duel()->withOriginal()->create();
+
+        $this->actingAs($user)->get(route('challenges.mine'))
+            ->assertSee('data-copy-invite', false)
+            ->assertSee(route('challenges.show', $duel->slug), false);
+    }
 }

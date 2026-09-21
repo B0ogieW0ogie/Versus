@@ -46,8 +46,15 @@ class ProcessEntryVideo implements ShouldQueue
             if (! $probe->hasVideo) {
                 throw VideoProcessingException::because('reason_no_video');
             }
-            if ($probe->durationMs > $maxSeconds * 1000 + 500) {
+            // With a trim only the kept part counts; the cut can't run past the real end of the video.
+            $start = $entry->trim_start_ms;
+            $end = $entry->trim_end_ms !== null && $probe->durationMs > 0 ? min($entry->trim_end_ms, $probe->durationMs) : $entry->trim_end_ms;
+            $durationMs = $end !== null ? $end - (int) $start : $probe->durationMs;
+            if ($durationMs > $maxSeconds * 1000 + 500) {
                 throw VideoProcessingException::because('reason_too_long');
+            }
+            if ($end !== null && $durationMs <= 0) {
+                throw VideoProcessingException::because('reason_generic');
             }
             if ((int) filesize($source) > $maxBytes) {
                 throw VideoProcessingException::because('reason_too_big');
@@ -59,7 +66,7 @@ class ProcessEntryVideo implements ShouldQueue
             $public->makeDirectory('videos');
             $public->makeDirectory('posters');
 
-            $transcoder->transcode($source, $public->path($videoPath));
+            $transcoder->transcode($source, $public->path($videoPath), $start, $end);
             $transcoder->poster($public->path($videoPath), $public->path($posterPath));
         } catch (VideoProcessingException $e) {
             $markFailed($entry, $e->reasonKey);
@@ -67,7 +74,7 @@ class ProcessEntryVideo implements ShouldQueue
             return;
         }
 
-        $markReady($entry, $videoPath, $posterPath, $probe->durationMs);
+        $markReady($entry, $videoPath, $posterPath, $durationMs);
     }
 
     public function failed(?Throwable $exception): void

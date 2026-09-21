@@ -22,6 +22,7 @@
             'tooBig' => __('challenges.video_too_big', ['mb' => config('versus.challenges.max_upload_mb')]),
             'failed' => __('challenges.upload_failed'),
             'cameraDenied' => __('challenges.camera_denied'),
+            'secondsShort' => __('challenges.seconds_short'),
         ]),
      })"
      @input="dirty = true"
@@ -30,7 +31,7 @@
     <header class="mb-6 flex items-start gap-3">
         <button type="button" class="-ml-2 p-2 text-2xl leading-none text-white/80 hover:text-white" @click="back()" aria-label="{{ __('challenges.leave') }}">←</button>
         <div>
-            <h1 class="text-2xl font-bold lg:text-3xl">{{ $isResponse ? __('challenges.respond_title') : __('challenges.create_title') }}</h1>
+            <h1 class="text-2xl font-bold lg:text-3xl">{{ $isResponse ? __('challenges.response_title') : __('challenges.create_title') }}</h1>
             @unless ($isResponse)
                 <p class="mt-1 text-sm text-white/60">{{ __('challenges.create_subtitle') }}</p>
             @endunless
@@ -38,33 +39,70 @@
     </header>
 
     <div class="flex flex-col gap-8 md:flex-row md:items-start">
-        {{-- Video: a 9:16 card sized for vertical content, never the full page --}}
-        <section data-video-zone class="mx-auto w-full max-w-[16rem] shrink-0 md:sticky md:top-6 md:mx-0 md:w-64 md:max-w-none">
-            <div class="relative aspect-[9/16] overflow-hidden rounded-2xl border-2 border-dashed border-indigo-500/60 bg-white/[0.03]"
-                 :class="(previewUrl || camera) && 'border-solid border-white/10'">
-                <video x-ref="live" x-show="camera" x-cloak class="absolute inset-0 h-full w-full -scale-x-100 object-cover" playsinline muted autoplay></video>
-                <video x-show="previewUrl && !camera" x-cloak :src="previewUrl" class="absolute inset-0 h-full w-full bg-black object-contain" playsinline muted loop autoplay></video>
-
-                <button type="button" x-show="!previewUrl && !camera" @click="pick()"
-                        class="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center text-white/70 hover:text-white">
-                    <span class="flex h-16 w-16 items-center justify-center rounded-full border border-white/15 bg-white/5 text-3xl">🎬</span>
-                    <span class="text-sm font-semibold">{{ __('challenges.upload_hint') }}</span>
-                    <span class="text-xs text-white/50">{{ __('challenges.upload_formats', ['seconds' => $maxSeconds, 'mb' => config('versus.challenges.max_upload_mb')]) }}</span>
+        {{-- Video. Empty: a compact drop zone with Record | Upload. Picked: a 9:16 preview plus a trimmer. --}}
+        <section data-video-zone class="w-full shrink-0 md:sticky md:top-6 md:w-64">
+            <div data-video-empty x-show="!previewUrl && !camera"
+                 class="flex flex-col overflow-hidden rounded-2xl border-2 border-dashed border-indigo-500/60 bg-indigo-500/[0.04] md:aspect-[9/16]">
+                <button type="button" @click="pick()" class="flex h-40 w-full flex-col items-center justify-center gap-2 px-4 text-center hover:bg-white/[0.03] md:h-auto md:flex-1">
+                    <svg class="h-12 w-12 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="2.5" /><path stroke-linejoin="round" d="m15.5 10.5 5-3v9l-5-3" /></svg>
+                    <span class="text-sm font-medium text-white/85">{{ __('challenges.upload_hint') }}</span>
+                    <span class="text-xs text-white/45">{{ __('challenges.upload_formats', ['seconds' => $maxSeconds, 'mb' => config('versus.challenges.max_upload_mb')]) }}</span>
                 </button>
+                <div class="grid grid-cols-2 border-t-2 border-dashed border-indigo-500/60 text-sm font-semibold">
+                    <button type="button" data-record @click="openCamera()" class="flex h-12 items-center justify-center gap-2 border-r-2 border-dashed border-indigo-500/60 hover:bg-white/[0.04]">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="2.5" /><path stroke-linejoin="round" d="m15.5 10.5 5-3v9l-5-3" /></svg>
+                        {{ __('challenges.record') }}
+                    </button>
+                    <button type="button" data-upload @click="pick()" class="flex h-12 items-center justify-center gap-2 hover:bg-white/[0.04]">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
+                        {{ __('challenges.upload') }}
+                    </button>
+                </div>
+            </div>
+            <p x-show="!previewUrl && !camera" class="mt-2 flex items-start gap-2 text-xs text-indigo-200/80">
+                <span aria-hidden="true">ⓘ</span> {{ __('challenges.trim_hint_before', ['seconds' => $maxSeconds]) }}
+            </p>
 
-                <span x-show="recording" x-cloak class="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold">
+            {{-- Vertical preview: the live camera while recording, the picked video otherwise --}}
+            <div data-video-preview x-show="previewUrl || camera" x-cloak
+                 class="relative mx-auto aspect-[9/16] h-[60vh] max-w-full overflow-hidden rounded-2xl border border-white/10 bg-black md:h-auto md:w-full">
+                <video x-ref="live" x-show="camera" class="absolute inset-0 h-full w-full -scale-x-100 object-cover" playsinline muted autoplay></video>
+                <video x-ref="preview" x-show="previewUrl && !camera" :src="previewUrl" class="absolute inset-0 h-full w-full object-contain"
+                       playsinline muted loop autoplay @timeupdate="keepInTrim($event.target)"></video>
+
+                <span x-show="recording" class="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold">
                     <span class="h-2 w-2 animate-pulse rounded-full bg-rose-500"></span>
                     <span x-text="recordLabel()"></span>
                 </span>
 
-                <div x-show="state === 'uploading'" x-cloak class="absolute inset-x-0 bottom-0 bg-black/70 px-4 py-2 text-sm"
+                <div x-show="state === 'uploading'" class="absolute inset-x-0 bottom-0 bg-black/70 px-4 py-2 text-sm"
                      x-text="@js(__('challenges.uploading', ['percent' => '__P__'])).replace('__P__', progress)"></div>
-                <div x-show="state === 'done' && !camera" x-cloak class="absolute inset-x-0 bottom-0 bg-emerald-600/80 px-4 py-2 text-center text-sm font-semibold">
+                <div x-show="state === 'done' && !camera" class="absolute inset-x-0 bottom-0 bg-emerald-600/80 px-4 py-2 text-center text-sm font-semibold">
                     ✓ {{ __('challenges.upload_done') }}
                 </div>
             </div>
 
-            <div class="mt-3 grid grid-cols-2 gap-2 text-sm font-semibold">
+            {{-- Trimmer: drag the edges to keep up to the time limit --}}
+            <div data-trimmer x-show="hasTrimmer()" x-cloak class="mt-3">
+                <div class="mb-1.5 flex items-center justify-between text-xs">
+                    <span class="font-semibold">{{ __('challenges.trim') }}</span>
+                    <span class="text-white/60" x-text="trimLabel()"></span>
+                </div>
+                <div x-ref="trimTrack" class="relative h-11 touch-none select-none rounded-lg bg-white/[0.06]">
+                    <div class="absolute inset-y-0 rounded-md border-y-2 border-indigo-500 bg-indigo-500/20"
+                         :style="`left: ${trimPercent(trimStart)}%; width: ${trimPercent(trimEnd - trimStart)}%`"></div>
+                    <button type="button" aria-label="{{ __('challenges.trim_start') }}" @pointerdown.prevent="startTrimDrag($event, 'start')"
+                            class="absolute inset-y-0 flex w-4 -translate-x-1/2 cursor-ew-resize items-center justify-center rounded-md bg-indigo-500"
+                            :style="`left: ${trimPercent(trimStart)}%`"><span class="h-4 w-0.5 rounded bg-white"></span></button>
+                    <button type="button" aria-label="{{ __('challenges.trim_end') }}" @pointerdown.prevent="startTrimDrag($event, 'end')"
+                            class="absolute inset-y-0 flex w-4 -translate-x-1/2 cursor-ew-resize items-center justify-center rounded-md bg-indigo-500"
+                            :style="`left: ${trimPercent(trimEnd)}%`"><span class="h-4 w-0.5 rounded bg-white"></span></button>
+                </div>
+                <p class="mt-1.5 text-xs text-white/45">{{ __('challenges.trim_hint') }}</p>
+            </div>
+
+            {{-- Actions once a video is picked or the camera is on --}}
+            <div x-show="previewUrl || camera" x-cloak class="mt-3 grid grid-cols-2 gap-2 text-sm font-semibold">
                 <template x-if="!camera">
                     <button type="button" data-record @click="openCamera()" :disabled="state === 'uploading'"
                             class="flex h-11 items-center justify-center gap-2 rounded-xl border border-indigo-500/50 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50">
@@ -72,23 +110,19 @@
                     </button>
                 </template>
                 <template x-if="camera && !recording">
-                    <button type="button" @click="startRecording()"
-                            class="flex h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500">
+                    <button type="button" @click="startRecording()" class="flex h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500">
                         <span class="h-2.5 w-2.5 rounded-full bg-white"></span> {{ __('challenges.record_start') }}
                     </button>
                 </template>
                 <template x-if="recording">
-                    <button type="button" @click="stopRecording()"
-                            class="flex h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500">
+                    <button type="button" @click="stopRecording()" class="flex h-11 items-center justify-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-500">
                         <span class="h-2.5 w-2.5 rounded-sm bg-white"></span> {{ __('challenges.record_stop') }}
                     </button>
                 </template>
-
                 <template x-if="!camera">
-                    <button type="button" data-upload @click="pick()" :disabled="state === 'uploading'"
+                    <button type="button" @click="pick()" :disabled="state === 'uploading'"
                             class="flex h-11 items-center justify-center gap-2 rounded-xl border border-indigo-500/50 bg-indigo-500/10 hover:bg-indigo-500/20 disabled:opacity-50">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0-4 4m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" /></svg>
-                        {{ __('challenges.upload') }}
+                        {{ __('challenges.replace_video') }}
                     </button>
                 </template>
                 <template x-if="camera">
@@ -105,13 +139,14 @@
             <p x-show="error" x-cloak x-text="error" class="mt-2 text-sm text-rose-400"></p>
             @error('uploadId') <p class="mt-2 text-sm text-rose-400">{{ $message }}</p> @enderror
             @error('upload') <p class="mt-2 text-sm text-rose-400">{{ $message }}</p> @enderror
+            @error('trim') <p class="mt-2 text-sm text-rose-400">{{ $message }}</p> @enderror
             @error('challenge') <p class="mt-2 text-sm text-rose-400">{{ $message }}</p> @enderror
         </section>
 
         {{-- Fields --}}
         <div class="min-w-0 flex-1 space-y-5">
             <label class="block">
-                <span class="mb-2 block text-sm font-semibold">{{ __('challenges.field_title') }} *</span>
+                <span class="mb-2 block text-sm font-semibold">{{ __('challenges.field_title') }}@unless ($isResponse) *@endunless</span>
                 <input type="text" maxlength="100" wire:model="title" @disabled($isResponse)
                        placeholder="{{ __('challenges.field_title_placeholder') }}" class="{{ $field }}">
                 <span class="mt-1 block text-right text-xs text-white/50" x-text="($wire.title || '').length + '/100'"></span>
@@ -119,7 +154,7 @@
             </label>
 
             <label class="block">
-                <span class="mb-2 block text-sm font-semibold">{{ __('challenges.field_rules') }} *</span>
+                <span class="mb-2 block text-sm font-semibold">{{ __('challenges.field_rules') }}@unless ($isResponse) *@endunless</span>
                 <textarea rows="4" maxlength="500" wire:model="rules" @disabled($isResponse)
                           placeholder="{{ __('challenges.field_rules_placeholder') }}" class="{{ $field }}"></textarea>
                 <span class="mt-1 block text-right text-xs text-white/50" x-text="($wire.rules || '').length + '/500'"></span>
@@ -127,10 +162,30 @@
             </label>
 
             @if ($isResponse)
-                <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                    <span class="text-white/60">{{ __('challenges.time_left') }}:</span>
-                    <span x-data="countdown(@js($challenge->ends_at?->toIso8601String()))" x-init="start()" x-text="label" class="font-semibold"></span>
+                {{-- Inherited from the Challenge and locked: a Response can't change the conditions --}}
+                <div data-locked="category">
+                    <span class="mb-2 block text-sm font-semibold">{{ __('challenges.field_category') }}</span>
+                    <div class="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 opacity-70">
+                        @if ($challenge->category)
+                            <span class="w-6 text-center">{{ $categoryIcons[$challenge->category] ?? '' }}</span>{{ __('challenges.category_'.$challenge->category) }}
+                        @else
+                            <span class="text-white/50">—</span>
+                        @endif
+                    </div>
                 </div>
+                <div data-locked="deadline">
+                    <span class="mb-2 block text-sm font-semibold">{{ __('challenges.field_deadline') }}</span>
+                    <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3 opacity-70">
+                        <span class="text-white/60">{{ __('challenges.time_left') }}:</span>
+                        <span x-data="countdown(@js($challenge->ends_at?->toIso8601String()))" x-init="start()" x-text="label" class="font-semibold"></span>
+                    </div>
+                </div>
+                @if ($challenge->isDuel())
+                    <p data-locked="format" class="rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-200">
+                        ⚔️ {{ __('challenges.duel_badge') }} · {{ __('challenges.duel_vs', ['opponent' => '@'.($challenge->opponent->username ?? $challenge->opponent->name ?? '')]) }}
+                    </p>
+                @endif
+                <p class="text-xs text-white/45">{{ __('challenges.response_locked_hint') }}</p>
             @else
                 {{-- Category: exactly one, chosen by hand (never inferred from hashtags) --}}
                 <div data-field="category" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false" class="relative">
@@ -180,18 +235,24 @@
                 {{-- Format --}}
                 <div data-field="format">
                     <span class="mb-2 block text-sm font-semibold">{{ __('challenges.field_format') }}</span>
-                    <div class="grid gap-2 sm:grid-cols-2">
-                        @foreach ([\App\Models\Challenge::FORMAT_PUBLIC => '🌍', \App\Models\Challenge::FORMAT_DUEL => '⚔️'] as $option => $icon)
-                            <label class="flex cursor-pointer gap-3 rounded-xl border p-4 transition {{ $format === $option ? 'border-indigo-500 bg-indigo-600/20' : 'border-white/10 bg-white/5 hover:bg-white/10' }}">
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach ([\App\Models\Challenge::FORMAT_PUBLIC => 'users', \App\Models\Challenge::FORMAT_DUEL => 'swords'] as $option => $icon)
+                            <label @class([
+                                'flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border text-sm font-semibold transition',
+                                'border-indigo-500 bg-indigo-600/25 shadow-[0_0_14px_rgba(99,102,241,0.35)]' => $format === $option,
+                                'border-white/10 bg-white/5 text-white/80 hover:bg-white/10' => $format !== $option,
+                            ])>
                                 <input type="radio" name="format" value="{{ $option }}" wire:model.live="format" class="sr-only">
-                                <span class="text-xl leading-none">{{ $icon }}</span>
-                                <span>
-                                    <span class="block text-sm font-semibold">{{ __('challenges.format_'.$option) }}</span>
-                                    <span class="mt-1 block text-xs text-white/60">{{ __('challenges.format_'.$option.'_hint') }}</span>
-                                </span>
+                                @if ($icon === 'users')
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2" /><path stroke-linecap="round" d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.2a3 3 0 0 1 0 5.6M17.5 14.2A5.5 5.5 0 0 1 20.5 19" /></svg>
+                                @else
+                                    <x-icon.swords class="h-5 w-5" />
+                                @endif
+                                {{ __('challenges.format_'.$option) }}
                             </label>
                         @endforeach
                     </div>
+                    <p class="mt-1.5 text-xs text-white/50">{{ __('challenges.format_'.$format.'_hint') }}</p>
                     @error('format') <span class="text-sm text-rose-400">{{ $message }}</span> @enderror
 
                     @if ($format === \App\Models\Challenge::FORMAT_DUEL)
@@ -235,6 +296,13 @@
                                     <p class="mt-2 text-sm text-white/50">{{ __('challenges.opponent_none') }}</p>
                                 @endif
                             @endif
+                            <div data-invite-link class="mt-3">
+                                <span class="mb-1.5 block text-xs font-semibold text-white/70">{{ __('challenges.invite_link') }}</span>
+                                <div class="flex items-center justify-between gap-2 rounded-xl border border-dashed border-white/15 px-3 py-2.5 text-xs text-white/45">
+                                    <span>{{ __('challenges.invite_link_after') }}</span>
+                                    <span aria-hidden="true">🔗</span>
+                                </div>
+                            </div>
                             <p class="mt-2 text-xs text-white/50">{{ __('challenges.opponent_hint') }}</p>
                             @error('opponent') <span class="text-sm text-rose-400">{{ $message }}</span> @enderror
                         </div>

@@ -5,8 +5,12 @@ namespace App\Livewire;
 use App\Actions\Challenges\CreateChallengeAction;
 use App\Actions\Challenges\SubmitResponseAction;
 use App\Models\Challenge;
+use App\Models\ChallengeEntry;
 use App\Models\User;
+use App\Services\Video\Trim;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -44,6 +48,11 @@ class ChallengeForm extends Component
 
     public string $username = '';
 
+    /** Optional cut of the picked video, set by the trimmer in the page (milliseconds). */
+    public ?int $trimStartMs = null;
+
+    public ?int $trimEndMs = null;
+
     public function mount(?Challenge $challenge = null): void
     {
         $fallback = route('challenges.index');
@@ -57,8 +66,15 @@ class ChallengeForm extends Component
 
             /** @var User $user */
             $user = Auth::user();
-            if ($challenge->isDuel() && ! $challenge->allowsResponseFrom($user)) {
-                abort(403);
+            if (! $challenge->allowsResponseFrom($user)) {
+                abort(403); // the creator, or anyone but the opponent in a Duel
+            }
+
+            // One Response per user, and it can't be swapped for another video: show the existing one.
+            $existing = ChallengeEntry::where('challenge_id', $challenge->id)->where('user_id', $user->id)->value('id');
+            if ($existing !== null) {
+                // Plain RedirectResponse: inside a component redirect() returns Livewire's Redirector.
+                throw new HttpResponseException(new RedirectResponse(route('challenges.show', ['challenge' => $challenge->slug, 'entry' => $existing])));
             }
 
             $this->challengeId = $challenge->id;
@@ -126,8 +142,10 @@ class ChallengeForm extends Component
         }
 
         try {
+            $trim = Trim::fromForm($this->trimStartMs, $this->trimEndMs);
+
             if ($this->challengeId !== null) {
-                $respond($user, Challenge::findOrFail($this->challengeId), $this->uploadId);
+                $respond($user, Challenge::findOrFail($this->challengeId), $this->uploadId, $trim);
             } else {
                 $create(
                     $user,
@@ -140,6 +158,7 @@ class ChallengeForm extends Component
                     $this->opponentId !== null ? User::find($this->opponentId) : null,
                     $user->username === null ? $this->username : null,
                     $this->retryChallengeId !== null ? Challenge::find($this->retryChallengeId) : null,
+                    $trim,
                 );
             }
         } catch (ValidationException $e) {
@@ -161,7 +180,7 @@ class ChallengeForm extends Component
     {
         /** @var User $user */
         $user = Auth::user();
-        $challenge = $this->challengeId !== null ? Challenge::find($this->challengeId) : null;
+        $challenge = $this->challengeId !== null ? Challenge::with('opponent')->find($this->challengeId) : null;
 
         return view('livewire.challenge-form', [
             'challenge' => $challenge,

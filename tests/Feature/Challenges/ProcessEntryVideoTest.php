@@ -150,4 +150,31 @@ class ProcessEntryVideoTest extends TestCase
 
         Notification::assertSentTo($rival, DuelInvitation::class);
     }
+
+    public function test_trim_cuts_the_video_and_only_the_kept_part_counts(): void
+    {
+        $this->transcoder->durationMs = 90000; // too long untrimmed
+        $challenge = Challenge::factory()->processing()->create();
+        $entry = $this->pendingEntry($challenge, true);
+        $entry->update(['trim_start_ms' => 30000, 'trim_end_ms' => 75000]);
+
+        (new ProcessEntryVideo($entry->id))->handle(...$this->handleArgs());
+
+        $this->assertSame([30000, 75000], $this->transcoder->lastCut);
+        $this->assertSame(45000, $entry->fresh()->duration_ms);
+        $this->assertSame(ChallengeEntry::STATUS_READY, $entry->fresh()->status);
+    }
+
+    public function test_trim_end_is_clamped_to_the_real_video_length(): void
+    {
+        $this->transcoder->durationMs = 20000;
+        $challenge = Challenge::factory()->processing()->create();
+        $entry = $this->pendingEntry($challenge, true);
+        $entry->update(['trim_start_ms' => 5000, 'trim_end_ms' => 40000]);
+
+        (new ProcessEntryVideo($entry->id))->handle(...$this->handleArgs());
+
+        $this->assertSame([5000, 20000], $this->transcoder->lastCut);
+        $this->assertSame(15000, $entry->fresh()->duration_ms);
+    }
 }

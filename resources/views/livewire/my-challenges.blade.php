@@ -89,6 +89,13 @@
                             @break
                         @case('own')
                             <a href="{{ $showUrl }}" class="flex h-12 flex-1 items-center justify-center rounded-xl border border-white/15 text-sm font-semibold uppercase">{{ __('challenges.responses_count', ['count' => $challenge->entries_count]) }}</a>
+                            @if ($challenge->isDuel())
+                                <button type="button" data-copy-invite
+                                        @click="navigator.clipboard?.writeText(@js($showUrl)); $dispatch('versus-stake-toast', { title: @js(__('challenges.link_copied')) })"
+                                        class="flex h-12 items-center justify-center gap-2 rounded-xl border border-orange-500/40 bg-orange-500/10 px-4 text-sm font-semibold text-orange-200">
+                                    🔗 {{ __('challenges.copy_invite') }}
+                                </button>
+                            @endif
                             @break
                         @case('own_processing')
                             <span data-plate="own_processing" class="flex h-12 flex-1 items-center justify-center rounded-xl bg-white/10 text-sm text-white/60">{{ __('challenges.status_processing') }}</span>

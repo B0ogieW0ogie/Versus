@@ -192,7 +192,7 @@ class ChallengeFormTest extends TestCase
 
         $this->actingAs($user)->get(route('challenges.create'))
             ->assertOk()
-            ->assertSee('data-nav="top" class="lg:hidden"', false)
+            ->assertSee('data-nav="top" class="hidden"', false)
             ->assertSee('data-side-nav', false)
             ->assertSee('data-video-zone', false)
             ->assertSee('aspect-[9/16]', false);
@@ -258,5 +258,93 @@ class ChallengeFormTest extends TestCase
 
         $this->actingAs(User::factory()->create())->get(route('challenges.respond', $duel->slug))->assertForbidden();
         $this->actingAs($rival)->get(route('challenges.respond', $duel->slug))->assertOk();
+    }
+
+    public function test_form_hides_all_global_navigation(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        $this->actingAs($user)->get(route('challenges.create'))
+            ->assertOk()
+            ->assertSee('data-nav="top" class="hidden"', false)
+            ->assertDontSee('fixed bottom-0 inset-x-0 z-40', false)
+            ->assertSee('data-video-empty', false);
+    }
+
+    public function test_trim_is_stored_on_the_original_entry(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        Livewire::actingAs($user)->test(ChallengeForm::class)
+            ->set('uploadId', $this->upload($user))
+            ->set('title', 'Trimmed')
+            ->set('rules', 'Rules')
+            ->set('category', Challenge::CATEGORY_OTHER)
+            ->set('trimStartMs', 2000)
+            ->set('trimEndMs', 14000)
+            ->call('publish')
+            ->assertHasNoErrors();
+
+        $entry = Challenge::sole()->original;
+        $this->assertSame([2000, 14000], [$entry->trim_start_ms, $entry->trim_end_ms]);
+    }
+
+    public function test_invalid_trim_is_rejected_without_consuming_the_upload(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        Livewire::actingAs($user)->test(ChallengeForm::class)
+            ->set('uploadId', $uploadId = $this->upload($user))
+            ->set('title', 'Trimmed')
+            ->set('rules', 'Rules')
+            ->set('category', Challenge::CATEGORY_OTHER)
+            ->set('trimStartMs', 0)
+            ->set('trimEndMs', 90000) // longer than the 60 s limit
+            ->call('publish')
+            ->assertHasErrors(['trim'])
+            ->assertSet('uploadId', $uploadId);
+
+        $this->assertSame(0, Challenge::count());
+    }
+
+    public function test_response_mode_shows_inherited_locked_conditions(): void
+    {
+        $challenge = Challenge::factory()->withOriginal()->create(['category' => Challenge::CATEGORY_MUSIC]);
+
+        $this->actingAs(User::factory()->create())->get(route('challenges.respond', $challenge->slug))
+            ->assertOk()
+            ->assertSee(__('challenges.response_title'))
+            ->assertSee('data-locked="category"', false)
+            ->assertSee(__('challenges.category_music'))
+            ->assertSee('data-locked="deadline"', false)
+            ->assertDontSee('data-field="format"', false)
+            ->assertDontSee('data-field="category"', false);
+    }
+
+    public function test_response_trim_is_stored(): void
+    {
+        $challenge = Challenge::factory()->withOriginal()->create();
+        $user = User::factory()->create();
+
+        Livewire::actingAs($user)->test(ChallengeForm::class, ['challenge' => $challenge])
+            ->set('uploadId', $this->upload($user))
+            ->set('trimStartMs', 500)
+            ->set('trimEndMs', 5500)
+            ->call('publish')
+            ->assertHasNoErrors();
+
+        $entry = ChallengeEntry::where('challenge_id', $challenge->id)->where('user_id', $user->id)->sole();
+        $this->assertSame([500, 5500], [$entry->trim_start_ms, $entry->trim_end_ms]);
+    }
+
+    public function test_creator_cannot_open_respond_and_a_second_response_is_not_offered(): void
+    {
+        $challenge = Challenge::factory()->withOriginal()->create();
+        $this->actingAs($challenge->user)->get(route('challenges.respond', $challenge->slug))->assertForbidden();
+
+        $responder = User::factory()->create();
+        $entry = ChallengeEntry::factory()->for($challenge)->for($responder)->create();
+        $this->actingAs($responder)->get(route('challenges.respond', $challenge->slug))
+            ->assertRedirect(route('challenges.show', ['challenge' => $challenge->slug, 'entry' => $entry->id]));
     }
 }

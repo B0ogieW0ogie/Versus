@@ -19,7 +19,12 @@
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900 lg:bg-navy-900">
             {{-- The old top header is mobile/tablet only: on lg the side menu replaces it everywhere.
                  The full-screen feed also hides it on phones, where the bottom nav covers navigation. --}}
-            <div data-nav="top" class="{{ request()->routeIs('challenges.index', 'challenges.show') ? 'hidden sm:block lg:hidden' : 'lg:hidden' }}">
+            {{-- The create/respond form is a focused screen with its own ← header: no global navigation at all. --}}
+            <div data-nav="top" class="{{ match (true) {
+                request()->routeIs('challenges.create', 'challenges.respond') => 'hidden',
+                request()->routeIs('challenges.index', 'challenges.show') => 'hidden sm:block lg:hidden',
+                default => 'lg:hidden',
+            } }}">
                 @include('layouts.navigation')
             </div>
 
@@ -42,7 +47,7 @@
                 </aside>
 
                 <!-- Page Content -->
-                <main class="min-w-0 pb-20 sm:pb-0">
+                <main class="min-w-0 {{ request()->routeIs('challenges.create', 'challenges.respond') ? '' : 'pb-20 sm:pb-0' }}">
                     {{ $slot }}
                 </main>
 

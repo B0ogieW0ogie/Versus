@@ -6,6 +6,7 @@ use App\Jobs\ProcessEntryVideo;
 use App\Models\Challenge;
 use App\Models\ChallengeEntry;
 use App\Models\User;
+use App\Services\Video\Trim;
 use App\Services\Video\UploadStore;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -27,6 +28,7 @@ class CreateChallengeAction
         ?User $opponent = null,
         ?string $username = null,
         ?Challenge $replacing = null,
+        ?Trim $trim = null,
     ): Challenge {
         $title = trim($title);
         $rules = trim($rules);
@@ -38,7 +40,7 @@ class CreateChallengeAction
 
         $source = $this->uploads->claim($user, $uploadId);
 
-        $challenge = DB::transaction(function () use ($user, $title, $rules, $category, $duration, $format, $opponent, $username, $replacing, $source): Challenge {
+        $challenge = DB::transaction(function () use ($user, $title, $rules, $category, $duration, $format, $opponent, $username, $replacing, $source, $trim): Challenge {
             if ($user->username === null && $username !== null) {
                 $user->forceFill(['username' => $username])->save();
             }
@@ -65,6 +67,8 @@ class CreateChallengeAction
                 'is_original' => true,
                 'status' => ChallengeEntry::STATUS_PROCESSING,
                 'submitted_at' => now(),
+                'trim_start_ms' => $trim?->startMs,
+                'trim_end_ms' => $trim?->endMs,
             ]);
 
             $destination = "entries/{$entry->id}/source";

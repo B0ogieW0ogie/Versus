@@ -14,13 +14,18 @@ class FakeVideoTranscoder implements VideoTranscoder
 
     public bool $failTranscode = false;
 
+    /** @var array{0: int|null, 1: int|null}|null */
+    public ?array $lastCut = null;
+
     public function probe(string $path): VideoProbe
     {
         return new VideoProbe($this->hasVideo, $this->durationMs);
     }
 
-    public function transcode(string $input, string $output): void
+    public function transcode(string $input, string $output, ?int $startMs = null, ?int $endMs = null): void
     {
+        $this->lastCut = [$startMs, $endMs];
+
         if ($this->failTranscode) {
             throw VideoProcessingException::because('reason_generic');
         }

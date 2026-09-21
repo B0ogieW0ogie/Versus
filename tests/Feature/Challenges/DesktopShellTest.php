@@ -49,7 +49,8 @@ class DesktopShellTest extends TestCase
             $this->assertStringContainsString('data-recommendations', $html, $url);
             $this->assertSame(1, substr_count($html, 'data-side-nav'), $url);
             $this->assertStringContainsString('data-nav="top" class="', $html, $url);
-            $this->assertDoesNotMatchRegularExpression('/data-nav="top" class="[^"]*(?<!lg:hidden)"/', $html, $url);
+            // Hidden on lg everywhere; the create form hides it on every size.
+            $this->assertMatchesRegularExpression('/data-nav="top" class="([^"]*lg:hidden|hidden)"/', $html, $url);
         }
     }
 

@@ -35,16 +35,21 @@ class FfmpegVideoTranscoder implements VideoTranscoder
         return new VideoProbe($hasVideo, $durationMs);
     }
 
-    public function transcode(string $input, string $output): void
+    public function transcode(string $input, string $output, ?int $startMs = null, ?int $endMs = null): void
     {
+        $maxSeconds = (int) config('versus.challenges.max_video_seconds') + 0.5;
+        $seconds = $endMs !== null ? min($maxSeconds, ($endMs - (int) $startMs) / 1000) : $maxSeconds;
+        // Input seeking (-ss before -i) is fast and, with re-encoding, frame-accurate.
+        $seek = $startMs ? ['-ss', sprintf('%.3F', $startMs / 1000)] : [];
+
         $this->run([
-            'ffmpeg', '-y', '-i', escapeshellarg($input),
+            'ffmpeg', '-y', ...$seek, '-i', escapeshellarg($input),
             '-vf', escapeshellarg(self::FIT_720P),
             '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p',
             '-c:a', 'aac', '-b:a', '128k',
             '-movflags', '+faststart',
             // Cap the output length: the container header duration checked by probe() can lie.
-            '-t', (string) ((int) config('versus.challenges.max_video_seconds') + 0.5),
+            '-t', rtrim(rtrim(sprintf('%.3F', $seconds), '0'), '.'),
             escapeshellarg($output),
         ]);
     }

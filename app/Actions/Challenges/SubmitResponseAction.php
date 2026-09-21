@@ -7,6 +7,7 @@ use App\Models\Challenge;
 use App\Models\ChallengeEntry;
 use App\Models\ChallengeParticipant;
 use App\Models\User;
+use App\Services\Video\Trim;
 use App\Services\Video\UploadStore;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,12 +17,12 @@ class SubmitResponseAction
 {
     public function __construct(private readonly UploadStore $uploads) {}
 
-    public function __invoke(User $user, Challenge $challenge, string $uploadId): ChallengeEntry
+    public function __invoke(User $user, Challenge $challenge, string $uploadId, ?Trim $trim = null): ChallengeEntry
     {
         $source = $this->uploads->claim($user, $uploadId);
 
         try {
-            $entry = DB::transaction(function () use ($user, $challenge, $source): ChallengeEntry {
+            $entry = DB::transaction(function () use ($user, $challenge, $source, $trim): ChallengeEntry {
                 /** @var Challenge $challenge */
                 $challenge = Challenge::whereKey($challenge->id)->lockForUpdate()->firstOrFail();
 
@@ -44,6 +45,8 @@ class SubmitResponseAction
                     'is_original' => false,
                     'status' => ChallengeEntry::STATUS_PROCESSING,
                     'submitted_at' => now(),
+                    'trim_start_ms' => $trim?->startMs,
+                    'trim_end_ms' => $trim?->endMs,
                 ]);
 
                 $destination = "entries/{$entry->id}/source";
