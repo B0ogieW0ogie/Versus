@@ -20,6 +20,7 @@ return [
     'in_reply_to' => 'в ответ :name',
     'link_copied' => 'Ссылка скопирована',
     'sound_on' => 'Включить звук',
+    'volume' => 'Громкость',
     'sound_off' => 'Выключить звук',
     'comments' => 'Комментарии',
     'comment_placeholder' => 'Написать комментарий…',

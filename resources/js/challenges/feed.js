@@ -283,6 +283,11 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         return this.isMuted() || this.soundBlocked;
     },
 
+    // What the slider shows: zero while muted (by the button or by dragging down), the saved level otherwise.
+    volumeLevel() {
+        return this.soundMuted() ? 0 : this.volume;
+    },
+
     // Volume slider (desktop, on hover). Zero means muted; dragging up unmutes.
     setVolumeFromPointer(event) {
         const track = event.currentTarget.getBoundingClientRect();
@@ -301,6 +306,10 @@ export default ({ initial, hintSeen, guest, loginUrl, i18n }) => {
         };
         const stop = () => {
             this.draggingVolume = false;
+            // The drag may end outside the hover zone, which then never gets its pointerleave.
+            if (!track.closest('[data-volume-zone]')?.matches(':hover')) {
+                this.volumeOpen = false;
+            }
             window.removeEventListener('pointermove', move);
             window.removeEventListener('pointerup', stop);
         };

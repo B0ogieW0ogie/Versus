@@ -20,6 +20,7 @@ return [
     'in_reply_to' => 'in reply to :name',
     'link_copied' => 'Link copied',
     'sound_on' => 'Turn sound on',
+    'volume' => 'Volume',
     'sound_off' => 'Mute',
     'comments' => 'Comments',
     'comment_placeholder' => 'Add a comment…',

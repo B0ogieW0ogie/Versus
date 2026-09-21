@@ -22,6 +22,7 @@
             'linkCopied' => __('challenges.link_copied'),
             'soundOn' => __('challenges.sound_on'),
             'soundOff' => __('challenges.sound_off'),
+            'volume' => __('challenges.volume'),
             'play' => __('challenges.play'),
             'pause' => __('challenges.pause'),
             'showMore' => __('challenges.show_more'),
@@ -102,26 +103,39 @@
                             <div class="pointer-events-auto flex flex-col items-center gap-4 pb-2 text-xs">
                                 {{-- Sound: click toggles mute. On desktop the hover zone spans the icon AND the
                                      whole strip above it where the slider appears, so there is no gap to fall through. --}}
-                                <div class="relative flex flex-col items-center"
+                                <div data-volume-zone class="relative flex flex-col items-center"
                                      @pointerenter="volumeOpen = isDesktop()" @pointerleave="if (!draggingVolume) volumeOpen = false">
-                                    {{-- Invisible hover column: icon height + slider height, always present on desktop --}}
-                                    <div class="absolute bottom-0 left-1/2 hidden h-44 w-12 -translate-x-1/2 lg:block"></div>
+                                    {{-- Invisible hover column: icon + capsule height, always present on desktop --}}
+                                    <div class="absolute bottom-0 left-1/2 hidden h-48 w-14 -translate-x-1/2 lg:block"></div>
 
-                                    {{-- Always rendered: toggling display + backdrop-filter made the fade stutter --}}
-                                    <div class="absolute bottom-full left-1/2 hidden -translate-x-1/2 rounded-full bg-black/70 px-2 py-3 opacity-0 transition-opacity duration-150 ease-out lg:block"
+                                    {{-- One dark capsule holding the track and the speaker icon. Always rendered and faded
+                                         with inline opacity: toggling display + backdrop-filter made the fade stutter. --}}
+                                    <div data-volume-capsule
+                                         class="absolute -bottom-2 left-1/2 hidden w-12 -translate-x-1/2 flex-col items-center rounded-full bg-neutral-800/90 pb-12 pt-4 shadow-lg shadow-black/40 opacity-0 transition-opacity duration-150 ease-out lg:flex"
                                          :style="volumeOpen ? 'opacity:1' : 'opacity:0;pointer-events:none'">
-                                        <div class="relative h-24 w-5 cursor-pointer touch-none"
+                                        {{-- Hit area wider than the track so the thumb is easy to grab --}}
+                                        <div data-volume-track class="relative h-28 w-8 cursor-pointer touch-none"
+                                             role="slider" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100"
+                                             :aria-valuenow="Math.round(volumeLevel() * 100)" :aria-label="i18n.volume"
                                              @pointerdown.stop.prevent="startVolumeDrag($event)" @click.stop>
-                                            <div class="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-white/30"></div>
-                                            <div class="absolute bottom-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full bg-white"
-                                                 :style="`height: ${volume * 100}%`"></div>
-                                            <div class="absolute left-1/2 h-4 w-4 -translate-x-1/2 translate-y-1/2 rounded-full bg-white shadow"
-                                                 :style="`bottom: ${volume * 100}%`"></div>
+                                            <div class="absolute inset-y-0 left-1/2 w-3.5 -translate-x-1/2 rounded-full bg-white/25"></div>
+                                            <div class="absolute bottom-0 left-1/2 w-3.5 -translate-x-1/2 rounded-full bg-white"
+                                                 :style="`height: ${volumeLevel() * 100}%`"></div>
+                                            <div class="absolute left-1/2 h-6 w-6 -translate-x-1/2 translate-y-1/2 rounded-full bg-white shadow-md shadow-black/40"
+                                                 :style="`bottom: ${volumeLevel() * 100}%`"></div>
                                         </div>
                                     </div>
-                                    <button type="button" data-sound-toggle @click.stop="toggleSound()" class="relative flex flex-col items-center gap-1"
+
+                                    <button type="button" data-sound-toggle @click.stop="toggleSound()" class="relative z-10 flex h-8 w-8 items-center justify-center text-white"
                                             :aria-label="soundMuted() ? i18n.soundOn : i18n.soundOff">
-                                        <span class="text-2xl" x-text="soundMuted() ? '🔇' : '🔊'"></span>
+                                        <svg x-show="!soundMuted()" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="M11 5 6.5 8.5H3v7h3.5L11 19V5Z" />
+                                            <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        <svg x-show="soundMuted()" x-cloak class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                            <path d="M11 5 6.5 8.5H3v7h3.5L11 19V5Z" />
+                                            <path d="m16 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
                                     </button>
                                 </div>
                                 <button type="button" @click.stop="like(ci)" class="flex flex-col items-center gap-1">
