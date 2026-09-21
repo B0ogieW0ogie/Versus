@@ -12,6 +12,12 @@ class SearchOverlayTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['versus.battles_enabled' => true]);
+    }
+
     public function test_empty_query_returns_no_results(): void
     {
         Battle::factory()->create(['title' => 'Messi vs Ronaldo']);

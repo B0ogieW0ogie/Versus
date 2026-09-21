@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Battle;
+use App\Models\Challenge;
+use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -15,14 +17,45 @@ class SearchOverlay extends Component
     public function render(): View
     {
         $trimmed = trim($this->query);
-        $results = mb_strlen($trimmed) < 2
-            ? new Collection
-            : $this->search($trimmed);
+        $ready = mb_strlen($trimmed) >= 2;
+        $battles = (bool) config('versus.battles_enabled');
 
         return view('livewire.search-overlay', [
-            'results' => $results,
+            'battlesMode' => $battles,
+            'results' => $ready && $battles ? $this->search($trimmed) : new Collection,
+            'people' => $ready && ! $battles ? $this->people($trimmed) : new Collection,
+            'challenges' => $ready && ! $battles ? $this->challenges($trimmed) : new Collection,
             'queryLength' => mb_strlen($trimmed),
         ]);
+    }
+
+    /** @return Collection<int, User> */
+    private function people(string $trimmed): Collection
+    {
+        $query = mb_strtolower(ltrim($trimmed, '@'));
+        $needle = '%'.$query.'%';
+
+        return User::query()
+            ->where(fn (Builder $w) => $w->whereRaw('LOWER(username) LIKE ?', [$needle])->orWhereRaw('LOWER(name) LIKE ?', [$needle]))
+            ->orderByRaw('CASE WHEN LOWER(username) = ? THEN 0 ELSE 1 END', [$query])
+            ->orderBy('username')
+            ->limit(8)
+            ->get();
+    }
+
+    /** @return Collection<int, Challenge> */
+    private function challenges(string $trimmed): Collection
+    {
+        $needle = '%'.mb_strtolower($trimmed).'%';
+
+        return Challenge::query()
+            ->with('user')
+            ->whereIn('status', [Challenge::STATUS_ACTIVE, Challenge::STATUS_CLOSED])
+            ->where(fn (Builder $w) => $w->whereRaw('LOWER(title) LIKE ?', [$needle])->orWhereRaw('LOWER(rules) LIKE ?', [$needle]))
+            ->orderByRaw("CASE status WHEN 'active' THEN 0 ELSE 1 END")
+            ->orderByDesc('feed_score')
+            ->limit(10)
+            ->get();
     }
 
     /**

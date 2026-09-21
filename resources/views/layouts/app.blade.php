@@ -16,14 +16,10 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            {{-- The full-screen feed hides the top nav on mobile (bottom nav covers it); the feed and the desktop-shell
-                 challenge pages hide it on lg, where the side nav takes over. It stays visible on sm/md. --}}
-            <div data-nav="top" class="{{ match (true) {
-                request()->routeIs('challenges.index', 'challenges.show') => 'hidden sm:block lg:hidden',
-                request()->routeIs('challenges.create', 'challenges.respond', 'challenges.mine') => 'lg:hidden',
-                default => '',
-            } }}">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900 lg:bg-navy-900">
+            {{-- The old top header is mobile/tablet only: on lg the side menu replaces it everywhere.
+                 The full-screen feed also hides it on phones, where the bottom nav covers navigation. --}}
+            <div data-nav="top" class="{{ request()->routeIs('challenges.index', 'challenges.show') ? 'hidden sm:block lg:hidden' : 'lg:hidden' }}">
                 @include('layouts.navigation')
             </div>
 
@@ -36,10 +32,26 @@
                 </header>
             @endisset
 
-            <!-- Page Content -->
-            <main class="pb-20 sm:pb-0">
-                {{ $slot }}
-            </main>
+            {{-- Desktop (lg+) VERSUS frame: recommendations · current section · menu. The side columns never move;
+                 only the centre column changes between sections. Below lg only the centre renders. --}}
+            <div data-shell class="lg:grid lg:grid-cols-[minmax(15rem,20rem)_minmax(0,1fr)_16rem] lg:gap-8 lg:px-8">
+                <aside data-shell-left class="hidden lg:block">
+                    <div class="sticky top-0 max-h-screen overflow-y-auto py-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        @include('layouts.recommendations')
+                    </div>
+                </aside>
+
+                <!-- Page Content -->
+                <main class="min-w-0 pb-20 sm:pb-0">
+                    {{ $slot }}
+                </main>
+
+                <div data-shell-right class="hidden lg:block">
+                    <div class="sticky top-0 flex h-screen flex-col [&>nav]:flex-1">
+                        @include('layouts.side-nav')
+                    </div>
+                </div>
+            </div>
 
             @unless (request()->routeIs('challenges.create', 'challenges.respond'))
                 @include('layouts.bottom-nav')

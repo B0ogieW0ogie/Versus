@@ -148,12 +148,13 @@ return [
 
     // Navigation
     'nav_challenges' => 'Челленджи',
+    'tab_feed' => 'Лента',
     'nav_my' => 'Мои челленджи',
 
     // Desktop feed
     'may_like_title' => 'Вам может это понравиться',
-    'may_like_subtitle' => 'Популярные авторы по хештегам',
-    'may_like_soon' => 'Скоро здесь появятся авторы',
+    'may_like_subtitle' => 'Популярные авторы по категориям',
+    'may_like_empty' => 'Скоро здесь появятся популярные авторы',
     'notifications' => 'Уведомления',
     'show_more' => 'Ещё',
     'show_less' => 'Свернуть',

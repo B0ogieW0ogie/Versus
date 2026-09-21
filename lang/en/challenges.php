@@ -148,12 +148,13 @@ return [
 
     // Navigation
     'nav_challenges' => 'Challenges',
+    'tab_feed' => 'Feed',
     'nav_my' => 'My Challenges',
 
     // Desktop feed
     'may_like_title' => 'You may like',
-    'may_like_subtitle' => 'Popular authors by hashtag',
-    'may_like_soon' => 'Coming soon',
+    'may_like_subtitle' => 'Popular creators by category',
+    'may_like_empty' => 'Popular creators will appear here soon',
     'notifications' => 'Notifications',
     'show_more' => 'More',
     'show_less' => 'Less',

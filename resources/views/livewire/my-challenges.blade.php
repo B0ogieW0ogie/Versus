@@ -1,8 +1,10 @@
-<x-challenges.desktop-shell>
+<div class="min-h-screen bg-navy-900 text-white">
 <div class="mx-auto max-w-3xl px-4 pb-8 pt-6 lg:px-0"
      @if (session('challenge_status'))
          x-init="$nextTick(() => window.dispatchEvent(new CustomEvent('versus-stake-toast', { detail: { title: @js(session('challenge_status')) } })))"
      @endif>
+    <div class="mb-5">@include('layouts.challenges-tabs')</div>
+
     <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-baseline gap-4">
             <h1 class="text-3xl font-bold">{{ __('challenges.my_title') }}</h1>
@@ -107,4 +109,4 @@
         <button type="button" wire:click="loadMore" class="mt-6 w-full rounded-xl border border-white/15 py-3">{{ __('challenges.load_more') }}</button>
     @endif
 </div>
-</x-challenges.desktop-shell>
+</div>

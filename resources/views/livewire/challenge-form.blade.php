@@ -6,7 +6,7 @@
     $field = 'w-full rounded-xl border-white/10 bg-white/5 text-white placeholder-white/40 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-70';
 @endphp
 
-<x-challenges.desktop-shell>
+<div class="min-h-screen bg-navy-900 text-white">
 <div x-data="challengeUpload({
         maxSeconds: @js($maxSeconds),
         maxBytes: @js($maxBytes),
@@ -271,4 +271,4 @@
         </div>
     </div>
 </div>
-</x-challenges.desktop-shell>
+</div>

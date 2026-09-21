@@ -14,4 +14,6 @@ return [
     'feed' => 'Лента',
     'create' => 'Создать',
     'coming_soon' => 'Скоро',
+    'settings' => 'Настройки',
+    'language' => 'Язык',
 ];

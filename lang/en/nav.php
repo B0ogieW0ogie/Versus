@@ -14,4 +14,6 @@ return [
     'feed' => 'Feed',
     'create' => 'Create',
     'coming_soon' => 'Coming soon',
+    'settings' => 'Settings',
+    'language' => 'Language',
 ];

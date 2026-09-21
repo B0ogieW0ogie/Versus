@@ -9,7 +9,8 @@
         <div class="flex items-center gap-1 text-white/40">
             <button type="button" disabled aria-disabled="true"
                     title="{{ __('profile.coming_soon') }}"
-                    class="p-2 cursor-not-allowed">
+                    class="p-2 cursor-not-allowed lg:hidden">
+                {{-- On lg Notifications live in the side menu; don't duplicate them here. --}}
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                      stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
                     <path stroke-linecap="round" stroke-linejoin="round"

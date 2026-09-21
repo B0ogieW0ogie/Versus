@@ -30,16 +30,16 @@
      })"
      @click.capture="unlockSound($event)"
      class="fixed inset-x-0 top-0 sm:top-16 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] sm:bottom-0 z-30 bg-black text-white
-            lg:top-0 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_16rem] lg:grid-rows-1 lg:gap-8 lg:bg-navy-900 lg:px-8">
+            lg:relative lg:top-0 lg:z-auto lg:grid lg:h-screen lg:grid-cols-[auto_minmax(0,1fr)] lg:grid-rows-[auto_minmax(0,1fr)] lg:gap-x-8 lg:bg-navy-900">
 
-    {{-- Desktop column 1: recommendations (placeholder for now) --}}
-    <aside class="hidden min-h-0 py-6 lg:block">
-        @include('challenges.may-like')
-    </aside>
+    {{-- Desktop: the feed fills the layout's centre column; the side columns come from layouts.app. --}}
+    <div class="hidden pb-4 pt-6 lg:col-span-2 lg:block">
+        @include('layouts.challenges-tabs')
+    </div>
 
     {{-- Column 2: the feed. Full-screen below lg; a centred 9:16 card with action buttons at lg. --}}
     <div class="h-full lg:flex lg:min-h-0 lg:flex-col lg:items-center lg:justify-center lg:gap-4">
-    <div data-card class="relative h-full lg:h-[calc(100vh-7rem)] lg:aspect-[9/16] lg:overflow-hidden lg:rounded-2xl lg:bg-black">
+    <div data-card class="relative h-full lg:h-[calc(100vh-11.5rem)] lg:aspect-[9/16] lg:overflow-hidden lg:rounded-2xl lg:bg-black">
 
     <div x-ref="vertical" class="h-full overflow-y-auto snap-y snap-mandatory overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
          @scroll.debounce.120ms="onVerticalScroll()">
@@ -205,8 +205,8 @@
     </div>
     </div>
 
-    {{-- Desktop column 3: details + comments for the active challenge/slide --}}
-    <section data-desktop-details class="hidden min-h-0 py-6 lg:flex lg:flex-col">
+    {{-- Desktop: details + comments for the active challenge/slide --}}
+    <section data-desktop-details class="hidden min-h-0 pb-6 lg:flex lg:flex-col">
         <template x-if="currentSlide(active)">
             <div class="flex min-h-0 flex-1 flex-col gap-4">
                 <div class="flex items-center gap-3">
@@ -286,12 +286,9 @@
         </template>
     </section>
 
-    {{-- Desktop column 4: navigation --}}
-    @include('layouts.side-nav')
-
     {{-- One bell for the whole page: a Livewire component must not live inside <template x-for>.
          Mobile only: on sm/md the top navigation (with its own bell) is visible above the feed,
-         and on lg the side nav carries the only bell. --}}
+         and on lg the side menu links to the Notifications page. --}}
     @auth
         <div class="absolute right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-40 sm:hidden lg:hidden">
             <livewire:notification-bell />

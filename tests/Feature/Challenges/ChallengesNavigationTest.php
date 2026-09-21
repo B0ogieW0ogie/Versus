@@ -23,7 +23,7 @@ class ChallengesNavigationTest extends TestCase
         $user = User::factory()->create();
         $battle = Battle::factory()->create();
 
-        $this->get('/')->assertRedirect(route('challenges.index'));
+        $this->get(route('battles.index'))->assertRedirect(route('challenges.index'));
         $this->get(route('battles.show', $battle->slug))->assertRedirect(route('challenges.index'));
         $this->get(route('leaderboard'))->assertRedirect(route('challenges.index'));
         $this->actingAs($user)->get(route('wallet'))->assertRedirect(route('challenges.index'));
@@ -64,9 +64,10 @@ class ChallengesNavigationTest extends TestCase
             ->assertOk()
             ->assertSee('data-nav="top" class="lg:hidden"', false);
 
+        // The old header never shows on desktop: every page is inside the side-menu shell.
         $this->actingAs(User::factory()->create())->get(route('profile.edit'))
             ->assertOk()
-            ->assertSee('data-nav="top" class=""', false);
+            ->assertSee('data-nav="top" class="lg:hidden"', false);
     }
 
     public function test_balance_chip_is_hidden_when_battles_are_off(): void

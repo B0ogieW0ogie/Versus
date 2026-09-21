@@ -14,11 +14,14 @@ use App\Livewire\ConnectionsPage;
 use App\Livewire\FeedPage;
 use App\Livewire\Leaderboard;
 use App\Livewire\MyChallenges;
+use App\Livewire\NewsFeed;
+use App\Livewire\NotificationsPage;
 use App\Livewire\ProfilePage;
 use App\Livewire\WalletPage;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', BattleIndex::class)->middleware('battles')->name('home');
+// Home is the News Feed; the vertical video feed is the Challenges section.
+Route::get('/', NewsFeed::class)->name('home');
 Route::get('/battles', BattleIndex::class)->middleware('battles')->name('battles.index');
 Route::middleware(['auth', 'verified', 'battles'])->get('/battles/create', BattleCreate::class)->name('battles.create');
 Route::get('/battles/{battle:slug}/pool-total', BattlePoolTotalController::class)->name('battles.pool-total');
@@ -53,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/my-bets', fn () => redirect()->route('profile.edit', ['tab' => 'activity'], 301))->name('my-bets');
 
     Route::get('/my-challenges', MyChallenges::class)->name('challenges.mine');
+    Route::get('/notifications', NotificationsPage::class)->name('notifications');
 
     Route::post('/challenge-uploads', [ChallengeUploadController::class, 'start'])
         ->middleware('throttle:challenge-upload-start')->name('challenge-uploads.start');

@@ -5,7 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon $accepted_at
+ */
 #[Fillable(['user_id', 'challenge_id', 'accepted_at'])]
 class ChallengeParticipant extends Model
 {
