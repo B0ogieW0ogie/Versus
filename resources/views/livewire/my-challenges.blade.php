@@ -1,10 +1,18 @@
-<div class="min-h-screen bg-navy-900 px-4 pb-8 pt-6 text-white"
+<x-challenges.desktop-shell>
+<div class="mx-auto max-w-3xl px-4 pb-8 pt-6 lg:px-0"
      @if (session('challenge_status'))
          x-init="$nextTick(() => window.dispatchEvent(new CustomEvent('versus-stake-toast', { detail: { title: @js(session('challenge_status')) } })))"
      @endif>
-    <header class="mb-6 flex items-baseline justify-between">
-        <h1 class="text-3xl font-bold">{{ __('challenges.my_title') }}</h1>
-        <span class="text-white/60">{{ __('challenges.active_count', ['count' => $activeCount]) }}</span>
+    <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-baseline gap-4">
+            <h1 class="text-3xl font-bold">{{ __('challenges.my_title') }}</h1>
+            <span class="text-white/60">{{ __('challenges.active_count', ['count' => $activeCount]) }}</span>
+        </div>
+        <a href="{{ route('challenges.create') }}" data-create-challenge
+           class="inline-flex h-11 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold uppercase tracking-wide shadow-lg shadow-indigo-600/20 hover:bg-indigo-500">
+            <x-icon.plus class="h-5 w-5" />
+            {{ __('challenges.create_title') }}
+        </a>
     </header>
 
     @if ($cards === [])
@@ -99,3 +107,4 @@
         <button type="button" wire:click="loadMore" class="mt-6 w-full rounded-xl border border-white/15 py-3">{{ __('challenges.load_more') }}</button>
     @endif
 </div>
+</x-challenges.desktop-shell>

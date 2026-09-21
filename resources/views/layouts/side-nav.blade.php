@@ -1,9 +1,9 @@
-{{-- Desktop (lg+) right-hand navigation for the challenge feed. Included by the feed view only. --}}
+{{-- Desktop (lg+) right-hand navigation: the challenge feed and <x-challenges.desktop-shell> pages. --}}
 @php
     $sideItems = [
         ['route' => 'home', 'match' => ['home'], 'label' => __('nav.home'), 'icon' => 'home', 'auth' => false],
         ['route' => 'challenges.index', 'match' => ['challenges.index', 'challenges.show'], 'label' => __('challenges.nav_challenges'), 'icon' => 'bolt', 'auth' => false],
-        ['route' => 'challenges.mine', 'match' => ['challenges.mine'], 'label' => __('challenges.nav_my'), 'icon' => 'swords', 'auth' => true],
+        ['route' => 'challenges.mine', 'match' => ['challenges.mine', 'challenges.create', 'challenges.respond'], 'label' => __('challenges.nav_my'), 'icon' => 'swords', 'auth' => true],
         ['route' => 'profile.edit', 'match' => ['profile.*'], 'label' => __('nav.profile'), 'icon' => 'user', 'auth' => true],
     ];
 @endphp

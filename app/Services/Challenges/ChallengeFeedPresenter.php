@@ -17,7 +17,7 @@ class ChallengeFeedPresenter
     /** @return array<string, mixed> */
     public function present(Challenge $challenge, ?User $viewer, ?int $focusEntryId = null): array
     {
-        $challenge->loadMissing(['user', 'original.user', 'winnerEntry.user']);
+        $challenge->loadMissing(['user', 'opponent', 'original.user', 'winnerEntry.user']);
 
         /** @var list<ChallengeEntry> $entries */
         $entries = array_values(array_filter([
@@ -80,6 +80,10 @@ class ChallengeFeedPresenter
             'is_open' => $challenge->isOpen(),
             'is_own' => $viewer !== null && $challenge->user_id === $viewer->id,
             'accepted' => $accepted,
+            'is_duel' => $challenge->isDuel(),
+            'opponent_name' => $challenge->opponent !== null ? '@'.($challenge->opponent->username ?? $challenge->opponent->name) : null,
+            // Guests see the button enabled and get the login prompt; in a Duel only the opponent can take part.
+            'can_accept' => $viewer === null ? ! $challenge->isDuel() : $challenge->allowsResponseFrom($viewer),
             'my_entry_id' => $myEntryId !== null ? (int) $myEntryId : null,
             'my_vote_entry_id' => $myVoteEntryId !== null ? (int) $myVoteEntryId : null,
             'entries_count' => $challenge->entries_count,

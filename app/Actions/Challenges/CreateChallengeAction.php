@@ -21,19 +21,24 @@ class CreateChallengeAction
         string $uploadId,
         string $title,
         string $rules,
+        string $category,
         string $duration,
+        string $format = Challenge::FORMAT_PUBLIC,
+        ?User $opponent = null,
         ?string $username = null,
         ?Challenge $replacing = null,
     ): Challenge {
         $title = trim($title);
         $rules = trim($rules);
         $username = $username !== null ? trim($username) : null;
+        // A Public challenge never carries an opponent, whatever the form sent.
+        $opponent = $format === Challenge::FORMAT_DUEL ? $opponent : null;
 
-        $this->validate($user, $title, $rules, $duration, $username, $replacing);
+        $this->validate($user, $title, $rules, $category, $duration, $format, $opponent, $username, $replacing);
 
         $source = $this->uploads->claim($user, $uploadId);
 
-        $challenge = DB::transaction(function () use ($user, $title, $rules, $duration, $username, $replacing, $source): Challenge {
+        $challenge = DB::transaction(function () use ($user, $title, $rules, $category, $duration, $format, $opponent, $username, $replacing, $source): Challenge {
             if ($user->username === null && $username !== null) {
                 $user->forceFill(['username' => $username])->save();
             }
@@ -47,6 +52,9 @@ class CreateChallengeAction
                 'user_id' => $user->id,
                 'title' => $title,
                 'rules' => $rules,
+                'category' => $category,
+                'format' => $format,
+                'opponent_id' => $opponent?->id,
                 'duration' => $duration,
                 'status' => Challenge::STATUS_PROCESSING,
             ]);
@@ -73,8 +81,17 @@ class CreateChallengeAction
         return $challenge;
     }
 
-    private function validate(User $user, string $title, string $rules, string $duration, ?string $username, ?Challenge $replacing): void
-    {
+    private function validate(
+        User $user,
+        string $title,
+        string $rules,
+        string $category,
+        string $duration,
+        string $format,
+        ?User $opponent,
+        ?string $username,
+        ?Challenge $replacing,
+    ): void {
         $errors = [];
 
         if ($title === '' || mb_strlen($title) > 100) {
@@ -83,8 +100,18 @@ class CreateChallengeAction
         if ($rules === '' || mb_strlen($rules) > 500) {
             $errors['rules'] = __('challenges.rules_required');
         }
+        if (! in_array($category, Challenge::CATEGORIES, true)) {
+            $errors['category'] = __('challenges.category_required');
+        }
         if (! array_key_exists($duration, (array) config('versus.challenges.durations'))) {
             $errors['duration'] = __('challenges.duration_required');
+        }
+        if (! in_array($format, Challenge::FORMATS, true)) {
+            $errors['format'] = __('challenges.format_required');
+        } elseif ($format === Challenge::FORMAT_DUEL && $opponent === null) {
+            $errors['opponent'] = __('challenges.opponent_required');
+        } elseif ($opponent !== null && $opponent->id === $user->id) {
+            $errors['opponent'] = __('challenges.opponent_self');
         }
 
         if ($user->username === null) {

@@ -14,6 +14,9 @@ class AcceptChallengeAction
         if ($challenge->user_id === $user->id) {
             throw ValidationException::withMessages(['challenge' => __('challenges.own_challenge')]);
         }
+        if (! $challenge->allowsResponseFrom($user)) {
+            throw ValidationException::withMessages(['challenge' => __('challenges.duel_only')]);
+        }
         if (! $challenge->isOpen()) {
             throw ValidationException::withMessages(['challenge' => __('challenges.not_open')]);
         }

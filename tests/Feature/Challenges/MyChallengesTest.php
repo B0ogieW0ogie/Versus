@@ -144,4 +144,13 @@ class MyChallengesTest extends TestCase
     {
         $this->get(route('challenges.mine'))->assertRedirect(route('login'));
     }
+
+    public function test_create_challenge_button_lives_in_my_challenges(): void
+    {
+        $this->actingAs(User::factory()->create())->get(route('challenges.mine'))
+            ->assertOk()
+            ->assertSee('data-create-challenge', false)
+            ->assertSee('href="'.route('challenges.create').'"', false)
+            ->assertSee('data-side-nav', false);
+    }
 }

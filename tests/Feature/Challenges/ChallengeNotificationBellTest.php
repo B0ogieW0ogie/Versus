@@ -8,6 +8,7 @@ use App\Models\ChallengeEntry;
 use App\Models\User;
 use App\Notifications\ChallengeResponseReceived;
 use App\Notifications\ChallengeResults;
+use App\Notifications\DuelInvitation;
 use App\Notifications\EntryProcessingFailed;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -39,5 +40,19 @@ class ChallengeNotificationBellTest extends TestCase
             ->assertSee(__('challenges.notif_results_over', ['title' => 'Kickflip', 'name' => 'Maya']))
             ->assertSee('/c/'.$challenge->slug.'?entry='.$entry->id, false)
             ->assertSee('/my-challenges', false);
+    }
+
+    public function test_bell_renders_duel_invitation(): void
+    {
+        $rival = User::factory()->create();
+        $challenge = Challenge::factory()->duel($rival)->create(['title' => 'Kickflip']);
+
+        $rival->notify(new DuelInvitation($challenge, '@dan'));
+
+        Livewire::actingAs($rival)
+            ->test(NotificationBell::class)
+            ->call('toggle')
+            ->assertSee(__('challenges.notif_duel_invitation', ['name' => '@dan', 'title' => 'Kickflip']))
+            ->assertSee('/c/'.$challenge->slug, false);
     }
 }

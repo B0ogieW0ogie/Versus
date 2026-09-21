@@ -62,6 +62,10 @@ class ChallengesNavigationTest extends TestCase
 
         $this->actingAs(User::factory()->create())->get(route('challenges.mine'))
             ->assertOk()
+            ->assertSee('data-nav="top" class="lg:hidden"', false);
+
+        $this->actingAs(User::factory()->create())->get(route('profile.edit'))
+            ->assertOk()
             ->assertSee('data-nav="top" class=""', false);
     }
 

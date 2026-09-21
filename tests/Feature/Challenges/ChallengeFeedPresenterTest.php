@@ -104,4 +104,37 @@ class ChallengeFeedPresenterTest extends TestCase
         $this->assertNull($data['my_entry_id']);
         $this->assertFalse($data['is_own']);
     }
+
+    public function test_duel_is_public_but_only_the_opponent_can_accept(): void
+    {
+        $rival = User::factory()->create(['username' => 'rival']);
+        $duel = Challenge::factory()->duel($rival)->withOriginal()->create();
+        $presenter = app(ChallengeFeedPresenter::class);
+
+        $guest = $presenter->present($duel, null);
+        $this->assertTrue($guest['is_duel']);
+        $this->assertSame('@rival', $guest['opponent_name']);
+        $this->assertFalse($guest['can_accept']);
+        $this->assertTrue($guest['slides'][0]['is_original']); // watchable by anyone
+
+        $this->assertFalse($presenter->present($duel, User::factory()->create())['can_accept']);
+        $this->assertFalse($presenter->present($duel, $duel->user)['can_accept']);
+        $this->assertTrue($presenter->present($duel, $rival)['can_accept']);
+
+        $public = Challenge::factory()->withOriginal()->create();
+        $this->assertTrue($presenter->present($public, null)['can_accept']);
+        $this->assertTrue($presenter->present($public, User::factory()->create())['can_accept']);
+    }
+
+    public function test_anyone_can_vote_in_a_duel(): void
+    {
+        $rival = User::factory()->create();
+        $duel = Challenge::factory()->duel($rival)->withOriginal()->create();
+        $entry = ChallengeEntry::factory()->for($duel)->for($rival)->create();
+        $voter = User::factory()->create();
+
+        app(CastChallengeVoteAction::class)($voter, $entry);
+
+        $this->assertSame(1, $entry->fresh()->votes_count);
+    }
 }

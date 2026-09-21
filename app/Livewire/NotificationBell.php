@@ -112,6 +112,10 @@ class NotificationBell extends Component
                 'name' => (string) $data['actor_name'],
                 'title' => (string) $data['challenge_title'],
             ]),
+            'DuelInvitation' => __('challenges.notif_duel_invitation', [
+                'name' => (string) $data['actor_name'],
+                'title' => (string) $data['challenge_title'],
+            ]),
             'ResponsePublished' => __('challenges.notif_response_published', ['title' => (string) $data['challenge_title']]),
             'ChallengeEndingSoon' => __('challenges.notif_ending_soon', ['title' => (string) $data['challenge_title']]),
             'ChallengeResults' => __('challenges.notif_results_'.$data['result'], [

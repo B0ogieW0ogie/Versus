@@ -5,7 +5,11 @@ return [
     'battles_enabled' => (bool) env('VERSUS_BATTLES_ENABLED', false),
 
     'challenges' => [
-        'durations' => ['24h' => 24 * 60, '3d' => 3 * 24 * 60, '7d' => 7 * 24 * 60], // minutes
+        // Offered in the create form, in minutes. The deadline's upper bound is still to be decided.
+        'durations' => ['3d' => 3 * 24 * 60, '7d' => 7 * 24 * 60, '14d' => 14 * 24 * 60, '30d' => 30 * 24 * 60],
+        'default_duration' => '7d',
+        // No longer offered, but existing challenges may still carry them.
+        'legacy_durations' => ['24h' => 24 * 60],
         'max_video_seconds' => 60,
         'max_upload_mb' => 100,
         'upload_chunk_mb' => 5,

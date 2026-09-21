@@ -25,8 +25,9 @@ class ChallengeModelTest extends TestCase
 
     public function test_duration_minutes_come_from_config(): void
     {
-        $this->assertSame(1440, Challenge::durationMinutes(Challenge::DURATION_24H));
         $this->assertSame(10080, Challenge::durationMinutes(Challenge::DURATION_7D));
+        $this->assertSame(43200, Challenge::durationMinutes(Challenge::DURATION_30D));
+        $this->assertSame(1440, Challenge::durationMinutes('24h')); // retired, still resolvable for old rows
 
         $this->expectException(InvalidArgumentException::class);
         Challenge::durationMinutes('1y');

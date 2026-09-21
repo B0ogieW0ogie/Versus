@@ -6,6 +6,7 @@ use App\Models\Challenge;
 use App\Models\ChallengeEntry;
 use App\Notifications\ChallengePublished;
 use App\Notifications\ChallengeResponseReceived;
+use App\Notifications\DuelInvitation;
 use App\Notifications\ResponsePublished;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -59,6 +60,10 @@ class MarkEntryReadyAction
         try {
             if ($entry->is_original) {
                 $challenge->user->notify(new ChallengePublished($challenge));
+                if ($challenge->isDuel()) {
+                    $author = $challenge->user;
+                    $challenge->opponent?->notify(new DuelInvitation($challenge, $author->username !== null ? '@'.$author->username : $author->name));
+                }
             } else {
                 $challenge->user->notify(new ChallengeResponseReceived($challenge, $entry, $entry->user));
                 $entry->user->notify(new ResponsePublished($challenge, $entry));

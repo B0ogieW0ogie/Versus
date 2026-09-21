@@ -42,7 +42,10 @@ class CreateChallengeActionTest extends TestCase
             'uploadId' => $this->upload($user),
             'title' => 'Kickflip clean',
             'rules' => 'Land it in 10 seconds #skate',
+            'category' => Challenge::CATEGORY_SPORTS,
             'duration' => Challenge::DURATION_3D,
+            'format' => Challenge::FORMAT_PUBLIC,
+            'opponent' => null,
             'username' => null,
             'replacing' => null,
         ], $overrides);
@@ -153,5 +156,79 @@ class CreateChallengeActionTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $this->create($user, ['replacing' => $active]);
+    }
+
+    public function test_stores_category_and_public_format(): void
+    {
+        $challenge = $this->create(User::factory()->create(['username' => 'dan']));
+
+        $this->assertSame(Challenge::CATEGORY_SPORTS, $challenge->category);
+        $this->assertSame(Challenge::FORMAT_PUBLIC, $challenge->format);
+        $this->assertNull($challenge->opponent_id);
+    }
+
+    public function test_category_is_required_and_must_be_known(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        foreach (['', 'memes'] as $category) {
+            try {
+                $this->create($user, ['category' => $category]);
+                $this->fail('Expected validation error');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('category', $e->errors());
+            }
+        }
+    }
+
+    public function test_offered_durations_are_3_7_14_30_days(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        $this->assertSame(['3d', '7d', '14d', '30d'], array_keys(config('versus.challenges.durations')));
+        $this->assertSame('30d', $this->create($user, ['duration' => Challenge::DURATION_30D])->duration);
+
+        $this->expectException(ValidationException::class);
+        $this->create($user, ['duration' => '24h']);
+    }
+
+    public function test_duel_stores_the_opponent(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+        $rival = User::factory()->create();
+
+        $challenge = $this->create($user, ['format' => Challenge::FORMAT_DUEL, 'opponent' => $rival]);
+
+        $this->assertTrue($challenge->isDuel());
+        $this->assertSame($rival->id, $challenge->opponent_id);
+    }
+
+    public function test_duel_requires_an_opponent_other_than_the_creator(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        foreach ([null, $user] as $opponent) {
+            try {
+                $this->create($user, ['format' => Challenge::FORMAT_DUEL, 'opponent' => $opponent]);
+                $this->fail('Expected validation error');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('opponent', $e->errors());
+            }
+        }
+    }
+
+    public function test_public_challenge_drops_any_opponent(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        $challenge = $this->create($user, ['opponent' => User::factory()->create()]);
+
+        $this->assertNull($challenge->opponent_id);
+    }
+
+    public function test_unknown_format_is_rejected(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->create(User::factory()->create(['username' => 'dan']), ['format' => 'private']);
     }
 }

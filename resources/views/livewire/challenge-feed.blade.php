@@ -11,6 +11,8 @@
             'vote' => __('challenges.vote'),
             'yourVote' => __('challenges.your_vote'),
             'yourChallenge' => __('challenges.your_challenge'),
+            'duelOnly' => __('challenges.duel_badge'),
+            'duelVs' => __('challenges.duel_vs'),
             'myResponse' => __('challenges.my_response'),
             'moveVote' => __('challenges.move_vote_confirm'),
             'winner' => __('challenges.winner'),
@@ -32,11 +34,7 @@
 
     {{-- Desktop column 1: recommendations (placeholder for now) --}}
     <aside class="hidden min-h-0 py-6 lg:block">
-        <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 class="text-lg font-bold">{{ __('challenges.may_like_title') }}</h2>
-            <p class="mt-1 text-sm text-white/60">{{ __('challenges.may_like_subtitle') }}</p>
-            <p class="mt-6 text-sm text-white/40">{{ __('challenges.may_like_soon') }}</p>
-        </div>
+        @include('challenges.may-like')
     </aside>
 
     {{-- Column 2: the feed. Full-screen below lg; a centred 9:16 card with action buttons at lg. --}}
@@ -147,10 +145,10 @@
                             <div class="pointer-events-auto flex w-full gap-2 text-sm font-semibold uppercase tracking-wide">
                                 <button type="button"
                                         class="flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 px-3 disabled:opacity-60"
-                                        :disabled="challenge.is_own"
+                                        :disabled="!challenge.can_accept"
                                         @click="accept(ci)">
                                     <x-icon.swords class="h-4 w-4 shrink-0" />
-                                    <span class="truncate" x-text="i18n.acceptShort"></span>
+                                    <span class="truncate" x-text="challenge.is_duel && !challenge.can_accept && !challenge.is_own ? i18n.duelOnly : i18n.acceptShort"></span>
                                 </button>
                                 <button type="button"
                                         class="flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3 disabled:opacity-60"
@@ -186,10 +184,10 @@
             <div class="flex gap-3 text-sm font-bold uppercase tracking-wide">
                 <button type="button"
                         class="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-400 px-3 shadow-lg shadow-orange-500/20 disabled:opacity-60"
-                        :disabled="challenges[active].is_own"
+                        :disabled="!challenges[active].can_accept"
                         @click="accept(active)">
                     <x-icon.swords class="h-5 w-5 shrink-0" />
-                    <span class="truncate" x-text="challenges[active].is_own ? i18n.yourChallenge : (challenges[active].my_entry_id ? i18n.myResponse : i18n.accept)"></span>
+                    <span class="truncate" x-text="challenges[active].is_own ? i18n.yourChallenge : (challenges[active].my_entry_id ? i18n.myResponse : (challenges[active].can_accept ? i18n.accept : i18n.duelOnly))"></span>
                 </button>
                 <button type="button"
                         class="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3 shadow-lg shadow-violet-600/20 disabled:opacity-60"
@@ -230,6 +228,11 @@
                 </div>
 
                 <h1 class="text-2xl font-bold leading-snug" x-text="challenges[active].title"></h1>
+
+                <p x-show="challenges[active].is_duel" x-cloak class="flex items-center gap-2 text-sm text-white/70">
+                    <span class="rounded-full bg-orange-500/15 px-3 py-1 text-xs font-semibold text-orange-300" x-text="i18n.duelOnly"></span>
+                    <span x-text="i18n.duelVs.replace(':opponent', challenges[active].opponent_name || '')"></span>
+                </p>
 
                 <div x-show="tagsOf(challenges[active].rules).length" class="flex flex-wrap gap-2">
                     <template x-for="tag in tagsOf(challenges[active].rules)" :key="tag">

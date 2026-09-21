@@ -10,6 +10,7 @@ use App\Models\ChallengeEntry;
 use App\Models\User;
 use App\Notifications\ChallengePublished;
 use App\Notifications\ChallengeResponseReceived;
+use App\Notifications\DuelInvitation;
 use App\Notifications\EntryProcessingFailed;
 use App\Notifications\ResponsePublished;
 use App\Services\Video\VideoTranscoder;
@@ -137,5 +138,16 @@ class ProcessEntryVideoTest extends TestCase
             app(MarkEntryReadyAction::class),
             app(MarkEntryFailedAction::class),
         ];
+    }
+
+    public function test_ready_duel_invites_the_opponent(): void
+    {
+        $rival = User::factory()->create();
+        $challenge = Challenge::factory()->processing()->duel($rival)->create();
+        $entry = $this->pendingEntry($challenge, true);
+
+        (new ProcessEntryVideo($entry->id))->handle(...$this->handleArgs());
+
+        Notification::assertSentTo($rival, DuelInvitation::class);
     }
 }

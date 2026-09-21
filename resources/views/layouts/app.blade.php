@@ -17,9 +17,13 @@
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            {{-- The full-screen feed hides the top nav on mobile (bottom nav covers it) and on lg (the feed has its own side nav);
-                 it stays visible on sm/md. --}}
-            <div data-nav="top" class="{{ request()->routeIs('challenges.index', 'challenges.show') ? 'hidden sm:block lg:hidden' : '' }}">
+            {{-- The full-screen feed hides the top nav on mobile (bottom nav covers it); the feed and the desktop-shell
+                 challenge pages hide it on lg, where the side nav takes over. It stays visible on sm/md. --}}
+            <div data-nav="top" class="{{ match (true) {
+                request()->routeIs('challenges.index', 'challenges.show') => 'hidden sm:block lg:hidden',
+                request()->routeIs('challenges.create', 'challenges.respond', 'challenges.mine') => 'lg:hidden',
+                default => '',
+            } }}">
                 @include('layouts.navigation')
             </div>
 

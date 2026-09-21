@@ -92,6 +92,14 @@ function readDuration(file) {
     });
 }
 
+// Safari records MP4, Chromium/Firefox WebM; ffmpeg on the server transcodes either.
+const RECORDER_TYPES = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+
+const recorderType = () => RECORDER_TYPES.find((type) => window.MediaRecorder?.isTypeSupported?.(type)) ?? '';
+
+// Phones get the native camera through <input capture>; in-page recording is for desktops with a webcam.
+const prefersNativeCamera = () => window.matchMedia('(pointer: coarse)').matches || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder;
+
 export default ({ maxSeconds, maxBytes, urls, backUrl, i18n }) => ({
     state: 'idle',
     progress: 0,
@@ -100,8 +108,15 @@ export default ({ maxSeconds, maxBytes, urls, backUrl, i18n }) => ({
     dirty: false,
     submitting: false,
     confirmLeave: false,
+    camera: false,
+    recording: false,
+    recordedSeconds: 0,
+    stream: null,
+    recorder: null,
+    timer: null,
 
     init() {
+        window.addEventListener('pagehide', () => this.closeCamera());
         window.addEventListener('beforeunload', (event) => {
             if (this.dirty && !this.submitting) {
                 event.preventDefault();
@@ -114,6 +129,74 @@ export default ({ maxSeconds, maxBytes, urls, backUrl, i18n }) => ({
         if (this.state !== 'uploading') {
             this.$refs.file.click();
         }
+    },
+
+    async openCamera() {
+        if (this.state === 'uploading') {
+            return;
+        }
+        if (prefersNativeCamera()) {
+            this.$refs.capture.click();
+            return;
+        }
+        this.error = '';
+        try {
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 } },
+                audio: true,
+            });
+        } catch {
+            this.error = i18n.cameraDenied;
+            return;
+        }
+        this.camera = true;
+        this.$nextTick(() => {
+            this.$refs.live.srcObject = this.stream;
+        });
+    },
+
+    startRecording() {
+        const type = recorderType();
+        const chunks = [];
+        this.recorder = new MediaRecorder(this.stream, type ? { mimeType: type } : undefined);
+        this.recorder.ondataavailable = (event) => event.data.size && chunks.push(event.data);
+        this.recorder.onstop = () => {
+            const mime = this.recorder.mimeType || type || 'video/webm';
+            const file = new File(chunks, `recording.${mime.includes('mp4') ? 'mp4' : 'webm'}`, { type: mime });
+            this.closeCamera();
+            this.useFile(file);
+        };
+        this.recorder.start(1000);
+        this.recording = true;
+        this.recordedSeconds = 0;
+        this.dirty = true;
+        this.timer = setInterval(() => {
+            this.recordedSeconds++;
+            if (this.recordedSeconds >= maxSeconds) {
+                this.stopRecording();
+            }
+        }, 1000);
+    },
+
+    stopRecording() {
+        clearInterval(this.timer);
+        this.recording = false;
+        if (this.recorder?.state === 'recording') {
+            this.recorder.stop(); // onstop hands the file over and closes the camera.
+        }
+    },
+
+    closeCamera() {
+        clearInterval(this.timer);
+        this.recording = false;
+        this.stream?.getTracks().forEach((track) => track.stop());
+        this.stream = null;
+        this.camera = false;
+    },
+
+    recordLabel() {
+        const clock = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+        return `${clock(this.recordedSeconds)} / ${clock(maxSeconds)}`;
     },
 
     back() {
@@ -132,9 +215,12 @@ export default ({ maxSeconds, maxBytes, urls, backUrl, i18n }) => ({
     async onFile(event) {
         const file = event.target.files[0];
         event.target.value = '';
-        if (!file) {
-            return;
+        if (file) {
+            await this.useFile(file);
         }
+    },
+
+    async useFile(file) {
         this.error = '';
         if (file.size > maxBytes) {
             this.error = i18n.tooBig;

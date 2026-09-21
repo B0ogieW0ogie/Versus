@@ -23,10 +23,20 @@ class ChallengeFactory extends Factory
             'user_id' => User::factory(),
             'title' => Str::limit($title, 100, ''),
             'rules' => $this->faker->sentence(12),
-            'duration' => Challenge::DURATION_24H,
+            'category' => Challenge::CATEGORY_OTHER,
+            'format' => Challenge::FORMAT_PUBLIC,
+            'duration' => Challenge::DURATION_3D,
             'ends_at' => now()->addDay(),
             'status' => Challenge::STATUS_ACTIVE,
         ];
+    }
+
+    public function duel(?User $opponent = null): static
+    {
+        return $this->state(fn () => [
+            'format' => Challenge::FORMAT_DUEL,
+            'opponent_id' => $opponent->id ?? User::factory(),
+        ]);
     }
 
     public function processing(): static

@@ -18,7 +18,7 @@ use InvalidArgumentException;
  * @property Carbon|null $reminder_sent_at
  */
 #[Fillable([
-    'slug', 'user_id', 'title', 'rules', 'duration', 'ends_at', 'status',
+    'slug', 'user_id', 'title', 'rules', 'category', 'format', 'opponent_id', 'duration', 'ends_at', 'status',
     'winner_entry_id', 'closed_at', 'reminder_sent_at', 'feed_score',
     'entries_count', 'votes_count',
 ])]
@@ -35,11 +35,45 @@ class Challenge extends Model
 
     public const STATUS_FAILED = 'failed';
 
-    public const DURATION_24H = '24h';
-
     public const DURATION_3D = '3d';
 
     public const DURATION_7D = '7d';
+
+    public const DURATION_14D = '14d';
+
+    public const DURATION_30D = '30d';
+
+    public const FORMAT_PUBLIC = 'public';
+
+    /** 1v1: only the creator and the chosen opponent may respond; anyone can watch and vote. */
+    public const FORMAT_DUEL = 'duel';
+
+    public const FORMATS = [self::FORMAT_PUBLIC, self::FORMAT_DUEL];
+
+    public const CATEGORY_SPORTS = 'sports';
+
+    public const CATEGORY_MUSIC = 'music';
+
+    public const CATEGORY_GAMING = 'gaming';
+
+    public const CATEGORY_CREATIVITY = 'creativity';
+
+    public const CATEGORY_SKILLS = 'skills';
+
+    public const CATEGORY_LIFESTYLE = 'lifestyle';
+
+    public const CATEGORY_OTHER = 'other';
+
+    /** In display order. Labels live in lang/{locale}/challenges.php as category_{key}. */
+    public const CATEGORIES = [
+        self::CATEGORY_SPORTS,
+        self::CATEGORY_MUSIC,
+        self::CATEGORY_GAMING,
+        self::CATEGORY_CREATIVITY,
+        self::CATEGORY_SKILLS,
+        self::CATEGORY_LIFESTYLE,
+        self::CATEGORY_OTHER,
+    ];
 
     protected function casts(): array
     {
@@ -51,12 +85,15 @@ class Challenge extends Model
             'entries_count' => 'integer',
             'votes_count' => 'integer',
             'winner_entry_id' => 'integer',
+            'opponent_id' => 'integer',
         ];
     }
 
     public static function durationMinutes(string $duration): int
     {
-        $minutes = config('versus.challenges.durations.'.$duration);
+        // Challenges created with a since-retired duration still need their deadline computed.
+        $minutes = config('versus.challenges.durations.'.$duration)
+            ?? config('versus.challenges.legacy_durations.'.$duration);
 
         if (! is_int($minutes)) {
             throw new InvalidArgumentException("Unknown challenge duration [{$duration}].");
@@ -71,6 +108,27 @@ class Challenge extends Model
         return $this->status === self::STATUS_ACTIVE
             && $this->ends_at !== null
             && now()->lt($this->ends_at);
+    }
+
+    public function isDuel(): bool
+    {
+        return $this->format === self::FORMAT_DUEL;
+    }
+
+    /** Whether the user may post a Response: anyone but the creator, or only the opponent in a Duel. */
+    public function allowsResponseFrom(User $user): bool
+    {
+        if ($this->user_id === $user->id) {
+            return false;
+        }
+
+        return ! $this->isDuel() || $this->opponent_id === $user->id;
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function opponent(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'opponent_id');
     }
 
     /** @return BelongsTo<User, $this> */

@@ -125,4 +125,21 @@ class ParticipationActionsTest extends TestCase
         ChallengeEntry::factory()->for($challenge)->for($user)->create();
         $this->assertChallengeError(fn () => app(LeaveChallengeAction::class)($user, $challenge), __('challenges.cannot_leave_with_entry'));
     }
+
+    public function test_duel_accepts_responses_only_from_the_opponent(): void
+    {
+        $rival = User::factory()->create();
+        $duel = Challenge::factory()->duel($rival)->withOriginal()->create();
+        $stranger = User::factory()->create();
+
+        $this->assertChallengeError(fn () => app(AcceptChallengeAction::class)($stranger, $duel), __('challenges.duel_only'));
+        $this->assertChallengeError(
+            fn () => app(SubmitResponseAction::class)($stranger, $duel, $this->upload($stranger)),
+            __('challenges.duel_only'),
+        );
+
+        app(AcceptChallengeAction::class)($rival, $duel);
+        app(SubmitResponseAction::class)($rival, $duel, $this->upload($rival));
+        $this->assertTrue(ChallengeEntry::where('challenge_id', $duel->id)->where('user_id', $rival->id)->exists());
+    }
 }

@@ -35,7 +35,6 @@
                                class="transition {{ request()->routeIs('challenges.mine') ? 'text-white' : 'text-white/60 hover:text-white' }}">
                                 {{ __('challenges.nav_my') }}
                             </a>
-                            <a href="{{ route('challenges.create') }}" class="text-white/60 transition hover:text-white">{{ __('challenges.publish') }}</a>
                         @endauth
                     @endif
                 </div>

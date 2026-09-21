@@ -60,12 +60,15 @@ class ChallengeFormTest extends TestCase
             ->set('uploadId', $this->upload($user))
             ->set('title', 'Kickflip clean')
             ->set('rules', 'Land it')
-            ->set('duration', Challenge::DURATION_24H)
+            ->set('category', Challenge::CATEGORY_SPORTS)
             ->call('publish')
             ->assertHasNoErrors()
             ->assertRedirect(route('challenges.mine'));
 
-        $this->assertSame('Kickflip clean', Challenge::sole()->title);
+        $challenge = Challenge::sole();
+        $this->assertSame('Kickflip clean', $challenge->title);
+        $this->assertSame(Challenge::DURATION_7D, $challenge->duration); // the default
+        $this->assertSame(Challenge::FORMAT_PUBLIC, $challenge->format);
     }
 
     public function test_missing_video_and_fields_show_errors(): void
@@ -79,7 +82,7 @@ class ChallengeFormTest extends TestCase
         Livewire::actingAs($user)->test(ChallengeForm::class)
             ->set('uploadId', $this->upload($user))
             ->call('publish')
-            ->assertHasErrors(['title', 'rules', 'duration']);
+            ->assertHasErrors(['title', 'rules', 'category']);
     }
 
     public function test_user_without_username_sees_the_field(): void
@@ -143,17 +146,117 @@ class ChallengeFormTest extends TestCase
     public function test_retry_prefills_from_failed_challenge_and_replaces_it(): void
     {
         $user = User::factory()->create(['username' => 'dan']);
-        $failed = Challenge::factory()->for($user)->failed()->create(['title' => 'Try again', 'rules' => 'Rules', 'duration' => Challenge::DURATION_7D]);
+        $rival = User::factory()->create();
+        $failed = Challenge::factory()->for($user)->failed()->duel($rival)->create([
+            'title' => 'Try again', 'rules' => 'Rules', 'duration' => Challenge::DURATION_14D, 'category' => Challenge::CATEGORY_MUSIC,
+        ]);
 
         Livewire::withQueryParams(['retry' => $failed->slug])
             ->actingAs($user)
             ->test(ChallengeForm::class)
             ->assertSet('title', 'Try again')
-            ->assertSet('duration', Challenge::DURATION_7D)
+            ->assertSet('duration', Challenge::DURATION_14D)
+            ->assertSet('category', Challenge::CATEGORY_MUSIC)
+            ->assertSet('format', Challenge::FORMAT_DUEL)
+            ->assertSet('opponentId', $rival->id)
             ->set('uploadId', $this->upload($user))
             ->call('publish')
             ->assertHasNoErrors();
 
         $this->assertNull(Challenge::find($failed->id));
+    }
+
+    public function test_form_shows_category_deadline_and_format_without_battle_mechanics(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        $html = $this->actingAs($user)->get(route('challenges.create'))->assertOk()->getContent();
+
+        foreach (Challenge::CATEGORIES as $category) {
+            $this->assertStringContainsString(e(__('challenges.category_'.$category)), $html);
+        }
+        foreach (['3d', '7d', '14d', '30d'] as $duration) {
+            $this->assertStringContainsString(__('challenges.duration_'.$duration), $html);
+        }
+        $this->assertStringContainsString(__('challenges.format_public'), $html);
+        $this->assertStringContainsString(__('challenges.format_duel'), $html);
+        $this->assertStringNotContainsString('data-field="opponent"', $html);
+        $this->assertStringNotContainsString('Private', $html);
+        // No stake/token/prize-pool inputs from the Battle mechanics.
+        $this->assertDoesNotMatchRegularExpression('/wire:model[^=]*="(amount|stake|side|pool)/', $html);
+    }
+
+    public function test_page_uses_the_desktop_shell_without_the_top_nav_on_lg(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+
+        $this->actingAs($user)->get(route('challenges.create'))
+            ->assertOk()
+            ->assertSee('data-nav="top" class="lg:hidden"', false)
+            ->assertSee('data-side-nav', false)
+            ->assertSee('data-video-zone', false)
+            ->assertSee('aspect-[9/16]', false);
+    }
+
+    public function test_duel_shows_opponent_search_and_public_hides_it(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+        $rival = User::factory()->create(['username' => 'rival_one', 'name' => 'Rival']);
+        User::factory()->create(['username' => 'someone']);
+
+        Livewire::actingAs($user)->test(ChallengeForm::class)
+            ->assertDontSee(__('challenges.field_opponent'))
+            ->set('format', Challenge::FORMAT_DUEL)
+            ->assertSee(__('challenges.field_opponent'))
+            ->set('opponentQuery', '@riv')
+            ->assertSee('@rival_one')
+            ->assertDontSee('@someone')
+            ->call('selectOpponent', $rival->id)
+            ->assertSet('opponentId', $rival->id)
+            ->set('format', Challenge::FORMAT_PUBLIC)
+            ->assertSet('opponentId', null)
+            ->assertDontSee(__('challenges.field_opponent'));
+    }
+
+    public function test_opponent_search_excludes_the_creator_and_self_selection_is_ignored(): void
+    {
+        $user = User::factory()->create(['username' => 'dan_self']);
+
+        Livewire::actingAs($user)->test(ChallengeForm::class)
+            ->set('format', Challenge::FORMAT_DUEL)
+            ->set('opponentQuery', 'dan')
+            ->assertSee(__('challenges.opponent_none'))
+            ->call('selectOpponent', $user->id)
+            ->assertSet('opponentId', null);
+    }
+
+    public function test_publishing_a_duel(): void
+    {
+        $user = User::factory()->create(['username' => 'dan']);
+        $rival = User::factory()->create();
+
+        Livewire::actingAs($user)->test(ChallengeForm::class)
+            ->set('uploadId', $this->upload($user))
+            ->set('title', 'Beat me')
+            ->set('rules', '1v1')
+            ->set('category', Challenge::CATEGORY_GAMING)
+            ->set('format', Challenge::FORMAT_DUEL)
+            ->call('publish')
+            ->assertHasErrors(['opponent'])
+            ->call('selectOpponent', $rival->id)
+            ->call('publish')
+            ->assertHasNoErrors()
+            ->assertRedirect(route('challenges.mine'));
+
+        $this->assertSame($rival->id, Challenge::sole()->opponent_id);
+    }
+
+    public function test_only_the_duel_opponent_can_open_the_respond_form(): void
+    {
+        $rival = User::factory()->create();
+        $duel = Challenge::factory()->duel($rival)->withOriginal()->create();
+
+        $this->actingAs(User::factory()->create())->get(route('challenges.respond', $duel->slug))->assertForbidden();
+        $this->actingAs($rival)->get(route('challenges.respond', $duel->slug))->assertOk();
     }
 }

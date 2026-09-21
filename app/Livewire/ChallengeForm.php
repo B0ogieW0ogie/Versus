@@ -32,7 +32,15 @@ class ChallengeForm extends Component
 
     public string $rules = '';
 
+    public string $category = '';
+
     public string $duration = '';
+
+    public string $format = Challenge::FORMAT_PUBLIC;
+
+    public ?int $opponentId = null;
+
+    public string $opponentQuery = '';
 
     public string $username = '';
 
@@ -47,12 +55,20 @@ class ChallengeForm extends Component
                 abort(404);
             }
 
+            /** @var User $user */
+            $user = Auth::user();
+            if ($challenge->isDuel() && ! $challenge->allowsResponseFrom($user)) {
+                abort(403);
+            }
+
             $this->challengeId = $challenge->id;
             $this->title = $challenge->title;
             $this->rules = $challenge->rules;
 
             return;
         }
+
+        $this->duration = (string) config('versus.challenges.default_duration');
 
         $retry = request()->query('retry');
         if (is_string($retry)) {
@@ -66,9 +82,36 @@ class ChallengeForm extends Component
                 $this->retryChallengeId = $failed->id;
                 $this->title = $failed->title;
                 $this->rules = $failed->rules;
-                $this->duration = $failed->duration;
+                $this->category = $failed->category ?? '';
+                if (array_key_exists($failed->duration, (array) config('versus.challenges.durations'))) {
+                    $this->duration = $failed->duration;
+                }
+                $this->format = $failed->format;
+                $this->opponentId = $failed->opponent_id;
             }
         }
+    }
+
+    public function updatedFormat(): void
+    {
+        if ($this->format !== Challenge::FORMAT_DUEL) {
+            $this->clearOpponent();
+        }
+    }
+
+    public function selectOpponent(int $userId): void
+    {
+        if ($userId !== Auth::id() && User::whereKey($userId)->exists()) {
+            $this->opponentId = $userId;
+            $this->opponentQuery = '';
+            $this->resetErrorBag('opponent');
+        }
+    }
+
+    public function clearOpponent(): void
+    {
+        $this->opponentId = null;
+        $this->opponentQuery = '';
     }
 
     public function publish(CreateChallengeAction $create, SubmitResponseAction $respond): void
@@ -91,7 +134,10 @@ class ChallengeForm extends Component
                     $this->uploadId,
                     $this->title,
                     $this->rules,
+                    $this->category,
                     $this->duration,
+                    $this->format,
+                    $this->opponentId !== null ? User::find($this->opponentId) : null,
                     $user->username === null ? $this->username : null,
                     $this->retryChallengeId !== null ? Challenge::find($this->retryChallengeId) : null,
                 );
@@ -122,8 +168,33 @@ class ChallengeForm extends Component
             'isResponse' => $challenge !== null,
             'needsUsername' => $challenge === null && $user->username === null,
             'durations' => array_keys((array) config('versus.challenges.durations')),
+            'categories' => Challenge::CATEGORIES,
+            'opponent' => $this->opponentId !== null ? User::find($this->opponentId) : null,
+            'opponentResults' => $this->opponentResults($user),
             'maxSeconds' => (int) config('versus.challenges.max_video_seconds'),
             'maxBytes' => (int) config('versus.challenges.max_upload_mb') * 1024 * 1024,
         ]);
+    }
+
+    /** @return list<User> */
+    private function opponentResults(User $user): array
+    {
+        $query = mb_strtolower(ltrim(trim($this->opponentQuery), '@'));
+        if ($this->format !== Challenge::FORMAT_DUEL || $this->opponentId !== null || mb_strlen($query) < 2) {
+            return [];
+        }
+
+        // `_` (valid in usernames) stays a one-char wildcard: harmless, it only widens the match.
+        $like = '%'.str_replace(['%', '\\'], '', $query).'%';
+
+        // LOWER() + LIKE instead of ILIKE: tests run on SQLite.
+        return User::query()
+            ->whereKeyNot($user->id)
+            ->where(fn ($q) => $q->whereRaw('LOWER(username) LIKE ?', [$like])->orWhereRaw('LOWER(name) LIKE ?', [$like]))
+            ->orderByRaw('CASE WHEN LOWER(username) = ? THEN 0 ELSE 1 END', [$query])
+            ->orderBy('username')
+            ->limit(6)
+            ->get()
+            ->all();
     }
 }
