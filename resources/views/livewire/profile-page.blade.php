@@ -98,6 +98,9 @@
                         <p class="mt-0.5 text-sm font-semibold {{ $user->is_admin ? 'text-orange-400' : 'text-white/50' }}">{{ $user->rankLabel() }}</p>
                     </div>
                     <div data-onboarding-target="bio" class="min-w-0 flex-1 pt-0.5">
+                        @if ($user->status)
+                            <p data-user-status class="mb-1 text-sm font-medium text-indigo-200">“{{ $user->status }}”</p>
+                        @endif
                         @if ($user->bio)
                             <p class="text-sm text-white/80 whitespace-pre-line">{{ $user->bio }}</p>
                         @else

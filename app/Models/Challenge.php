@@ -16,11 +16,12 @@ use InvalidArgumentException;
  * @property Carbon|null $ends_at
  * @property Carbon|null $closed_at
  * @property Carbon|null $reminder_sent_at
+ * @property Carbon|null $top_checked_at
  */
 #[Fillable([
     'slug', 'user_id', 'title', 'rules', 'category', 'format', 'opponent_id', 'duration', 'ends_at', 'status',
     'winner_entry_id', 'closed_at', 'reminder_sent_at', 'feed_score',
-    'entries_count', 'votes_count',
+    'entries_count', 'votes_count', 'top_checked_at',
 ])]
 class Challenge extends Model
 {
@@ -81,6 +82,7 @@ class Challenge extends Model
             'ends_at' => 'datetime',
             'closed_at' => 'datetime',
             'reminder_sent_at' => 'datetime',
+            'top_checked_at' => 'datetime',
             'feed_score' => 'float',
             'entries_count' => 'integer',
             'votes_count' => 'integer',

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
 #[Fillable([
     'challenge_id', 'user_id', 'is_original', 'status', 'source_path', 'video_path',
     'poster_path', 'duration_ms', 'failure_reason', 'votes_count', 'likes_count',
-    'impressions_count', 'submitted_at',
+    'impressions_count', 'submitted_at', 'top_rank',
 ])]
 class ChallengeEntry extends Model
 {
@@ -39,6 +39,7 @@ class ChallengeEntry extends Model
             'votes_count' => 'integer',
             'likes_count' => 'integer',
             'impressions_count' => 'integer',
+            'top_rank' => 'integer',
         ];
     }
 

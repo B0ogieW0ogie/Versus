@@ -16,11 +16,18 @@ class RecommendedProfiles
 
     private const CACHE_SECONDS = 600;
 
+    /** @return list<int> everyone recommended, for the News Feed's "interesting people" source */
+    public function userIds(?User $viewer): array
+    {
+        $ids = array_unique(array_merge([], ...array_values($this->cachedIds())));
+
+        return array_values(array_diff($ids, [$viewer?->id]));
+    }
+
     /** @return list<array{category: string, users: list<User>}> */
     public function groups(?User $viewer): array
     {
-        /** @var array<string, list<int>> $ids */
-        $ids = Cache::remember('recommended-profiles:v1', self::CACHE_SECONDS, fn (): array => $this->rankedIds());
+        $ids = $this->cachedIds();
 
         $users = User::query()
             ->whereIn('id', array_unique(array_merge([], ...array_values($ids))))
@@ -46,6 +53,13 @@ class RecommendedProfiles
         }
 
         return $groups;
+    }
+
+    /** @return array<string, list<int>> */
+    private function cachedIds(): array
+    {
+        /** @var array<string, list<int>> */
+        return Cache::remember('recommended-profiles:v1', self::CACHE_SECONDS, fn (): array => $this->rankedIds());
     }
 
     /**

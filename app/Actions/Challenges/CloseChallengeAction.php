@@ -7,11 +7,14 @@ use App\Models\Challenge;
 use App\Models\ChallengeEntry;
 use App\Models\ChallengeVote;
 use App\Notifications\ChallengeResults;
+use App\Services\Achievements\AwardAchievements;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class CloseChallengeAction
 {
+    public function __construct(private readonly AwardAchievements $achievements) {}
+
     public function __invoke(Challenge $challenge): Challenge
     {
         $closed = DB::transaction(function () use ($challenge): ?Challenge {
@@ -78,6 +81,9 @@ class CloseChallengeAction
     private function notifyResults(Challenge $challenge): void
     {
         $winner = $challenge->winnerEntry()->with('user')->first();
+        if ($winner !== null) {
+            $this->achievements->check($winner->user, AwardAchievements::KIND_WINS);
+        }
 
         $entries = ChallengeEntry::query()
             ->where('challenge_id', $challenge->id)

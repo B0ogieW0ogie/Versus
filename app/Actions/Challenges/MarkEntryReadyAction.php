@@ -8,12 +8,15 @@ use App\Notifications\ChallengePublished;
 use App\Notifications\ChallengeResponseReceived;
 use App\Notifications\DuelInvitation;
 use App\Notifications\ResponsePublished;
+use App\Services\Achievements\AwardAchievements;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 class MarkEntryReadyAction
 {
+    public function __construct(private readonly AwardAchievements $achievements) {}
+
     public function __invoke(ChallengeEntry $entry, string $videoPath, string $posterPath, int $durationMs): void
     {
         $result = DB::transaction(function () use ($entry, $videoPath, $posterPath, $durationMs): ?array {
@@ -56,6 +59,8 @@ class MarkEntryReadyAction
         if ($sourcePath !== null) {
             Storage::disk('local')->deleteDirectory(dirname($sourcePath));
         }
+
+        $this->achievements->check($entry->user, $entry->is_original ? AwardAchievements::KIND_CHALLENGES : AwardAchievements::KIND_RESPONSES);
 
         try {
             if ($entry->is_original) {

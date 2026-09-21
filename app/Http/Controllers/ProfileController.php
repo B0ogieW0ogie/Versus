@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\FeedPost;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +36,9 @@ class ProfileController extends Controller
             'email' => $validated['email'],
             'username' => $validated['username'] ?? null,
             'bio' => $validated['bio'] ?? null,
+            'status' => $validated['status'] ?? null,
         ]);
+        $statusChanged = $user->isDirty('status') && $user->status !== null;
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -56,6 +59,15 @@ class ProfileController extends Controller
         }
 
         $user->save();
+
+        if ($statusChanged) {
+            FeedPost::create([
+                'type' => FeedPost::TYPE_STATUS,
+                'user_id' => $user->id,
+                'body' => $user->status,
+                'published_at' => now(),
+            ]);
+        }
 
         return Redirect::route('profile.settings')->with('status', 'profile-updated');
     }

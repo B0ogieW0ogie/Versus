@@ -6,14 +6,17 @@ use App\Models\Challenge;
 use App\Models\ChallengeEntry;
 use App\Models\ChallengeVote;
 use App\Models\User;
+use App\Services\Achievements\AwardAchievements;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class CastChallengeVoteAction
 {
+    public function __construct(private readonly AwardAchievements $achievements) {}
+
     public function __invoke(User $user, ChallengeEntry $entry): ChallengeVote
     {
-        return DB::transaction(function () use ($user, $entry): ChallengeVote {
+        $vote = DB::transaction(function () use ($user, $entry): ChallengeVote {
             /** @var Challenge $challenge */
             $challenge = Challenge::whereKey($entry->challenge_id)->lockForUpdate()->firstOrFail();
 
@@ -65,5 +68,9 @@ class CastChallengeVoteAction
 
             return $vote;
         });
+
+        $this->achievements->check($user, AwardAchievements::KIND_VOTES);
+
+        return $vote;
     }
 }

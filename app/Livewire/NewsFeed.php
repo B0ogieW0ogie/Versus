@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\User;
-use App\Services\News\NewsEvent;
 use App\Services\News\NewsFeedService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -14,23 +13,24 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class NewsFeed extends Component
 {
-    private const PER_PAGE = 15;
+    private const PER_PAGE = 20;
 
-    public string $scope = NewsFeedService::SCOPE_ALL;
+    public string $source = NewsFeedService::SOURCE_ALL;
 
-    public string $type = '';
+    /** '' = all events, else a key of NewsFeedService::FILTERS */
+    public string $filter = '';
 
     public int $pages = 1;
 
     public function updated(string $property): void
     {
-        if (! in_array($this->scope, [NewsFeedService::SCOPE_ALL, NewsFeedService::SCOPE_FOLLOWING], true)) {
-            $this->scope = NewsFeedService::SCOPE_ALL;
+        if (! in_array($this->source, NewsFeedService::SOURCES, true)) {
+            $this->source = NewsFeedService::SOURCE_ALL;
         }
-        if ($this->type !== '' && ! in_array($this->type, NewsEvent::TYPES, true)) {
-            $this->type = '';
+        if ($this->filter !== '' && ! array_key_exists($this->filter, NewsFeedService::FILTERS)) {
+            $this->filter = '';
         }
-        if (in_array($property, ['scope', 'type'], true)) {
+        if (in_array($property, ['source', 'filter'], true)) {
             $this->pages = 1;
         }
     }
@@ -45,12 +45,13 @@ class NewsFeed extends Component
         /** @var User|null $viewer */
         $viewer = Auth::user();
         $limit = $this->pages * self::PER_PAGE;
-        $events = $news->events($viewer, $this->scope, $this->type !== '' ? $this->type : null, $limit + 1);
+        $events = $news->events($viewer, $this->source, $this->filter !== '' ? $this->filter : null, $limit + 1);
 
         return view('livewire.news-feed', [
             'events' => $events->take($limit),
             'hasMore' => $events->count() > $limit,
-            'types' => NewsEvent::TYPES,
+            'sources' => NewsFeedService::SOURCES,
+            'filters' => array_keys(NewsFeedService::FILTERS),
         ]);
     }
 }

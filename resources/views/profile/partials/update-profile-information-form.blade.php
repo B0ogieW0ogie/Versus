@@ -57,6 +57,16 @@
         </div>
 
         <div class="mt-4">
+            <x-input-label for="status" :value="__('profile.status_label')" />
+            <x-text-input id="status" name="status" type="text" maxlength="140"
+                          class="mt-1 block w-full"
+                          value="{{ old('status', $user->status) }}"
+                          placeholder="{{ __('profile.status_placeholder') }}" />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ __('profile.status_help') }}</p>
+            <x-input-error class="mt-2" :messages="$errors->get('status')" />
+        </div>
+
+        <div class="mt-4">
             <x-input-label for="bio" :value="__('profile.bio_label')" />
             <textarea id="bio" name="bio" rows="3"
                       class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('bio', $user->bio) }}</textarea>

@@ -17,6 +17,9 @@ return [
         'carousel_top_by_votes' => 7,
         'carousel_fresh_slots' => 3,
         'reminder_minutes_before' => 60,
+        // News Feed "Top change" events: the viewing-feed Top-N of responses, checked every N hours.
+        'top_size' => 10,
+        'top_checkpoint_hours' => 8,
         'comment_max_length' => 1000,
         'feed' => [
             'freshness_half_life_hours' => 24,
@@ -26,6 +29,14 @@ return [
             'ending_soon_hours' => 6,
             'weight_ending_soon' => 0.5,
         ],
+    ],
+
+    // Milestones that post an achievement to the News Feed (count of the user's own actions).
+    'achievements' => [
+        'votes' => [1, 10, 100],
+        'responses' => [1, 10, 50],
+        'challenges' => [1, 10],
+        'wins' => [1, 5, 25],
     ],
 
     'signup_bonus' => 10,

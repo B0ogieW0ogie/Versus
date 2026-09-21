@@ -22,3 +22,8 @@ Schedule::command('challenges:score-feed')
 
 Schedule::command('challenges:cleanup-uploads')
     ->daily();
+
+// News Feed "Top change" checkpoints (versus.challenges.top_checkpoint_hours, default every 8 h).
+Schedule::command('challenges:track-top')
+    ->cron('0 */'.max(1, (int) config('versus.challenges.top_checkpoint_hours')).' * * *')
+    ->withoutOverlapping();

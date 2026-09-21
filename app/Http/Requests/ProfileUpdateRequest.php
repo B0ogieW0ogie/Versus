@@ -35,6 +35,7 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class, 'username')->ignore($this->user()->id),
             ],
             'bio' => ['nullable', 'string', 'max:500'],
+            'status' => ['nullable', 'string', 'max:140'],
             'avatar' => ['nullable', 'image', 'max:2048'],
             'banner' => ['nullable', 'image', 'max:2048'],
         ];
@@ -44,6 +45,10 @@ class ProfileUpdateRequest extends FormRequest
     {
         if ($this->input('username') === '') {
             $this->merge(['username' => null]);
+        }
+        if (is_string($this->input('status'))) {
+            $status = trim($this->input('status'));
+            $this->merge(['status' => $status === '' ? null : $status]);
         }
         if ($this->input('bio') === '') {
             $this->merge(['bio' => null]);
